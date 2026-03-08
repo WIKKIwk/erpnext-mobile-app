@@ -146,13 +146,13 @@ class ActionDock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 18, bottom: 6),
+      padding: const EdgeInsets.only(top: 14, bottom: 8),
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               color: const Color(0xFF090909),
               borderRadius: BorderRadius.circular(999),
@@ -167,16 +167,22 @@ class ActionDock extends StatelessWidget {
             ),
             child: Row(
               children: [
-                ...leading,
+                Wrap(
+                  spacing: 10,
+                  children: leading,
+                ),
                 const Spacer(),
-                const SizedBox(width: 72),
+                const SizedBox(width: 58),
                 const Spacer(),
-                ...trailing,
+                Wrap(
+                  spacing: 10,
+                  children: trailing,
+                ),
               ],
             ),
           ),
           Positioned(
-            top: -14,
+            top: -10,
             child: center,
           ),
         ],
@@ -213,8 +219,8 @@ class DockButton extends StatelessWidget {
       child: AnimatedContainer(
         duration: AppMotion.medium,
         curve: AppMotion.smooth,
-        height: primary ? 72 : 46,
-        width: primary ? 72 : 46,
+        height: primary ? 62 : 46,
+        width: primary ? 62 : 46,
         decoration: BoxDecoration(
           color: background,
           shape: BoxShape.circle,
@@ -226,13 +232,13 @@ class DockButton extends StatelessWidget {
               ? const [
                   BoxShadow(
                     color: Color(0x33000000),
-                    blurRadius: 18,
-                    offset: Offset(0, 8),
+                    blurRadius: 16,
+                    offset: Offset(0, 6),
                   ),
                 ]
               : null,
         ),
-        child: Icon(icon, color: foreground, size: primary ? 30 : 20),
+        child: Icon(icon, color: foreground, size: primary ? 26 : 20),
       ),
     );
   }
