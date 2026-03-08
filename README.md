@@ -2,36 +2,43 @@
 
 Flutter Android-first app skeleton for the supplier and werka workflow.
 
-## Status
+## Bu dastur qayerdan ochildi
 
-This folder was created without running `flutter create`, because Flutter SDK is not installed on this machine yet.
-
-The source files are ready to be opened and continued once Flutter is available.
-
-## Expected next steps
-
-1. Install Flutter SDK on Linux.
-2. Run:
+VS Code ichidagi terminaldan shu papka ichida ochilgan:
 
 ```bash
-cd mobile_app
-flutter pub get
-flutter run -d linux
+cd /home/wikki/local.git/erpnext_stock_telegram/mobile_app
+flutter run -d linux --dart-define=MOBILE_API_BASE_URL=http://127.0.0.1:8081
 ```
 
-3. Optional browser preview:
+## Eng qulay qayta ochish usuli
+
+Shu papka ichida tayyor script bor:
 
 ```bash
-flutter run -d chrome
+cd /home/wikki/local.git/erpnext_stock_telegram/mobile_app
+./run_linux_preview.sh
 ```
 
-## Current scope
+## Muhim
 
-- theme and navigation shell
-- fake data driven supplier flow
-- fake data driven werka flow
-- light transitions and animated cards
+Mobile app ishlashi uchun backend ham turishi kerak:
 
-## Note
+```bash
+cd /home/wikki/local.git/erpnext_stock_telegram
+go run ./cmd/mobileapi
+```
 
-ERPNext API integration is not wired into this Flutter app yet. This is Phase 1 UI and navigation groundwork.
+Keyin alohida terminalda mobile app:
+
+```bash
+cd /home/wikki/local.git/erpnext_stock_telegram/mobile_app
+./run_linux_preview.sh
+```
+
+## Optional web preview
+
+```bash
+cd /home/wikki/local.git/erpnext_stock_telegram/mobile_app
+flutter run -d chrome --dart-define=MOBILE_API_BASE_URL=http://127.0.0.1:8081
+```
