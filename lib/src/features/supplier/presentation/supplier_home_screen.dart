@@ -1,10 +1,9 @@
-import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
-import '../../../core/session/app_session.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
+import 'widgets/supplier_dock.dart';
 import 'package:flutter/material.dart';
 
 class SupplierHomeScreen extends StatelessWidget {
@@ -12,63 +11,10 @@ class SupplierHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final profile = AppSession.instance.profile;
-
     return AppShell(
       title: 'Supplier',
       subtitle: 'Jo‘natish va statuslarni shu yerdan boshqarasiz.',
-      bottom: ActionDock(
-        leading: [
-          DockButton(
-            icon: Icons.home_rounded,
-            active: true,
-            onTap: () {
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                AppRoutes.supplierHome,
-                (route) => false,
-              );
-            },
-          ),
-          DockButton(
-            icon: Icons.notifications_none_rounded,
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content:
-                        Text('Bildirishnomalar keyingi bosqichda ochiladi')),
-              );
-            },
-          ),
-        ],
-        center: DockButton(
-          icon: Icons.add_rounded,
-          primary: true,
-          onTap: () =>
-              Navigator.of(context).pushNamed(AppRoutes.supplierItemPicker),
-        ),
-        trailing: [
-          DockButton(
-            icon: Icons.history_rounded,
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text('Recent view keyingi bosqichda ochiladi')),
-              );
-            },
-          ),
-          DockButton(
-            icon: Icons.person_outline_rounded,
-            onTap: () => Navigator.of(context).pushNamed(
-              AppRoutes.profile,
-              arguments: ProfileArgs(
-                role: UserRole.supplier,
-                name: profile?.displayName ?? 'Supplier',
-                subtitle: 'Jo‘natish va statuslarni boshqaradi',
-              ),
-            ),
-          ),
-        ],
-      ),
+      bottom: const SupplierDock(activeTab: SupplierDockTab.home),
       child: Column(
         children: [
           Expanded(

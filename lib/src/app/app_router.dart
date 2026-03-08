@@ -4,7 +4,9 @@ import '../features/shared/presentation/profile_screen.dart';
 import '../features/supplier/presentation/supplier_confirm_screen.dart';
 import '../features/supplier/presentation/supplier_home_screen.dart';
 import '../features/supplier/presentation/supplier_item_picker_screen.dart';
+import '../features/supplier/presentation/supplier_notifications_screen.dart';
 import '../features/supplier/presentation/supplier_qty_screen.dart';
+import '../features/supplier/presentation/supplier_recent_screen.dart';
 import '../features/supplier/presentation/supplier_success_screen.dart';
 import '../features/werka/presentation/werka_detail_screen.dart';
 import '../features/werka/presentation/werka_home_screen.dart';
@@ -19,6 +21,8 @@ class AppRoutes {
   static const String supplierQty = '/supplier-qty';
   static const String supplierConfirm = '/supplier-confirm';
   static const String supplierSuccess = '/supplier-success';
+  static const String supplierNotifications = '/supplier-notifications';
+  static const String supplierRecent = '/supplier-recent';
   static const String werkaHome = '/werka-home';
   static const String werkaDetail = '/werka-detail';
   static const String werkaSuccess = '/werka-success';
@@ -44,6 +48,10 @@ class AppRouter {
       case AppRoutes.supplierSuccess:
         final DispatchRecord record = settings.arguments as DispatchRecord;
         return _buildRoute(settings, SupplierSuccessScreen(record: record));
+      case AppRoutes.supplierNotifications:
+        return _buildRoute(settings, const SupplierNotificationsScreen());
+      case AppRoutes.supplierRecent:
+        return _buildRoute(settings, const SupplierRecentScreen());
       case AppRoutes.werkaHome:
         return _buildRoute(settings, const WerkaHomeScreen());
       case AppRoutes.werkaDetail:
