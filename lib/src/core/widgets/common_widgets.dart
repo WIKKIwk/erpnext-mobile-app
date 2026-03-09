@@ -165,12 +165,12 @@ class ActionDock extends StatelessWidget implements BottomInsetWidget {
   @override
   double bottomInsetForWidth(double width) {
     if (width <= 375) {
-      return 74;
+      return 64;
     }
     if (width <= 430) {
-      return 80;
+      return 70;
     }
-    return 84;
+    return 72;
   }
 
   @override
