@@ -63,7 +63,7 @@ class StatusPill extends StatelessWidget {
       case DispatchStatus.accepted:
         label = 'Qabul qilindi';
         color = const Color(0xFFFFFFFF);
-        background = const Color(0xFF1F8B4C);
+        background = const Color(0xFF5BB450);
       case DispatchStatus.partial:
         label = 'Qisman qabul';
         color = const Color(0xFFFFFFFF);

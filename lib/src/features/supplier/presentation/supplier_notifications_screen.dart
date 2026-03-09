@@ -146,7 +146,7 @@ IconData notificationIcon(DispatchStatus status) {
 Color notificationColor(DispatchStatus status) {
   switch (status) {
     case DispatchStatus.accepted:
-      return const Color(0xFF1F8B4C);
+      return const Color(0xFF5BB450);
     case DispatchStatus.partial:
       return const Color(0xFF2A6FDB);
     case DispatchStatus.rejected:

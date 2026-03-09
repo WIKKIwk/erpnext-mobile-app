@@ -384,7 +384,7 @@ class _MetricGrid extends StatelessWidget {
         _EnterpriseMetricTile(
           label: 'Accepted',
           value: acceptedCount.toString(),
-          accent: const Color(0xFF1F8B4C),
+          accent: const Color(0xFF5BB450),
         ),
         _EnterpriseMetricTile(
           label: 'Partial',
@@ -479,7 +479,7 @@ class _StatusMixBar extends StatelessWidget {
           children: [
             segment(const Color(0xFFFFD54F), pending),
             const SizedBox(width: 6),
-            segment(const Color(0xFF1F8B4C), accepted),
+            segment(const Color(0xFF5BB450), accepted),
             const SizedBox(width: 6),
             segment(const Color(0xFF2A6FDB), partial),
             const SizedBox(width: 6),
@@ -500,7 +500,7 @@ class _StatusMixBar extends StatelessWidget {
               child: _MixLegend(
                 label: 'Accepted',
                 value: '$accepted / $safeTotal',
-                color: const Color(0xFF1F8B4C),
+                color: const Color(0xFF5BB450),
               ),
             ),
           ],
