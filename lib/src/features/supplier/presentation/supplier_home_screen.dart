@@ -527,8 +527,8 @@ class _VolumeChartPainter extends CustomPainter {
     final barPaint = Paint()
       ..shader = const LinearGradient(
         colors: [
-          Color(0xFFA78BFA),
-          Color(0xFF2A6FDB),
+          Color(0xFF7A4A26),
+          Color(0xFFB1733B),
         ],
         begin: Alignment.bottomCenter,
         end: Alignment.topCenter,
@@ -549,9 +549,9 @@ class _VolumeChartPainter extends CustomPainter {
     final segmentWidth = size.width / values.length;
     for (int index = 0; index < values.length; index++) {
       final value = values[index];
-      final barHeight = (value / safeMax) * (chartHeight - 12);
-      final left = segmentWidth * index + (segmentWidth * 0.18);
-      final width = segmentWidth * 0.64;
+      final barHeight = (value / safeMax) * (chartHeight - 18);
+      final left = segmentWidth * index + (segmentWidth * 0.34);
+      final width = segmentWidth * 0.32;
       final rect = RRect.fromRectAndRadius(
         Rect.fromLTWH(
           left,
@@ -559,7 +559,7 @@ class _VolumeChartPainter extends CustomPainter {
           width,
           barHeight,
         ),
-        const Radius.circular(14),
+        const Radius.circular(8),
       );
       canvas.drawRRect(rect, barPaint);
     }
