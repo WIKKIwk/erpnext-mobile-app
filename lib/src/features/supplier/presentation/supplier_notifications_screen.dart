@@ -79,7 +79,7 @@ class _SupplierNotificationsScreenState
                           height: 44,
                           width: 44,
                           decoration: const BoxDecoration(
-                            color: Color(0xFF111111),
+                            color: Colors.transparent,
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -101,8 +101,6 @@ class _SupplierNotificationsScreenState
                                 notificationBody(record),
                                 style: Theme.of(context).textTheme.bodySmall,
                               ),
-                              const SizedBox(height: 10),
-                              StatusPill(status: record.status),
                             ],
                           ),
                         ),
@@ -122,41 +120,41 @@ class _SupplierNotificationsScreenState
 String notificationTitle(DispatchRecord record) {
   switch (record.status) {
     case DispatchStatus.accepted:
-      return '${record.itemCode} qabul qilindi';
+      return record.itemCode;
     case DispatchStatus.partial:
-      return '${record.itemCode} qisman qabul qilindi';
+      return record.itemCode;
     case DispatchStatus.rejected:
-      return '${record.itemCode} rad etildi';
+      return record.itemCode;
     case DispatchStatus.cancelled:
-      return '${record.itemCode} bekor qilindi';
+      return record.itemCode;
     case DispatchStatus.draft:
-      return '${record.itemCode} draft holatda';
+      return record.itemCode;
     case DispatchStatus.pending:
-      return '${record.itemCode} hali kutilmoqda';
+      return record.itemCode;
   }
 }
 
 String notificationBody(DispatchRecord record) {
   switch (record.status) {
     case DispatchStatus.accepted:
-      return 'Werka ${record.acceptedQty.toStringAsFixed(0)} ${record.uom} qabul qildi.';
+      return 'Werka ${record.acceptedQty.toStringAsFixed(0)} ${record.uom} oldi.';
     case DispatchStatus.partial:
-      return 'Werka ${record.acceptedQty.toStringAsFixed(0)} ${record.uom} qabul qildi, qolgan qismi hali yopilmagan.';
+      return 'Qisman olindi: ${record.acceptedQty.toStringAsFixed(0)} ${record.uom}.';
     case DispatchStatus.rejected:
-      return 'Jo‘natish rad etildi. Tafsilotni tekshiring.';
+      return 'Rad etildi.';
     case DispatchStatus.cancelled:
-      return 'Jo‘natish bekor qilindi.';
+      return 'Bekor qilindi.';
     case DispatchStatus.draft:
-      return 'Hujjat hali draft bosqichida turibdi.';
+      return 'Draft holatda.';
     case DispatchStatus.pending:
-      return 'Werka hali qabul qilishni yakunlamagan.';
+      return 'Hali kutilmoqda.';
   }
 }
 
 IconData notificationIcon(DispatchStatus status) {
   switch (status) {
     case DispatchStatus.accepted:
-      return Icons.check_circle_rounded;
+      return Icons.check_rounded;
     case DispatchStatus.partial:
       return Icons.timelapse_rounded;
     case DispatchStatus.rejected:
