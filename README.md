@@ -20,6 +20,13 @@ cd /home/wikki/local.git/erpnext_stock_telegram/mobile_app
 ./run_linux_preview.sh
 ```
 
+Yoki `make` bilan:
+
+```bash
+cd /home/wikki/local.git/erpnext_stock_telegram/mobile_app
+make run
+```
+
 ## Muhim
 
 Mobile app ishlashi uchun backend ham turishi kerak:
@@ -41,4 +48,11 @@ cd /home/wikki/local.git/erpnext_stock_telegram/mobile_app
 ```bash
 cd /home/wikki/local.git/erpnext_stock_telegram/mobile_app
 flutter run -d chrome --dart-define=MOBILE_API_BASE_URL=http://127.0.0.1:8081
+```
+
+Yoki:
+
+```bash
+cd /home/wikki/local.git/erpnext_stock_telegram/mobile_app
+make web
 ```
