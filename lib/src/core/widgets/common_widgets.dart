@@ -173,7 +173,7 @@ class ActionDock extends StatelessWidget {
         ),
       ),
       child: Transform.translate(
-        offset: const Offset(0, -2),
+        offset: Offset(0, compact ? -2 : 0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: buttons
