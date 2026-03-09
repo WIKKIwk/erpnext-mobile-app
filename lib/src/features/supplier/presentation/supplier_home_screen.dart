@@ -247,10 +247,10 @@ class _EnterpriseHero extends StatelessWidget {
                 : const Color(0xFFFFFFFF),
             AppTheme.isDark(context)
                 ? const Color(0xFF121212)
-                : const Color(0xFFF8F8F6),
+                : const Color(0xFFFFFFFF),
             AppTheme.isDark(context)
                 ? const Color(0xFF0A0A0A)
-                : const Color(0xFFF3F3F0),
+                : const Color(0xFFFFFFFF),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,

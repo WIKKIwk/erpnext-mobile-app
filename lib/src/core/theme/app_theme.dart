@@ -40,7 +40,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
-          textStyle: GoogleFonts.spaceGrotesk(
+          textStyle: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
@@ -54,7 +54,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
-          textStyle: GoogleFonts.spaceGrotesk(
+          textStyle: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
@@ -106,7 +106,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
-          textStyle: GoogleFonts.spaceGrotesk(
+          textStyle: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
@@ -120,7 +120,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
-          textStyle: GoogleFonts.spaceGrotesk(
+          textStyle: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
@@ -139,39 +139,39 @@ class AppTheme {
     required Color muted,
   }) {
     return TextTheme(
-      displaySmall: GoogleFonts.spaceGrotesk(
+      displaySmall: GoogleFonts.poppins(
         fontSize: 34,
         fontWeight: FontWeight.w700,
         letterSpacing: -1.2,
         color: ink,
       ),
-      headlineMedium: GoogleFonts.spaceGrotesk(
+      headlineMedium: GoogleFonts.poppins(
         fontSize: 28,
         fontWeight: FontWeight.w700,
         letterSpacing: -0.8,
         color: ink,
       ),
-      titleLarge: GoogleFonts.spaceGrotesk(
+      titleLarge: GoogleFonts.poppins(
         fontSize: 20,
         fontWeight: FontWeight.w700,
         color: ink,
       ),
-      titleMedium: GoogleFonts.spaceGrotesk(
+      titleMedium: GoogleFonts.poppins(
         fontSize: 16,
         fontWeight: FontWeight.w700,
         color: ink,
       ),
-      bodyLarge: GoogleFonts.dmSans(
+      bodyLarge: GoogleFonts.poppins(
         fontSize: 16,
         fontWeight: FontWeight.w500,
         color: ink,
       ),
-      bodyMedium: GoogleFonts.dmSans(
+      bodyMedium: GoogleFonts.poppins(
         fontSize: 14,
         fontWeight: FontWeight.w500,
         color: ink,
       ),
-      bodySmall: GoogleFonts.dmSans(
+      bodySmall: GoogleFonts.poppins(
         fontSize: 12,
         fontWeight: FontWeight.w500,
         color: muted,
@@ -187,7 +187,7 @@ class AppTheme {
     return InputDecorationTheme(
       filled: true,
       fillColor: fillColor,
-      hintStyle: GoogleFonts.dmSans(
+      hintStyle: GoogleFonts.poppins(
         color: hintColor,
         fontSize: 15,
       ),
