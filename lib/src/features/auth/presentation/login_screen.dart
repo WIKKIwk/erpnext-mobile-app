@@ -15,14 +15,16 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   static const String lastCodeKey = 'last_login_code';
+  static const String lastPhoneKey = 'last_login_phone';
 
+  final TextEditingController phoneController = TextEditingController();
   final TextEditingController codeController = TextEditingController();
-  final TextEditingController secretController = TextEditingController();
+  final FocusNode phoneFocusNode = FocusNode();
   final FocusNode codeFocusNode = FocusNode();
-  final FocusNode secretFocusNode = FocusNode();
   String? errorText;
   bool loading = false;
   String? rememberedCode;
+  String? rememberedPhone;
 
   @override
   void initState() {
@@ -33,11 +35,18 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> loadRememberedCode() async {
     final prefs = await SharedPreferences.getInstance();
     final savedCode = prefs.getString(lastCodeKey);
+    final savedPhone = prefs.getString(lastPhoneKey);
     if (!mounted) {
       return;
     }
     setState(() {
       rememberedCode = savedCode;
+      rememberedPhone = savedPhone;
+      if (phoneController.text.trim().isEmpty &&
+          savedPhone != null &&
+          savedPhone.isNotEmpty) {
+        phoneController.text = savedPhone;
+      }
       if (codeController.text.trim().isEmpty &&
           savedCode != null &&
           savedCode.isNotEmpty) {
@@ -69,12 +78,35 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
+  Future<void> persistRememberedPhone(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      await prefs.remove(lastPhoneKey);
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        rememberedPhone = null;
+      });
+      return;
+    }
+
+    await prefs.setString(lastPhoneKey, trimmed);
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      rememberedPhone = trimmed;
+    });
+  }
+
   @override
   void dispose() {
+    phoneController.dispose();
     codeController.dispose();
-    secretController.dispose();
+    phoneFocusNode.dispose();
     codeFocusNode.dispose();
-    secretFocusNode.dispose();
     super.dispose();
   }
 
@@ -82,11 +114,11 @@ class _LoginScreenState extends State<LoginScreen> {
     if (loading) {
       return;
     }
+    final String phone = phoneController.text.trim();
     final String code = codeController.text.trim();
-    final String secret = secretController.text.trim();
 
-    if (code.isEmpty || secret.isEmpty) {
-      setState(() => errorText = 'Code va secret ni kiriting');
+    if (phone.isEmpty || code.isEmpty) {
+      setState(() => errorText = 'Telefon raqam va code ni kiriting');
       return;
     }
     setState(() {
@@ -95,11 +127,16 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     MobileApi.instance
-        .login(code: code, secret: secret)
+        .login(phone: phone, code: code)
         .then((SessionProfile profile) {
       if (!context.mounted) {
         return;
       }
+      SharedPreferences.getInstance().then((prefs) {
+        prefs
+          ..setString(lastCodeKey, code)
+          ..setString(lastPhoneKey, phone);
+      });
       final String route = profile.role == UserRole.supplier
           ? AppRoutes.supplierHome
           : AppRoutes.werkaHome;
@@ -131,16 +168,55 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 children: [
                   SmoothAppear(
+                    delay: const Duration(milliseconds: 30),
+                    child: TextField(
+                      controller: phoneController,
+                      focusNode: phoneFocusNode,
+                      textInputAction: TextInputAction.next,
+                      keyboardType: TextInputType.phone,
+                      autocorrect: false,
+                      enableSuggestions: true,
+                      autofillHints: const [AutofillHints.telephoneNumber],
+                      onChanged: persistRememberedPhone,
+                      onSubmitted: (_) => codeFocusNode.requestFocus(),
+                      decoration: const InputDecoration(
+                        labelText: 'Telefon raqam',
+                        hintText: 'Masalan: +998901234567',
+                      ),
+                    ),
+                  ),
+                  if (rememberedPhone != null && rememberedPhone!.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    SmoothAppear(
+                      delay: const Duration(milliseconds: 42),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: ActionChip(
+                          label: Text('Oxirgi telefon: $rememberedPhone'),
+                          onPressed: () {
+                            phoneController.text = rememberedPhone!;
+                            codeFocusNode.requestFocus();
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 14),
+                  SmoothAppear(
                     delay: const Duration(milliseconds: 40),
                     child: TextField(
                       controller: codeController,
                       focusNode: codeFocusNode,
-                      textInputAction: TextInputAction.next,
+                      textInputAction: TextInputAction.done,
                       autocorrect: false,
                       enableSuggestions: true,
                       autofillHints: const [AutofillHints.username],
                       onChanged: persistRememberedCode,
-                      onSubmitted: (_) => secretFocusNode.requestFocus(),
+                      onSubmitted: (_) {
+                        if (!loading) {
+                          submitLogin(context);
+                        }
+                      },
                       decoration: const InputDecoration(
                         labelText: 'Code',
                         hintText: 'Masalan: 10XXXXXXXXXX',
@@ -157,34 +233,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           label: Text('Oxirgi code: $rememberedCode'),
                           onPressed: () {
                             codeController.text = rememberedCode!;
-                            secretFocusNode.requestFocus();
+                            codeFocusNode.unfocus();
                           },
                         ),
                       ),
                     ),
                   ],
                   const SizedBox(height: 14),
-                  SmoothAppear(
-                    delay: const Duration(milliseconds: 90),
-                    child: TextField(
-                      controller: secretController,
-                      focusNode: secretFocusNode,
-                      obscureText: true,
-                      autocorrect: false,
-                      enableSuggestions: false,
-                      autofillHints: const [AutofillHints.password],
-                      textInputAction: TextInputAction.done,
-                      onSubmitted: (_) {
-                        if (!loading) {
-                          submitLogin(context);
-                        }
-                      },
-                      decoration: const InputDecoration(
-                        labelText: 'Secret',
-                        hintText: 'Secret code',
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),

@@ -15,15 +15,15 @@ class MobileApi {
   );
 
   Future<SessionProfile> login({
+    required String phone,
     required String code,
-    required String secret,
   }) async {
     final http.Response response = await http.post(
       Uri.parse('$baseUrl/v1/mobile/auth/login'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
+        'phone': phone,
         'code': code,
-        'secret': secret,
       }),
     );
 
