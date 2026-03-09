@@ -170,7 +170,7 @@ class ActionDock extends StatelessWidget implements BottomInsetWidget {
     if (width <= 430) {
       return 88;
     }
-    return 60;
+    return 56;
   }
 
   @override
@@ -262,23 +262,23 @@ class DockButton extends StatelessWidget {
             ? switch (deviceClass) {
                 _DockDeviceClass.small => 54,
                 _DockDeviceClass.medium => 57,
-                _DockDeviceClass.large => 60,
+                _DockDeviceClass.large => 56,
               }
             : switch (deviceClass) {
                 _DockDeviceClass.small => 46,
                 _DockDeviceClass.medium => 50,
-                _DockDeviceClass.large => 54,
+                _DockDeviceClass.large => 50,
               },
         width: primary
             ? switch (deviceClass) {
                 _DockDeviceClass.small => 54,
                 _DockDeviceClass.medium => 57,
-                _DockDeviceClass.large => 60,
+                _DockDeviceClass.large => 56,
               }
             : switch (deviceClass) {
                 _DockDeviceClass.small => 46,
                 _DockDeviceClass.medium => 50,
-                _DockDeviceClass.large => 54,
+                _DockDeviceClass.large => 50,
               },
         decoration: BoxDecoration(
           color: background,
@@ -304,12 +304,12 @@ class DockButton extends StatelessWidget {
               ? switch (deviceClass) {
                   _DockDeviceClass.small => 24,
                   _DockDeviceClass.medium => 25,
-                  _DockDeviceClass.large => 27,
+                  _DockDeviceClass.large => 25,
                 }
               : switch (deviceClass) {
                   _DockDeviceClass.small => 22,
                   _DockDeviceClass.medium => 23,
-                  _DockDeviceClass.large => 25,
+                  _DockDeviceClass.large => 23,
                 },
         ),
       ),
