@@ -3,6 +3,10 @@ import '../theme/app_motion.dart';
 import '../theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
+abstract class BottomInsetWidget {
+  double bottomInsetForWidth(double width);
+}
+
 enum _DockDeviceClass {
   small,
   medium,
@@ -146,7 +150,7 @@ class MetricBadge extends StatelessWidget {
   }
 }
 
-class ActionDock extends StatelessWidget {
+class ActionDock extends StatelessWidget implements BottomInsetWidget {
   const ActionDock({
     super.key,
     required this.leading,
@@ -157,6 +161,17 @@ class ActionDock extends StatelessWidget {
   final List<Widget> leading;
   final List<Widget> trailing;
   final Widget center;
+
+  @override
+  double bottomInsetForWidth(double width) {
+    if (width <= 375) {
+      return 80;
+    }
+    if (width <= 430) {
+      return 88;
+    }
+    return 96;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -173,7 +188,7 @@ class ActionDock extends StatelessWidget {
     ];
 
     return Container(
-      padding: EdgeInsets.zero,
+      height: bottomInsetForWidth(width),
       decoration: BoxDecoration(
         color: AppTheme.cardBackground(context),
         border: Border(
@@ -183,22 +198,25 @@ class ActionDock extends StatelessWidget {
           ),
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: buttons
-            .map(
-              (button) => Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: switch (deviceClass) {
-                    _DockDeviceClass.small => 1,
-                    _DockDeviceClass.medium => 2,
-                    _DockDeviceClass.large => 3,
-                  },
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: buttons
+              .map(
+                (button) => Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: switch (deviceClass) {
+                      _DockDeviceClass.small => 1,
+                      _DockDeviceClass.medium => 2,
+                      _DockDeviceClass.large => 3,
+                    },
+                  ),
+                  child: button,
                 ),
-                child: button,
-              ),
-            )
-            .toList(),
+              )
+              .toList(),
+        ),
       ),
     );
   }

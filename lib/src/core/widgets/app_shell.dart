@@ -1,5 +1,6 @@
 import '../theme/app_motion.dart';
 import '../theme/app_theme.dart';
+import 'common_widgets.dart';
 import 'package:flutter/material.dart';
 
 enum _DockDeviceClass {
@@ -30,23 +31,11 @@ class AppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final width = MediaQuery.sizeOf(context).width;
-    final deviceClass = width <= 375
-        ? _DockDeviceClass.small
-        : width <= 430
-            ? _DockDeviceClass.medium
-            : _DockDeviceClass.large;
-
-    final double dockOffset = switch (deviceClass) {
-      _DockDeviceClass.small => 0,
-      _DockDeviceClass.medium => 7,
-      _DockDeviceClass.large => 12,
-    };
-
-    final double bottomInset = switch (deviceClass) {
-      _DockDeviceClass.small => bottom != null ? 94 : 20,
-      _DockDeviceClass.medium => bottom != null ? 104 : 20,
-      _DockDeviceClass.large => bottom != null ? 112 : 20,
-    };
+    final double bottomInset = bottom == null
+        ? 20
+        : bottom is BottomInsetWidget
+            ? (bottom as BottomInsetWidget).bottomInsetForWidth(width)
+            : 88;
 
     return Scaffold(
       body: DecoratedBox(
@@ -130,7 +119,7 @@ class AppShell extends StatelessWidget {
                       Positioned(
                         left: 20,
                         right: 24,
-                        bottom: dockOffset,
+                        bottom: 0,
                         child: bottom!,
                       ),
                   ],
