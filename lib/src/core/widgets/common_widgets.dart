@@ -165,12 +165,12 @@ class ActionDock extends StatelessWidget implements BottomInsetWidget {
   @override
   double bottomInsetForWidth(double width) {
     if (width <= 375) {
-      return 64;
+      return 54;
     }
     if (width <= 430) {
-      return 70;
+      return 58;
     }
-    return 72;
+    return 60;
   }
 
   @override
@@ -193,7 +193,7 @@ class ActionDock extends StatelessWidget implements BottomInsetWidget {
         color: AppTheme.cardBackground(context),
       ),
       child: Align(
-        alignment: Alignment.center,
+        alignment: Alignment.bottomCenter,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: buttons
