@@ -4,7 +4,7 @@ import '../theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 abstract class BottomInsetWidget {
-  double bottomInsetForWidth(double width);
+  double bottomInsetForContext(BuildContext context);
 }
 
 enum _DockDeviceClass {
@@ -163,18 +163,8 @@ class ActionDock extends StatelessWidget implements BottomInsetWidget {
   final Widget center;
 
   @override
-  double bottomInsetForWidth(double width) {
-    if (width <= 375) {
-      return 58;
-    }
-    if (width <= 430) {
-      return 62;
-    }
-    return 64;
-  }
-
-  double _panelHeightForWidth(double width) {
-    return 12;
+  double bottomInsetForContext(BuildContext context) {
+    return MediaQuery.viewPaddingOf(context).bottom + 10;
   }
 
   @override
@@ -191,10 +181,11 @@ class ActionDock extends StatelessWidget implements BottomInsetWidget {
       ...trailing,
     ];
 
-    final panelHeight = _panelHeightForWidth(width);
+    final double safeBottom = MediaQuery.viewPaddingOf(context).bottom;
+    final double panelHeight = safeBottom + 10;
 
     return SizedBox(
-      height: bottomInsetForWidth(width),
+      height: panelHeight,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -210,7 +201,7 @@ class ActionDock extends StatelessWidget implements BottomInsetWidget {
           Positioned(
             left: 0,
             right: 0,
-            bottom: 0,
+            bottom: safeBottom > 0 ? safeBottom - 2 : 0,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: buttons

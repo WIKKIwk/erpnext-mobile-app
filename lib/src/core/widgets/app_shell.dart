@@ -24,11 +24,10 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final width = MediaQuery.sizeOf(context).width;
     final double bottomInset = bottom == null
         ? 0
         : bottom is BottomInsetWidget
-            ? (bottom as BottomInsetWidget).bottomInsetForWidth(width)
+            ? (bottom as BottomInsetWidget).bottomInsetForContext(context)
             : 88;
 
     return Scaffold(
