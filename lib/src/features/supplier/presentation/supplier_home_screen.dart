@@ -34,79 +34,116 @@ class SupplierHomeScreen extends StatelessWidget {
                 }
 
                 final history = snapshot.data ?? <DispatchRecord>[];
+                final pendingCount = history
+                    .where((item) => item.status == DispatchStatus.pending)
+                    .length;
+                final acceptedCount = history
+                    .where((item) => item.status == DispatchStatus.accepted)
+                    .length;
+                final totalQty = history.fold<double>(
+                  0,
+                  (sum, item) => sum + item.sentQty,
+                );
 
                 return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SmoothAppear(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: MetricBadge(
-                              label: 'Pending',
-                              value: history
-                                  .where((item) =>
-                                      item.status == DispatchStatus.pending)
-                                  .length
-                                  .toString(),
+                      child: SoftCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Dashboard',
+                              style: Theme.of(context).textTheme.titleLarge,
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: MetricBadge(
-                              label: 'Qabul qilingan',
-                              value: history
-                                  .where((item) =>
-                                      item.status == DispatchStatus.accepted)
-                                  .length
-                                  .toString(),
+                            const SizedBox(height: 14),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: MetricBadge(
+                                    label: 'Pending',
+                                    value: pendingCount.toString(),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: MetricBadge(
+                                    label: 'Qabul qilingan',
+                                    value: acceptedCount.toString(),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: MetricBadge(
+                                    label: 'Jami',
+                                    value: totalQty.toStringAsFixed(0),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 18),
+                    Text(
+                      'Jarayonlar',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 12),
                     Expanded(
                       child: ListView.separated(
                         itemCount: history.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        separatorBuilder: (_, __) => const Divider(
+                          height: 1,
+                          color: Color(0xFF1F1F1F),
+                        ),
                         itemBuilder: (context, index) {
                           final DispatchRecord record = history[index];
                           return SmoothAppear(
                             delay: Duration(milliseconds: 60 + (index * 70)),
                             offset: const Offset(0, 18),
                             child: PressableScale(
-                              child: SoftCard(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                  horizontal: 4,
+                                ),
+                                child: Row(
                                   children: [
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            record.itemCode,
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            record.itemName.isEmpty
+                                                ? record.itemCode
+                                                : record.itemName,
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .titleLarge,
                                           ),
-                                        ),
-                                        StatusPill(status: record.status),
-                                      ],
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium,
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            record.createdLabel,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall,
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                    const SizedBox(height: 10),
-                                    Text(record.itemName),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .displaySmall
-                                          ?.copyWith(fontSize: 28),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Text(record.createdLabel,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall),
+                                    const SizedBox(width: 12),
+                                    StatusPill(status: record.status),
                                   ],
                                 ),
                               ),
