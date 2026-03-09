@@ -161,109 +161,126 @@ class _LoginScreenState extends State<LoginScreen> {
         onPressed: loading ? null : () => submitLogin(context),
         child: Text(loading ? 'Kuting...' : 'Login'),
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            AutofillGroup(
-              child: Column(
-                children: [
-                  SmoothAppear(
-                    delay: const Duration(milliseconds: 30),
-                    child: TextField(
-                      controller: phoneController,
-                      focusNode: phoneFocusNode,
-                      textInputAction: TextInputAction.next,
-                      keyboardType: TextInputType.phone,
-                      autocorrect: false,
-                      enableSuggestions: true,
-                      autofillHints: const [AutofillHints.telephoneNumber],
-                      onChanged: persistRememberedPhone,
-                      onSubmitted: (_) => codeFocusNode.requestFocus(),
-                      decoration: const InputDecoration(
-                        labelText: 'Telefon raqam',
-                        hintText: 'Masalan: +998901234567',
-                      ),
-                    ),
-                  ),
-                  if (rememberedPhone != null && rememberedPhone!.isNotEmpty) ...[
-                    const SizedBox(height: 10),
-                    SmoothAppear(
-                      delay: const Duration(milliseconds: 42),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: ActionChip(
-                          label: Text('Oxirgi telefon: $rememberedPhone'),
-                          onPressed: () {
-                            phoneController.text = rememberedPhone!;
-                            codeFocusNode.requestFocus();
-                          },
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 28),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      AutofillGroup(
+                        child: Column(
+                          children: [
+                            SmoothAppear(
+                              delay: const Duration(milliseconds: 30),
+                              child: TextField(
+                                controller: phoneController,
+                                focusNode: phoneFocusNode,
+                                textInputAction: TextInputAction.next,
+                                keyboardType: TextInputType.phone,
+                                autocorrect: false,
+                                enableSuggestions: true,
+                                autofillHints: const [AutofillHints.telephoneNumber],
+                                onChanged: persistRememberedPhone,
+                                onSubmitted: (_) => codeFocusNode.requestFocus(),
+                                decoration: const InputDecoration(
+                                  labelText: 'Telefon raqam',
+                                  hintText: 'Masalan: +998901234567',
+                                ),
+                              ),
+                            ),
+                            if (rememberedPhone != null &&
+                                rememberedPhone!.isNotEmpty) ...[
+                              const SizedBox(height: 10),
+                              SmoothAppear(
+                                delay: const Duration(milliseconds: 42),
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: ActionChip(
+                                    label:
+                                        Text('Oxirgi telefon: $rememberedPhone'),
+                                    onPressed: () {
+                                      phoneController.text = rememberedPhone!;
+                                      codeFocusNode.requestFocus();
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: 14),
+                            SmoothAppear(
+                              delay: const Duration(milliseconds: 40),
+                              child: TextField(
+                                controller: codeController,
+                                focusNode: codeFocusNode,
+                                textInputAction: TextInputAction.done,
+                                autocorrect: false,
+                                enableSuggestions: true,
+                                autofillHints: const [AutofillHints.username],
+                                onChanged: persistRememberedCode,
+                                onSubmitted: (_) {
+                                  if (!loading) {
+                                    submitLogin(context);
+                                  }
+                                },
+                                decoration: const InputDecoration(
+                                  labelText: 'Code',
+                                  hintText: 'Masalan: 10XXXXXXXXXX',
+                                ),
+                              ),
+                            ),
+                            if (rememberedCode != null &&
+                                rememberedCode!.isNotEmpty) ...[
+                              const SizedBox(height: 10),
+                              SmoothAppear(
+                                delay: const Duration(milliseconds: 55),
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: ActionChip(
+                                    label: Text('Oxirgi code: $rememberedCode'),
+                                    onPressed: () {
+                                      codeController.text = rememberedCode!;
+                                      codeFocusNode.unfocus();
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: 14),
+                          ],
                         ),
                       ),
-                    ),
-                  ],
-                  const SizedBox(height: 14),
-                  SmoothAppear(
-                    delay: const Duration(milliseconds: 40),
-                    child: TextField(
-                      controller: codeController,
-                      focusNode: codeFocusNode,
-                      textInputAction: TextInputAction.done,
-                      autocorrect: false,
-                      enableSuggestions: true,
-                      autofillHints: const [AutofillHints.username],
-                      onChanged: persistRememberedCode,
-                      onSubmitted: (_) {
-                        if (!loading) {
-                          submitLogin(context);
-                        }
-                      },
-                      decoration: const InputDecoration(
-                        labelText: 'Code',
-                        hintText: 'Masalan: 10XXXXXXXXXX',
-                      ),
-                    ),
-                  ),
-                  if (rememberedCode != null && rememberedCode!.isNotEmpty) ...[
-                    const SizedBox(height: 10),
-                    SmoothAppear(
-                      delay: const Duration(milliseconds: 55),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: ActionChip(
-                          label: Text('Oxirgi code: $rememberedCode'),
-                          onPressed: () {
-                            codeController.text = rememberedCode!;
-                            codeFocusNode.unfocus();
-                          },
+                      if (errorText != null) ...[
+                        const SizedBox(height: 14),
+                        SmoothAppear(
+                          delay: const Duration(milliseconds: 120),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0B0B0B),
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                  color: const Color(0xFF2A2A2A)),
+                            ),
+                            child: Text(
+                              errorText!,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 14),
-                ],
-              ),
-            ),
-            if (errorText != null) ...[
-              const SizedBox(height: 14),
-              SmoothAppear(
-                delay: const Duration(milliseconds: 120),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0B0B0B),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: const Color(0xFF2A2A2A)),
-                  ),
-                  child: Text(
-                    errorText!,
-                    style: Theme.of(context).textTheme.bodyMedium,
+                      ],
+                    ],
                   ),
                 ),
               ),
-            ],
-          ],
-        ),
+            ),
+          );
+        },
       ),
     );
   }
