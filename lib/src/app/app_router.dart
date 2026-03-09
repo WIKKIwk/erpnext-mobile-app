@@ -105,20 +105,20 @@ class AppRouter {
           reverseCurve: AppMotion.emphasized,
         );
         final Animation<Offset> offset = Tween<Offset>(
-          begin: const Offset(0.018, 0.012),
+          begin: const Offset(0.0, 0.018),
           end: Offset.zero,
         ).animate(curved);
         final Animation<double> scale = Tween<double>(
-          begin: 0.992,
+          begin: 0.996,
           end: 1,
         ).animate(curved);
 
         return FadeTransition(
           opacity: curved,
-          child: SlideTransition(
-            position: offset,
-            child: ScaleTransition(
-              scale: scale,
+          child: ScaleTransition(
+            scale: scale,
+            child: SlideTransition(
+              position: offset,
               child: child,
             ),
           ),
