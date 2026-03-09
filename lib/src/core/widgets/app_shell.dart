@@ -25,6 +25,9 @@ class AppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final width = MediaQuery.sizeOf(context).width;
+    final bool largeDock = width > 430;
+    final double dockLeft = largeDock ? 36 : 20;
+    final double dockRight = largeDock ? 40 : 24;
     final double bottomInset = bottom == null
         ? 20
         : bottom is BottomInsetWidget
@@ -105,14 +108,19 @@ class AppShell extends StatelessWidget {
                     Positioned.fill(
                       child: Container(
                         width: double.infinity,
-                        padding: EdgeInsets.fromLTRB(20, 0, 24, bottomInset),
+                        padding: EdgeInsets.fromLTRB(
+                          20,
+                          0,
+                          24,
+                          bottomInset,
+                        ),
                         child: child,
                       ),
                     ),
                     if (bottom != null)
                       Positioned(
-                        left: 20,
-                        right: 24,
+                        left: dockLeft,
+                        right: dockRight,
                         bottom: 0,
                         child: bottom!,
                       ),
