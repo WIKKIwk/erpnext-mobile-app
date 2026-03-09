@@ -52,7 +52,7 @@ class SupplierHomeScreen extends StatelessWidget {
               .length;
 
           return ListView(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: EdgeInsets.zero,
             children: [
               SmoothAppear(
                 child: _EnterpriseHero(

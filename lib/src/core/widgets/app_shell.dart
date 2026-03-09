@@ -95,7 +95,7 @@ class AppShell extends StatelessWidget {
                     20,
                     0,
                     20,
-                    bottom != null ? 4 : 20,
+                    bottom != null ? 0 : 20,
                   ),
                   child: child,
                 ),
