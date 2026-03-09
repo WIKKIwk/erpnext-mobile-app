@@ -182,32 +182,22 @@ class ActionDock extends StatelessWidget {
           ),
         ),
       ),
-      child: Transform.translate(
-        offset: Offset(
-          0,
-          switch (deviceClass) {
-            _DockDeviceClass.small => -2,
-            _DockDeviceClass.medium => -1,
-            _DockDeviceClass.large => 0,
-          },
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: buttons
-              .map(
-                (button) => Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: switch (deviceClass) {
-                      _DockDeviceClass.small => 1,
-                      _DockDeviceClass.medium => 2,
-                      _DockDeviceClass.large => 3,
-                    },
-                  ),
-                  child: button,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: buttons
+            .map(
+              (button) => Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: switch (deviceClass) {
+                    _DockDeviceClass.small => 1,
+                    _DockDeviceClass.medium => 2,
+                    _DockDeviceClass.large => 3,
+                  },
                 ),
-              )
-              .toList(),
-        ),
+                child: button,
+              ),
+            )
+            .toList(),
       ),
     );
   }

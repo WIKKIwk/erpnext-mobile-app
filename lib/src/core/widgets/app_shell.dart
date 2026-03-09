@@ -122,7 +122,7 @@ class AppShell extends StatelessWidget {
                       offset: Offset(
                         0,
                         switch (deviceClass) {
-                          _DockDeviceClass.small => 0,
+                          _DockDeviceClass.small => -2,
                           _DockDeviceClass.medium => 7,
                           _DockDeviceClass.large => 12,
                         },
