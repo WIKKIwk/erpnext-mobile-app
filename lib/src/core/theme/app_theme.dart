@@ -40,9 +40,10 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
-          textStyle: GoogleFonts.poppins(
+          textStyle: GoogleFonts.inter(
             fontSize: 16,
             fontWeight: FontWeight.w700,
+            fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
       ),
@@ -54,9 +55,10 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
-          textStyle: GoogleFonts.poppins(
+          textStyle: GoogleFonts.inter(
             fontSize: 16,
             fontWeight: FontWeight.w700,
+            fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
       ),
@@ -106,9 +108,10 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
-          textStyle: GoogleFonts.poppins(
+          textStyle: GoogleFonts.inter(
             fontSize: 16,
             fontWeight: FontWeight.w700,
+            fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
       ),
@@ -120,9 +123,10 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
-          textStyle: GoogleFonts.poppins(
+          textStyle: GoogleFonts.inter(
             fontSize: 16,
             fontWeight: FontWeight.w700,
+            fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
       ),
@@ -139,42 +143,49 @@ class AppTheme {
     required Color muted,
   }) {
     return TextTheme(
-      displaySmall: GoogleFonts.poppins(
+      displaySmall: GoogleFonts.inter(
         fontSize: 34,
         fontWeight: FontWeight.w700,
         letterSpacing: -1.2,
         color: ink,
+        fontFeatures: const [FontFeature.tabularFigures()],
       ),
-      headlineMedium: GoogleFonts.poppins(
+      headlineMedium: GoogleFonts.inter(
         fontSize: 28,
         fontWeight: FontWeight.w700,
         letterSpacing: -0.8,
         color: ink,
+        fontFeatures: const [FontFeature.tabularFigures()],
       ),
-      titleLarge: GoogleFonts.poppins(
+      titleLarge: GoogleFonts.inter(
         fontSize: 20,
         fontWeight: FontWeight.w700,
         color: ink,
+        fontFeatures: const [FontFeature.tabularFigures()],
       ),
-      titleMedium: GoogleFonts.poppins(
+      titleMedium: GoogleFonts.inter(
         fontSize: 16,
         fontWeight: FontWeight.w700,
         color: ink,
+        fontFeatures: const [FontFeature.tabularFigures()],
       ),
-      bodyLarge: GoogleFonts.poppins(
+      bodyLarge: GoogleFonts.inter(
         fontSize: 16,
         fontWeight: FontWeight.w500,
         color: ink,
+        fontFeatures: const [FontFeature.tabularFigures()],
       ),
-      bodyMedium: GoogleFonts.poppins(
+      bodyMedium: GoogleFonts.inter(
         fontSize: 14,
         fontWeight: FontWeight.w500,
         color: ink,
+        fontFeatures: const [FontFeature.tabularFigures()],
       ),
-      bodySmall: GoogleFonts.poppins(
+      bodySmall: GoogleFonts.inter(
         fontSize: 12,
         fontWeight: FontWeight.w500,
         color: muted,
+        fontFeatures: const [FontFeature.tabularFigures()],
       ),
     );
   }
@@ -187,9 +198,10 @@ class AppTheme {
     return InputDecorationTheme(
       filled: true,
       fillColor: fillColor,
-      hintStyle: GoogleFonts.poppins(
+      hintStyle: GoogleFonts.inter(
         color: hintColor,
         fontSize: 15,
+        fontFeatures: const [FontFeature.tabularFigures()],
       ),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
