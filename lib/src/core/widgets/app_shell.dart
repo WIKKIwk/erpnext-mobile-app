@@ -23,6 +23,7 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final bool compact = MediaQuery.sizeOf(context).width <= 375;
 
     return Scaffold(
       body: DecoratedBox(
@@ -104,7 +105,7 @@ class AppShell extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 24, 0),
                   child: Transform.translate(
-                    offset: const Offset(0, 6),
+                    offset: Offset(0, compact ? 6 : 12),
                     child: bottom,
                   ),
                 ),
