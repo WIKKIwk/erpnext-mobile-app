@@ -90,36 +90,51 @@ class _SupplierItemPickerScreenState extends State<SupplierItemPickerScreen> {
                 }
                 return ListView.separated(
                   itemCount: filtered.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  separatorBuilder: (_, __) => const Divider(
+                    height: 1,
+                    color: Color(0xFF1F1F1F),
+                  ),
                   itemBuilder: (context, index) {
                     final SupplierItem item = filtered[index];
-                    return InkWell(
-                      borderRadius: BorderRadius.circular(24),
+                    return Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(18),
                       onTap: () => Navigator.of(context)
                           .pushNamed(AppRoutes.supplierQty, arguments: item),
-                      child: SoftCard(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(item.code,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 16,
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.code,
                                       style: Theme.of(context)
                                           .textTheme
-                                          .titleLarge),
-                                  const SizedBox(height: 6),
-                                  Text(item.name),
-                                  const SizedBox(height: 10),
-                                  Text('${item.uom}  •  ${item.warehouse}',
+                                          .titleLarge,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(item.name),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      '${item.uom}  •  ${item.warehouse}',
                                       style: Theme.of(context)
                                           .textTheme
-                                          .bodySmall),
-                                ],
+                                          .bodySmall,
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            const Icon(Icons.arrow_forward_rounded),
-                          ],
+                              const SizedBox(width: 12),
+                              const Icon(Icons.arrow_forward_rounded),
+                            ],
+                          ),
                         ),
                       ),
                     );
