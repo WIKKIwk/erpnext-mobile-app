@@ -474,7 +474,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Security va Location',
+                    'Security',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 10),
@@ -485,27 +485,21 @@ class _ProfileScreenState extends State<ProfileScreen>
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: savingPin ? null : _showPinFlow,
-                      child: Text(
-                        savingPin
-                            ? 'Saqlanmoqda...'
-                            : hasPin
-                                ? 'PIN almashtirish'
-                                : 'PIN o‘rnatish',
-                      ),
-                    ),
+                  _ProfileActionButton(
+                    primary: true,
+                    onPressed: savingPin ? null : _showPinFlow,
+                    label: savingPin
+                        ? 'Saqlanmoqda...'
+                        : hasPin
+                            ? 'PIN almashtirish'
+                            : 'PIN o‘rnatish',
                   ),
                   if (hasPin) ...[
                     const SizedBox(height: 10),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: savingPin ? null : _removePin,
-                        child: const Text('PIN o‘chirish'),
-                      ),
+                    _ProfileActionButton(
+                      primary: false,
+                      onPressed: savingPin ? null : _removePin,
+                      label: 'PIN o‘chirish',
                     ),
                   ],
                   const SizedBox(height: 14),
@@ -537,20 +531,18 @@ class _ProfileScreenState extends State<ProfileScreen>
               ),
             ],
             const SizedBox(height: 18),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () async {
-                  final navigator = Navigator.of(context);
-                  await MobileApi.instance.logout();
-                  await SecurityController.instance.clearForLogout();
-                  if (!mounted) {
-                    return;
-                  }
-                  navigator.pushNamedAndRemoveUntil('/', (route) => false);
-                },
-                child: const Text('Logout'),
-              ),
+            _ProfileActionButton(
+              primary: true,
+              onPressed: () async {
+                final navigator = Navigator.of(context);
+                await MobileApi.instance.logout();
+                await SecurityController.instance.clearForLogout();
+                if (!mounted) {
+                  return;
+                }
+                navigator.pushNamedAndRemoveUntil('/', (route) => false);
+              },
+              label: 'Logout',
             ),
             const SizedBox(height: 12),
           ],
@@ -638,6 +630,46 @@ class _ThemeIconButton extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _ProfileActionButton extends StatelessWidget {
+  const _ProfileActionButton({
+    required this.primary,
+    required this.onPressed,
+    required this.label,
+  });
+
+  final bool primary;
+  final VoidCallback? onPressed;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final child = SizedBox(
+      width: double.infinity,
+      height: 54,
+      child: primary
+          ? FilledButton(
+              onPressed: onPressed,
+              style: FilledButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+              child: Text(label),
+            )
+          : OutlinedButton(
+              onPressed: onPressed,
+              style: OutlinedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+              child: Text(label),
+            ),
+    );
+    return child;
   }
 }
 
