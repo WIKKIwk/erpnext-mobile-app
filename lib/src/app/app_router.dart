@@ -1,6 +1,8 @@
 import '../features/auth/presentation/login_screen.dart';
+import '../features/admin/presentation/admin_create_hub_screen.dart';
 import '../features/admin/presentation/admin_home_screen.dart';
 import '../features/admin/presentation/admin_inactive_suppliers_screen.dart';
+import '../features/admin/presentation/admin_item_create_screen.dart';
 import '../features/admin/presentation/admin_settings_screen.dart';
 import '../features/admin/presentation/admin_supplier_detail_screen.dart';
 import '../features/admin/presentation/admin_suppliers_screen.dart';
@@ -34,9 +36,11 @@ class AppRoutes {
   static const String werkaSuccess = '/werka-success';
   static const String profile = '/profile';
   static const String adminHome = '/admin-home';
+  static const String adminCreateHub = '/admin-create-hub';
   static const String adminSettings = '/admin-settings';
   static const String adminSuppliers = '/admin-suppliers';
   static const String adminInactiveSuppliers = '/admin-inactive-suppliers';
+  static const String adminItemCreate = '/admin-item-create';
   static const String adminSupplierDetail = '/admin-supplier-detail';
   static const String adminWerka = '/admin-werka';
 }
@@ -48,6 +52,7 @@ class AppRouter {
     AppRoutes.supplierRecent,
     AppRoutes.werkaHome,
     AppRoutes.adminHome,
+    AppRoutes.adminCreateHub,
     AppRoutes.adminSettings,
     AppRoutes.adminSuppliers,
     AppRoutes.adminWerka,
@@ -88,12 +93,16 @@ class AppRouter {
         return _buildRoute(settings, const ProfileScreen());
       case AppRoutes.adminHome:
         return _buildRoute(settings, const AdminHomeScreen());
+      case AppRoutes.adminCreateHub:
+        return _buildRoute(settings, const AdminCreateHubScreen());
       case AppRoutes.adminSettings:
         return _buildRoute(settings, const AdminSettingsScreen());
       case AppRoutes.adminSuppliers:
         return _buildRoute(settings, const AdminSuppliersScreen());
       case AppRoutes.adminInactiveSuppliers:
         return _buildRoute(settings, const AdminInactiveSuppliersScreen());
+      case AppRoutes.adminItemCreate:
+        return _buildRoute(settings, const AdminItemCreateScreen());
       case AppRoutes.adminSupplierDetail:
         final String supplierRef = settings.arguments as String;
         return _buildRoute(

@@ -44,12 +44,12 @@ class AdminDock extends StatelessWidget {
         ),
       ],
       center: DockButton(
-        icon: Icons.settings_rounded,
+        icon: Icons.add_rounded,
         primary: true,
         onTap: () {
           if (activeTab == AdminDockTab.settings) return;
           Navigator.of(context).pushNamedAndRemoveUntil(
-            AppRoutes.adminSettings,
+            AppRoutes.adminCreateHub,
             (route) => false,
           );
         },
@@ -60,8 +60,8 @@ class AdminDock extends StatelessWidget {
           active: activeTab == AdminDockTab.werka,
           onTap: () {
             if (activeTab == AdminDockTab.werka) return;
-            Navigator.of(context)
-                .pushNamedAndRemoveUntil(AppRoutes.adminWerka, (route) => false);
+            Navigator.of(context).pushNamedAndRemoveUntil(
+                AppRoutes.adminWerka, (route) => false);
           },
         ),
         DockButton(

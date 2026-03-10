@@ -339,6 +339,31 @@ class MobileApi {
         .toList();
   }
 
+  Future<SupplierItem> adminCreateItem({
+    required String code,
+    required String name,
+    required String uom,
+  }) async {
+    final response = await _sendAuthorized(
+      () => http.post(
+        Uri.parse('$baseUrl/v1/mobile/admin/items'),
+        headers: _headers(requireToken())
+          ..['Content-Type'] = 'application/json',
+        body: jsonEncode({
+          'code': code,
+          'name': name,
+          'uom': uom,
+        }),
+      ),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Admin item create failed');
+    }
+    return SupplierItem.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  }
+
   Future<AdminSupplier> adminCreateSupplier({
     required String name,
     required String phone,

@@ -4,6 +4,7 @@ import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/admin_dock.dart';
+import 'widgets/admin_module_card.dart';
 import 'package:flutter/material.dart';
 
 class AdminHomeScreen extends StatefulWidget {
@@ -110,21 +111,21 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                _AdminActionTile(
+                AdminModuleCard(
                   title: 'Settings',
                   subtitle: 'ERP va default sozlamalar',
                   onTap: () =>
                       Navigator.of(context).pushNamed(AppRoutes.adminSettings),
                 ),
                 const SizedBox(height: 12),
-                _AdminActionTile(
+                AdminModuleCard(
                   title: 'Suppliers',
                   subtitle: 'List, mahsulot biriktirish va block nazorati',
                   onTap: () =>
                       Navigator.of(context).pushNamed(AppRoutes.adminSuppliers),
                 ),
                 const SizedBox(height: 12),
-                _AdminActionTile(
+                AdminModuleCard(
                   title: 'Werka',
                   subtitle: 'Omborchi phone va name',
                   onTap: () =>
@@ -134,43 +135,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class _AdminActionTile extends StatelessWidget {
-  const _AdminActionTile({
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(24),
-      onTap: onTap,
-      child: SoftCard(
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: 6),
-                  Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
-                ],
-              ),
-            ),
-            const Icon(Icons.arrow_forward_rounded),
-          ],
-        ),
       ),
     );
   }
