@@ -17,6 +17,7 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -436,6 +437,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                           ],
                         ),
                       ),
+                      const SizedBox(width: 12),
+                      _ThemeIconToggle(
+                        isDark: ThemeController.instance.isDark,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -502,40 +507,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 18),
-            SoftCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Theme',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _ThemeModeButton(
-                          label: 'Qora',
-                          active: ThemeController.instance.isDark,
-                          onTap: () => ThemeController.instance
-                              .setThemeMode(ThemeMode.dark),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _ThemeModeButton(
-                          label: 'Oq',
-                          active: !ThemeController.instance.isDark,
-                          onTap: () => ThemeController.instance
-                              .setThemeMode(ThemeMode.light),
-                        ),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),
@@ -650,41 +621,73 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 }
 
-class _ThemeModeButton extends StatelessWidget {
-  const _ThemeModeButton({
-    required this.label,
+class _ThemeIconToggle extends StatelessWidget {
+  const _ThemeIconToggle({
+    required this.isDark,
+  });
+
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _ThemeIconButton(
+          asset: 'assets/icons/contrast-2-fill.svg',
+          active: isDark,
+          onTap: () => ThemeController.instance.setThemeMode(ThemeMode.dark),
+        ),
+        const SizedBox(width: 8),
+        _ThemeIconButton(
+          asset: isDark
+              ? 'assets/icons/sun-line.svg'
+              : 'assets/icons/sun-fill.svg',
+          active: !isDark,
+          onTap: () => ThemeController.instance.setThemeMode(ThemeMode.light),
+        ),
+      ],
+    );
+  }
+}
+
+class _ThemeIconButton extends StatelessWidget {
+  const _ThemeIconButton({
+    required this.asset,
     required this.active,
     required this.onTap,
   });
 
-  final String label;
+  final String asset;
   final bool active;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(16),
       onTap: active ? null : onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
-        height: 56,
-        alignment: Alignment.center,
+      child: Container(
+        height: 44,
+        width: 44,
         decoration: BoxDecoration(
           color: active
               ? AppTheme.primaryButton(context)
-              : AppTheme.cardBackground(context),
-          borderRadius: BorderRadius.circular(18),
+              : AppTheme.actionSurface(context),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppTheme.cardBorder(context)),
         ),
-        child: Text(
-          label,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: active
-                    ? AppTheme.primaryButtonForeground(context)
-                    : Theme.of(context).colorScheme.onSurface,
-              ),
+        alignment: Alignment.center,
+        child: SvgPicture.asset(
+          asset,
+          width: 22,
+          height: 22,
+          colorFilter: ColorFilter.mode(
+            active
+                ? AppTheme.primaryButtonForeground(context)
+                : Theme.of(context).colorScheme.onSurface,
+            BlendMode.srcIn,
+          ),
         ),
       ),
     );
