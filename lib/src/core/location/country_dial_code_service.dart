@@ -33,6 +33,24 @@ class CountryDialCodeService {
     return prefix;
   }
 
+  Future<String?> cachedPrefix() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cached = prefs.getString(_cachedKey)?.trim() ?? '';
+    return cached.isEmpty ? null : cached;
+  }
+
+  Future<String?> refreshFromLocation() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_promptedKey, true);
+    String? prefix = await _resolveFromLocation();
+    prefix ??=
+        _resolveFromCountryCode(PlatformDispatcher.instance.locale.countryCode);
+    if (prefix != null && prefix.isNotEmpty) {
+      await prefs.setString(_cachedKey, prefix);
+    }
+    return prefix;
+  }
+
   Future<String?> _resolveFromLocation() async {
     try {
       final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
