@@ -331,11 +331,13 @@ class DockSvgIcon extends StatelessWidget {
     required this.fillAsset,
     required this.lineAsset,
     required this.primary,
+    this.size,
   });
 
   final String fillAsset;
   final String lineAsset;
   final bool primary;
+  final double? size;
 
   @override
   Widget build(BuildContext context) {
@@ -347,8 +349,8 @@ class DockSvgIcon extends StatelessWidget {
 
     return SvgPicture.asset(
       asset,
-      width: primary ? 22 : 20,
-      height: primary ? 22 : 20,
+      width: size ?? (primary ? 24 : 23),
+      height: size ?? (primary ? 24 : 23),
       colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
     );
   }
