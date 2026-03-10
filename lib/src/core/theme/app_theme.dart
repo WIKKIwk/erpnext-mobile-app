@@ -13,9 +13,9 @@ class AppTheme {
       seedColor: Colors.white,
       brightness: Brightness.dark,
       primary: Colors.white,
-      secondary: const Color(0xFF5BB450),
+      secondary: Colors.white,
       surface: card,
-      error: const Color(0xFFC53B30),
+      error: Colors.white,
     );
 
     return ThemeData(
@@ -78,12 +78,12 @@ class AppTheme {
 
     final textTheme = _textTheme(ink: ink, muted: muted);
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF7A4A26),
+      seedColor: const Color(0xFF141414),
       brightness: Brightness.light,
-      primary: const Color(0xFF1F1A17),
-      secondary: const Color(0xFF5BB450),
+      primary: const Color(0xFF141414),
+      secondary: const Color(0xFF141414),
       surface: card,
-      error: const Color(0xFFC53B30),
+      error: const Color(0xFF141414),
     );
 
     return ThemeData(
@@ -133,7 +133,7 @@ class AppTheme {
       inputDecorationTheme: _inputDecorationTheme(
         fillColor: const Color(0xFFF6F6F3),
         hintColor: muted,
-        focusColor: const Color(0xFF7A4A26),
+        focusColor: const Color(0xFF141414),
       ),
     );
   }
@@ -247,7 +247,7 @@ class AppTheme {
       isDark(context) ? const Color(0xFF181818) : const Color(0xFFF2F0EB);
 
   static Color primaryButton(BuildContext context) =>
-      isDark(context) ? Colors.white : const Color(0xFF1F1A17);
+      isDark(context) ? Colors.white : const Color(0xFF141414);
 
   static Color primaryButtonForeground(BuildContext context) =>
       isDark(context) ? Colors.black : Colors.white;

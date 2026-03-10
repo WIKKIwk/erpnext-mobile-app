@@ -1,6 +1,7 @@
 import '../../../core/api/mobile_api.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../shared/models/app_models.dart';
 import 'package:flutter/material.dart';
 
@@ -127,12 +128,12 @@ class _AdminInactiveSuppliersScreenState
                           if (item.removed)
                             const _StatusChip(
                               label: 'Chiqarilgan',
-                              color: Color(0xFFC53B30),
+                              color: Colors.white,
                             )
                           else if (item.blocked)
                             const _StatusChip(
                               label: 'Blocked',
-                              color: Color(0xFFC53B30),
+                              color: Colors.white,
                             ),
                         ],
                       ),
@@ -162,7 +163,7 @@ class _AdminInactiveSuppliersScreenState
                             const SizedBox(width: 12),
                           if (item.blocked && !item.removed)
                             Expanded(
-                              child: FilledButton.tonal(
+                              child: OutlinedButton(
                                 onPressed: busy ? null : () => _unblock(item),
                                 child: Text(
                                   busy ? 'Ochilmoqda...' : 'Blokdan ochish',
@@ -197,8 +198,9 @@ class _StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppTheme.cardBorder(context)),
       ),
       child: Text(
         label,

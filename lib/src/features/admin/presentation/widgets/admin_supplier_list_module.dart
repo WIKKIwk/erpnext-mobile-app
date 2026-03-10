@@ -1,4 +1,5 @@
 import '../../../../core/widgets/common_widgets.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../shared/models/app_models.dart';
 import 'package:flutter/material.dart';
 
@@ -31,7 +32,10 @@ class AdminSupplierListModule extends StatelessWidget {
     return ListView.separated(
       padding: EdgeInsets.zero,
       itemCount: items.length,
-      separatorBuilder: (_, __) => const Divider(height: 1),
+      separatorBuilder: (context, _) => Container(
+        height: 1,
+        color: AppTheme.cardBorder(context),
+      ),
       itemBuilder: (context, index) {
         final item = items[index];
         return InkWell(
@@ -53,15 +57,15 @@ class AdminSupplierListModule extends StatelessWidget {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0x22C53B30),
+                      color: Colors.transparent,
                       borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: AppTheme.cardBorder(context)),
                     ),
                     child: Text(
                       'Blocked',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: const Color(0xFFC53B30)),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                     ),
                   ),
                 const SizedBox(width: 10),

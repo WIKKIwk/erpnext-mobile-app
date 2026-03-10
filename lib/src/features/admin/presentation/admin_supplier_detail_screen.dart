@@ -1,6 +1,7 @@
 import '../../../core/api/mobile_api.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../shared/models/app_models.dart';
 import 'package:flutter/material.dart';
 
@@ -227,15 +228,21 @@ class _AdminSupplierDetailScreenState extends State<AdminSupplierDetailScreen> {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0x22C53B30),
+                              color: Colors.transparent,
                               borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: AppTheme.cardBorder(context),
+                              ),
                             ),
                             child: Text(
                               'Blocked',
                               style: Theme.of(context)
                                   .textTheme
                                   .bodySmall
-                                  ?.copyWith(color: const Color(0xFFC53B30)),
+                                  ?.copyWith(
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                  ),
                             ),
                           ),
                       ],
@@ -257,7 +264,7 @@ class _AdminSupplierDetailScreenState extends State<AdminSupplierDetailScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: FilledButton.tonal(
+                    child: OutlinedButton(
                       onPressed:
                           _savingStatus ? null : () => _toggleBlocked(detail),
                       child: Text(
@@ -363,7 +370,7 @@ class _AdminSupplierDetailScreenState extends State<AdminSupplierDetailScreen> {
                     const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
-                      child: FilledButton.tonal(
+                      child: OutlinedButton(
                         onPressed: _searching ? null : _searchItems,
                         child: Text(
                           _searching ? 'Qidirilmoqda...' : 'Mahsulot qidirish',
@@ -394,7 +401,9 @@ class _AdminSupplierDetailScreenState extends State<AdminSupplierDetailScreen> {
                                   borderRadius: BorderRadius.circular(18),
                                   border: Border.all(
                                     color: selected
-                                        ? Theme.of(context).colorScheme.primary
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
                                         : Theme.of(context)
                                             .colorScheme
                                             .outlineVariant,
@@ -456,11 +465,8 @@ class _AdminSupplierDetailScreenState extends State<AdminSupplierDetailScreen> {
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
-                child: FilledButton.tonal(
+                child: OutlinedButton(
                   onPressed: _removing ? null : _removeSupplier,
-                  style: FilledButton.styleFrom(
-                    foregroundColor: const Color(0xFFC53B30),
-                  ),
                   child: Text(
                     _removing ? 'Chiqarilmoqda...' : 'Tizimdan chiqarish',
                   ),

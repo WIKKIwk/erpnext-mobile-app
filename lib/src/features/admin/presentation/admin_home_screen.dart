@@ -77,7 +77,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                         children: [
                           const Icon(
                             Icons.block_rounded,
-                            color: Color(0xFFC53B30),
+                            color: Colors.white,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
