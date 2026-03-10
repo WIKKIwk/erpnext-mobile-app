@@ -376,89 +376,81 @@ class _ProfileScreenState extends State<ProfileScreen>
           padding: EdgeInsets.zero,
           children: [
             SoftCard(
-              padding: const EdgeInsets.all(22),
+              padding: const EdgeInsets.all(18),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Stack(
+                  Row(
                     children: [
-                      _AvatarPreview(
-                        displayName: current.displayName,
-                        cachedAvatar: cachedAvatar,
-                        pendingAvatarBytes: pendingAvatarBytes,
-                      ),
-                      Positioned(
-                        right: 0,
-                        bottom: 0,
-                        child: GestureDetector(
-                          onTap: savingAvatar ? null : _pickAvatar,
-                          child: Container(
-                            height: 32,
-                            width: 32,
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryButton(context),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppTheme.cardBackground(context),
-                                width: 2,
+                      Stack(
+                        children: [
+                          _AvatarPreview(
+                            displayName: current.displayName,
+                            cachedAvatar: cachedAvatar,
+                            pendingAvatarBytes: pendingAvatarBytes,
+                          ),
+                          Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: GestureDetector(
+                              onTap: savingAvatar ? null : _pickAvatar,
+                              child: Container(
+                                height: 30,
+                                width: 30,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primaryButton(context),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppTheme.cardBackground(context),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.camera_alt_rounded,
+                                  size: 14,
+                                  color:
+                                      AppTheme.primaryButtonForeground(context),
+                                ),
                               ),
                             ),
-                            child: Icon(
-                              Icons.camera_alt_rounded,
-                              size: 16,
-                              color: AppTheme.primaryButtonForeground(context),
-                            ),
                           ),
+                        ],
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              current.displayName,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineMedium
+                                  ?.copyWith(fontSize: 24),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              subtitle,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 18),
-                  Text(
-                    current.displayName,
-                    style: Theme.of(context)
-                        .textTheme
-                        .displaySmall
-                        ?.copyWith(fontSize: 28),
-                    textAlign: TextAlign.center,
+                  const SizedBox(height: 16),
+                  _InfoRow(
+                    label: 'Telefon',
+                    value: current.phone,
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    subtitle,
-                    style: Theme.of(context).textTheme.bodySmall,
-                    textAlign: TextAlign.center,
+                  const SizedBox(height: 12),
+                  _InfoRow(
+                    label: 'Asl ism',
+                    value: current.legalName.isEmpty
+                        ? current.displayName
+                        : current.legalName,
                   ),
-                  if (pendingAvatarBytes != null) ...[
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: savingAvatar ? null : _saveAvatar,
-                        child: savingAvatar
-                            ? const SizedBox(
-                                height: 18,
-                                width: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.black,
-                                ),
-                              )
-                            : const Text('Rasm saqlash'),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 18),
-            SoftCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Nickname',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 16),
                   TextField(
                     controller: nicknameController,
                     decoration: const InputDecoration(
@@ -467,41 +459,49 @@ class _ProfileScreenState extends State<ProfileScreen>
                     ),
                   ),
                   const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: savingNickname ? null : _saveNickname,
-                      child: savingNickname
-                          ? const SizedBox(
-                              height: 18,
-                              width: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.black,
-                              ),
-                            )
-                          : const Text('Saqlash'),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: savingNickname ? null : _saveNickname,
+                          child: savingNickname
+                              ? const SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.black,
+                                  ),
+                                )
+                              : const Text('Saqlash'),
+                        ),
+                      ),
+                      if (pendingAvatarBytes != null) ...[
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: savingAvatar ? null : _saveAvatar,
+                            child: savingAvatar
+                                ? const SizedBox(
+                                    height: 18,
+                                    width: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Text('Rasm saqlash'),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  if (pendingAvatarBytes != null) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      'Yangi rasm tanlandi, saqlashni bosing.',
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 18),
-            SoftCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _InfoRow(
-                    label: 'Telefon',
-                    value: current.phone,
-                  ),
-                  const SizedBox(height: 14),
-                  _InfoRow(
-                    label: 'Asl ism',
-                    value: current.legalName.isEmpty
-                        ? current.displayName
-                        : current.legalName,
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -545,7 +545,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Security',
+                    'Security va Location',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 10),
@@ -598,26 +598,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 18),
-            SoftCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Location',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   Text(
                     countryPrefix == null || countryPrefix!.isEmpty
-                        ? 'Country code hali aniqlanmagan'
+                        ? 'Country code aniqlanmagan'
                         : 'Hozirgi country code: $countryPrefix',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
@@ -625,7 +613,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                       child: Text(
                         savingLocation
                             ? 'Aniqlanmoqda...'
-                            : 'Location orqali country code aniqlash',
+                            : 'Country code yangilash',
                       ),
                     ),
                   ),
