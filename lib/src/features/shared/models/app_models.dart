@@ -305,6 +305,29 @@ class AdminSupplierDetail {
   }
 }
 
+enum AdminUserKind {
+  supplier,
+  werka,
+}
+
+class AdminUserListEntry {
+  const AdminUserListEntry({
+    required this.id,
+    required this.name,
+    required this.phone,
+    required this.kind,
+    this.blocked = false,
+  });
+
+  final String id;
+  final String name;
+  final String phone;
+  final AdminUserKind kind;
+  final bool blocked;
+
+  String get roleLabel => kind == AdminUserKind.werka ? 'Werka' : 'Supplier';
+}
+
 DispatchStatus parseDispatchStatus(String raw) {
   switch (raw.trim().toLowerCase()) {
     case 'accepted':

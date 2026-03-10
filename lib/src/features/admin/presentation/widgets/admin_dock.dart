@@ -32,7 +32,11 @@ class AdminDock extends StatelessWidget {
           },
         ),
         DockButton(
-          icon: Icons.inventory_2_outlined,
+          iconWidget: const DockSvgIcon(
+            fillAsset: 'assets/icons/group-fill.svg',
+            lineAsset: 'assets/icons/group-line.svg',
+            primary: false,
+          ),
           active: activeTab == AdminDockTab.suppliers,
           onTap: () {
             if (activeTab == AdminDockTab.suppliers) return;

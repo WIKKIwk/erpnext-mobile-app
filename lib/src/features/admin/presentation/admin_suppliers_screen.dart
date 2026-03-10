@@ -15,29 +15,61 @@ class AdminSuppliersScreen extends StatefulWidget {
 }
 
 class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
-  late Future<List<AdminSupplier>> _future;
+  late Future<List<AdminUserListEntry>> _future;
 
   @override
   void initState() {
     super.initState();
-    _future = MobileApi.instance.adminSuppliers();
+    _future = _loadUsers();
   }
 
   Future<void> _reload() async {
-    final future = MobileApi.instance.adminSuppliers();
+    final future = _loadUsers();
     setState(() {
       _future = future;
     });
     await future;
   }
 
+  Future<List<AdminUserListEntry>> _loadUsers() async {
+    final results = await Future.wait<dynamic>([
+      MobileApi.instance.adminSuppliers(),
+      MobileApi.instance.adminSettings(),
+    ]);
+    final List<AdminSupplier> suppliers = results[0] as List<AdminSupplier>;
+    final AdminSettings settings = results[1] as AdminSettings;
+
+    final items = <AdminUserListEntry>[
+      if (settings.werkaName.trim().isNotEmpty ||
+          settings.werkaPhone.trim().isNotEmpty)
+        AdminUserListEntry(
+          id: 'werka',
+          name: settings.werkaName.trim().isEmpty
+              ? 'Werka'
+              : settings.werkaName.trim(),
+          phone: settings.werkaPhone.trim(),
+          kind: AdminUserKind.werka,
+        ),
+      ...suppliers.map(
+        (item) => AdminUserListEntry(
+          id: item.ref,
+          name: item.name,
+          phone: item.phone,
+          kind: AdminUserKind.supplier,
+          blocked: item.blocked,
+        ),
+      ),
+    ];
+    return items;
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppShell(
-      title: 'Suppliers',
-      subtitle: 'Supplierlar ro‘yxati.',
+      title: 'Users',
+      subtitle: 'Supplier va werka ro‘yxati.',
       bottom: const AdminDock(activeTab: AdminDockTab.suppliers),
-      child: FutureBuilder<List<AdminSupplier>>(
+      child: FutureBuilder<List<AdminUserListEntry>>(
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
@@ -46,20 +78,24 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
           if (snapshot.hasError) {
             return Center(
               child: SoftCard(
-                child: Text('Suppliers yuklanmadi: ${snapshot.error}'),
+                child: Text('Users yuklanmadi: ${snapshot.error}'),
               ),
             );
           }
-          final items = snapshot.data ?? const <AdminSupplier>[];
+          final items = snapshot.data ?? const <AdminUserListEntry>[];
           return RefreshIndicator(
             onRefresh: _reload,
             child: AdminSupplierListModule(
               items: items,
-              onTapSupplier: (item) async {
-                await Navigator.of(context).pushNamed(
-                  AppRoutes.adminSupplierDetail,
-                  arguments: item.ref,
-                );
+              onTapUser: (item) async {
+                if (item.kind == AdminUserKind.werka) {
+                  await Navigator.of(context).pushNamed(AppRoutes.adminWerka);
+                } else {
+                  await Navigator.of(context).pushNamed(
+                    AppRoutes.adminSupplierDetail,
+                    arguments: item.id,
+                  );
+                }
                 await _reload();
               },
             ),

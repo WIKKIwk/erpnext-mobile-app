@@ -7,11 +7,11 @@ class AdminSupplierListModule extends StatelessWidget {
   const AdminSupplierListModule({
     super.key,
     required this.items,
-    required this.onTapSupplier,
+    required this.onTapUser,
   });
 
-  final List<AdminSupplier> items;
-  final ValueChanged<AdminSupplier> onTapSupplier;
+  final List<AdminUserListEntry> items;
+  final ValueChanged<AdminUserListEntry> onTapUser;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class AdminSupplierListModule extends StatelessWidget {
         children: [
           SoftCard(
             child: Text(
-              'Supplierlar topilmadi.',
+              'Userlar topilmadi.',
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
@@ -39,15 +39,25 @@ class AdminSupplierListModule extends StatelessWidget {
       itemBuilder: (context, index) {
         final item = items[index];
         return InkWell(
-          onTap: () => onTapSupplier(item),
+          onTap: () => onTapUser(item),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 14),
             child: Row(
               children: [
                 Expanded(
-                  child: Text(
-                    item.name,
-                    style: Theme.of(context).textTheme.titleMedium,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.name,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        item.roleLabel,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
                   ),
                 ),
                 if (item.blocked)
