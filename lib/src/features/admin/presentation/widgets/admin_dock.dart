@@ -57,8 +57,8 @@ class AdminDock extends StatelessWidget {
       trailing: [
         DockButton(
           iconWidget: const DockSvgIcon(
-            fillAsset: 'assets/icons/login-circle-fill.svg',
-            lineAsset: 'assets/icons/login-circle-line.svg',
+            fillAsset: 'assets/icons/chat-history-fill.svg',
+            lineAsset: 'assets/icons/chat-history-line.svg',
             primary: false,
           ),
           active: activeTab == AdminDockTab.activity,
