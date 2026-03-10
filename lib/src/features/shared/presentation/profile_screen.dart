@@ -6,6 +6,7 @@ import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../data/profile_avatar_cache.dart';
 import '../models/app_models.dart';
+import '../../admin/presentation/widgets/admin_dock.dart';
 import '../../supplier/presentation/widgets/supplier_dock.dart';
 import '../../werka/presentation/widgets/werka_dock.dart';
 import 'dart:io';
@@ -204,7 +205,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           ? const SupplierDock(activeTab: SupplierDockTab.profile)
           : role == UserRole.werka
               ? const WerkaDock(activeTab: WerkaDockTab.profile)
-              : null,
+              : const AdminDock(activeTab: AdminDockTab.profile),
       child: RefreshIndicator.adaptive(
         onRefresh: _refreshProfile,
         child: ListView(
