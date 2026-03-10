@@ -9,6 +9,8 @@ import '../features/admin/presentation/admin_supplier_detail_screen.dart';
 import '../features/admin/presentation/admin_suppliers_screen.dart';
 import '../features/admin/presentation/admin_werka_screen.dart';
 import '../features/shared/models/app_models.dart';
+import '../features/shared/presentation/pin_setup_confirm_screen.dart';
+import '../features/shared/presentation/pin_setup_entry_screen.dart';
 import '../features/shared/presentation/profile_screen.dart';
 import '../features/supplier/presentation/supplier_confirm_screen.dart';
 import '../features/supplier/presentation/supplier_home_screen.dart';
@@ -36,6 +38,8 @@ class AppRoutes {
   static const String werkaDetail = '/werka-detail';
   static const String werkaSuccess = '/werka-success';
   static const String profile = '/profile';
+  static const String pinSetupEntry = '/pin-setup-entry';
+  static const String pinSetupConfirm = '/pin-setup-confirm';
   static const String adminHome = '/admin-home';
   static const String adminCreateHub = '/admin-create-hub';
   static const String adminSettings = '/admin-settings';
@@ -93,6 +97,12 @@ class AppRouter {
         return _buildRoute(settings, WerkaSuccessScreen(record: record));
       case AppRoutes.profile:
         return _buildRoute(settings, const ProfileScreen());
+      case AppRoutes.pinSetupEntry:
+        return _buildRoute(settings, const PinSetupEntryScreen());
+      case AppRoutes.pinSetupConfirm:
+        final PinSetupConfirmArgs args =
+            settings.arguments as PinSetupConfirmArgs;
+        return _buildRoute(settings, PinSetupConfirmScreen(args: args));
       case AppRoutes.adminHome:
         return _buildRoute(settings, const AdminHomeScreen());
       case AppRoutes.adminCreateHub:

@@ -42,3 +42,37 @@ android {
 flutter {
     source = "../.."
 }
+
+val flutterApkDir = layout.buildDirectory.dir("outputs/flutter-apk")
+val debugApkDir = layout.buildDirectory.dir("outputs/apk/debug")
+val releaseApkDir = layout.buildDirectory.dir("outputs/apk/release")
+
+tasks.register<Copy>("copyAccordDebugApk") {
+    from(debugApkDir.map { it.file("app-debug.apk") })
+    into(flutterApkDir)
+}
+
+tasks.register<Copy>("copyAccordDebugAliasApk") {
+    from(debugApkDir.map { it.file("app-debug.apk") })
+    into(flutterApkDir)
+    rename { "accord-debug.apk" }
+}
+
+tasks.register<Copy>("copyAccordReleaseApk") {
+    from(releaseApkDir.map { it.file("app-release.apk") })
+    into(flutterApkDir)
+}
+
+tasks.register<Copy>("copyAccordReleaseAliasApk") {
+    from(releaseApkDir.map { it.file("app-release.apk") })
+    into(flutterApkDir)
+    rename { "accord.apk" }
+}
+
+tasks.matching { it.name == "assembleDebug" }.configureEach {
+    finalizedBy("copyAccordDebugApk", "copyAccordDebugAliasApk")
+}
+
+tasks.matching { it.name == "assembleRelease" }.configureEach {
+    finalizedBy("copyAccordReleaseApk", "copyAccordReleaseAliasApk")
+}

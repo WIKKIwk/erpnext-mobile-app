@@ -16,7 +16,7 @@ class ErpnextStockMobileApp extends StatelessWidget {
       animation: ThemeController.instance,
       builder: (context, _) {
         return MaterialApp(
-          title: 'ERP Stock Mobile',
+          title: 'Accord',
           debugShowCheckedModeBanner: false,
           locale: AppPreview.enabled ? DevicePreview.locale(context) : null,
           builder: (context, child) {

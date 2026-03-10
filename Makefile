@@ -1,6 +1,6 @@
 API_URL ?= http://127.0.0.1:8081
 JDK_HOME ?= /usr/lib/jvm/java-17-openjdk
-APK_NAME ?= accord-vision.apk
+APK_NAME ?= accord.apk
 
 .PHONY: run web analyze test deps backend-up backend-stop core-up core-stop remote-up remote-stop remote-url apk-remote run-remote android-sdk-setup domain-up domain-url apk-domain run-domain
 

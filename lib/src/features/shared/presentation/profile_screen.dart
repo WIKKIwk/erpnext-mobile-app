@@ -1,6 +1,7 @@
 import '../../../core/api/mobile_api.dart';
 import '../../../core/location/country_dial_code_service.dart';
 import '../../../core/security/security_controller.dart';
+import '../../../app/app_router.dart';
 import '../../../core/session/app_session.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_controller.dart';
@@ -191,85 +192,10 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
-  Future<void> _showPinDialog() async {
-    final pinController = TextEditingController();
-    final confirmController = TextEditingController();
-    String? dialogError;
-
-    final result = await showDialog<String>(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: const Text('4 xonali PIN'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: pinController,
-                    keyboardType: TextInputType.number,
-                    maxLength: 4,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'PIN',
-                      counterText: '',
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: confirmController,
-                    keyboardType: TextInputType.number,
-                    maxLength: 4,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'PIN takrorlang',
-                      counterText: '',
-                    ),
-                  ),
-                  if (dialogError != null) ...[
-                    const SizedBox(height: 8),
-                    Text(dialogError!,
-                        style: Theme.of(context).textTheme.bodySmall),
-                  ],
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Bekor qilish'),
-                ),
-                FilledButton(
-                  onPressed: () {
-                    final pin = pinController.text.trim();
-                    final confirm = confirmController.text.trim();
-                    if (!RegExp(r'^\d{4}$').hasMatch(pin)) {
-                      setDialogState(() {
-                        dialogError = 'PIN 4 xonali bo‘lishi kerak';
-                      });
-                      return;
-                    }
-                    if (pin != confirm) {
-                      setDialogState(() {
-                        dialogError = 'PIN bir xil emas';
-                      });
-                      return;
-                    }
-                    Navigator.of(context).pop(pin);
-                  },
-                  child: const Text('Saqlash'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-
-    pinController.dispose();
-    confirmController.dispose();
-
-    if (result == null || result.isEmpty) {
+  Future<void> _showPinFlow() async {
+    final result =
+        await Navigator.of(context).pushNamed(AppRoutes.pinSetupEntry);
+    if (result != true || !mounted) {
       return;
     }
 
@@ -278,10 +204,6 @@ class _ProfileScreenState extends State<ProfileScreen>
       errorMessage = null;
     });
     try {
-      await SecurityController.instance.savePinForCurrentUser(result);
-      if (!mounted) {
-        return;
-      }
       final canUseBiometrics =
           await SecurityController.instance.canUseBiometrics();
       if (!mounted ||
@@ -637,7 +559,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton(
-                      onPressed: savingPin ? null : _showPinDialog,
+                      onPressed: savingPin ? null : _showPinFlow,
                       child: Text(
                         savingPin
                             ? 'Saqlanmoqda...'
