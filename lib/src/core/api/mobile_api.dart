@@ -3,11 +3,14 @@ import '../session/app_session.dart';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MobileApi {
   MobileApi._();
 
   static final MobileApi instance = MobileApi._();
+  static const String _lastCodeKey = 'last_login_code';
+  static const String _lastPhoneKey = 'last_login_phone';
 
   static const String baseUrl = String.fromEnvironment(
     'MOBILE_API_BASE_URL',
@@ -15,6 +18,13 @@ class MobileApi {
   );
 
   Future<SessionProfile> login({
+    required String phone,
+    required String code,
+  }) async {
+    return _performLogin(phone: phone, code: code);
+  }
+
+  Future<SessionProfile> _performLogin({
     required String phone,
     required String code,
   }) async {
@@ -43,18 +53,22 @@ class MobileApi {
   Future<void> logout() async {
     final String? token = AppSession.instance.token;
     if (token != null) {
-      await http.post(
+      await _sendAuthorized(
+        () => http.post(
         Uri.parse('$baseUrl/v1/mobile/auth/logout'),
         headers: _headers(token),
+        ),
       );
     }
     await AppSession.instance.clear();
   }
 
   Future<SessionProfile> profile() async {
-    final http.Response response = await http.get(
-      Uri.parse('$baseUrl/v1/mobile/profile'),
-      headers: _headers(requireToken()),
+    final http.Response response = await _sendAuthorized(
+      () => http.get(
+        Uri.parse('$baseUrl/v1/mobile/profile'),
+        headers: _headers(requireToken()),
+      ),
     );
     if (response.statusCode != 200) {
       throw Exception('Profile fetch failed');
@@ -67,10 +81,12 @@ class MobileApi {
   }
 
   Future<SessionProfile> updateNickname(String nickname) async {
-    final http.Response response = await http.put(
-      Uri.parse('$baseUrl/v1/mobile/profile'),
-      headers: _headers(requireToken())..['Content-Type'] = 'application/json',
-      body: jsonEncode({'nickname': nickname}),
+    final http.Response response = await _sendAuthorized(
+      () => http.put(
+        Uri.parse('$baseUrl/v1/mobile/profile'),
+        headers: _headers(requireToken())..['Content-Type'] = 'application/json',
+        body: jsonEncode({'nickname': nickname}),
+      ),
     );
     if (response.statusCode != 200) {
       throw Exception('Nickname update failed');
@@ -86,20 +102,23 @@ class MobileApi {
     required List<int> bytes,
     required String filename,
   }) async {
-    final request = http.MultipartRequest(
-      'POST',
-      Uri.parse('$baseUrl/v1/mobile/profile/avatar'),
+    final streamed = await _sendMultipartAuthorized(
+      () {
+        final request = http.MultipartRequest(
+          'POST',
+          Uri.parse('$baseUrl/v1/mobile/profile/avatar'),
+        );
+        request.headers.addAll(_headers(requireToken()));
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'avatar',
+            bytes,
+            filename: filename,
+          ),
+        );
+        return request.send();
+      },
     );
-    request.headers.addAll(_headers(requireToken()));
-    request.files.add(
-      http.MultipartFile.fromBytes(
-        'avatar',
-        bytes,
-        filename: filename,
-      ),
-    );
-
-    final streamed = await request.send();
     final response = await http.Response.fromStream(streamed);
     if (response.statusCode != 200) {
       throw Exception('Avatar upload failed');
@@ -112,9 +131,11 @@ class MobileApi {
   }
 
   Future<List<DispatchRecord>> supplierHistory() async {
-    final http.Response response = await http.get(
-      Uri.parse('$baseUrl/v1/mobile/supplier/history'),
-      headers: _headers(requireToken()),
+    final http.Response response = await _sendAuthorized(
+      () => http.get(
+        Uri.parse('$baseUrl/v1/mobile/supplier/history'),
+        headers: _headers(requireToken()),
+      ),
     );
     if (response.statusCode != 200) {
       throw Exception('Supplier history failed');
@@ -129,9 +150,11 @@ class MobileApi {
     final Uri uri = Uri.parse('$baseUrl/v1/mobile/supplier/items').replace(
       queryParameters: query.trim().isEmpty ? null : {'q': query},
     );
-    final http.Response response = await http.get(
-      uri,
-      headers: _headers(requireToken()),
+    final http.Response response = await _sendAuthorized(
+      () => http.get(
+        uri,
+        headers: _headers(requireToken()),
+      ),
     );
     if (response.statusCode != 200) {
       throw Exception('Supplier items failed');
@@ -146,13 +169,15 @@ class MobileApi {
     required String itemCode,
     required double qty,
   }) async {
-    final http.Response response = await http.post(
-      Uri.parse('$baseUrl/v1/mobile/supplier/dispatch'),
-      headers: _headers(requireToken())..['Content-Type'] = 'application/json',
-      body: jsonEncode({
-        'item_code': itemCode,
-        'qty': qty,
-      }),
+    final http.Response response = await _sendAuthorized(
+      () => http.post(
+        Uri.parse('$baseUrl/v1/mobile/supplier/dispatch'),
+        headers: _headers(requireToken())..['Content-Type'] = 'application/json',
+        body: jsonEncode({
+          'item_code': itemCode,
+          'qty': qty,
+        }),
+      ),
     );
     if (response.statusCode != 200) {
       throw Exception('Dispatch create failed');
@@ -162,9 +187,11 @@ class MobileApi {
   }
 
   Future<List<DispatchRecord>> werkaPending() async {
-    final http.Response response = await http.get(
-      Uri.parse('$baseUrl/v1/mobile/werka/pending'),
-      headers: _headers(requireToken()),
+    final http.Response response = await _sendAuthorized(
+      () => http.get(
+        Uri.parse('$baseUrl/v1/mobile/werka/pending'),
+        headers: _headers(requireToken()),
+      ),
     );
     if (response.statusCode != 200) {
       throw Exception('Werka pending failed');
@@ -179,13 +206,15 @@ class MobileApi {
     required String receiptID,
     required double acceptedQty,
   }) async {
-    final http.Response response = await http.post(
-      Uri.parse('$baseUrl/v1/mobile/werka/confirm'),
-      headers: _headers(requireToken())..['Content-Type'] = 'application/json',
-      body: jsonEncode({
-        'receipt_id': receiptID,
-        'accepted_qty': acceptedQty,
-      }),
+    final http.Response response = await _sendAuthorized(
+      () => http.post(
+        Uri.parse('$baseUrl/v1/mobile/werka/confirm'),
+        headers: _headers(requireToken())..['Content-Type'] = 'application/json',
+        body: jsonEncode({
+          'receipt_id': receiptID,
+          'accepted_qty': acceptedQty,
+        }),
+      ),
     );
     if (response.statusCode != 200) {
       throw Exception('Confirm receipt failed');
@@ -206,5 +235,53 @@ class MobileApi {
       throw Exception('No session token');
     }
     return token;
+  }
+
+  Future<http.Response> _sendAuthorized(
+    Future<http.Response> Function() send,
+  ) async {
+    final http.Response response = await send();
+    if (response.statusCode != 401) {
+      return response;
+    }
+
+    final bool refreshed = await _reauthenticateFromStorage();
+    if (!refreshed) {
+      await AppSession.instance.clear();
+      return response;
+    }
+    return send();
+  }
+
+  Future<http.StreamedResponse> _sendMultipartAuthorized(
+    Future<http.StreamedResponse> Function() send,
+  ) async {
+    final http.StreamedResponse response = await send();
+    if (response.statusCode != 401) {
+      return response;
+    }
+
+    final bool refreshed = await _reauthenticateFromStorage();
+    if (!refreshed) {
+      await AppSession.instance.clear();
+      return response;
+    }
+    return send();
+  }
+
+  Future<bool> _reauthenticateFromStorage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String phone = prefs.getString(_lastPhoneKey)?.trim() ?? '';
+    final String code = prefs.getString(_lastCodeKey)?.trim() ?? '';
+    if (phone.isEmpty || code.isEmpty) {
+      return false;
+    }
+
+    try {
+      await _performLogin(phone: phone, code: code);
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 }
