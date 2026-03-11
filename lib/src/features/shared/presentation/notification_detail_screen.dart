@@ -131,6 +131,10 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
           final detail = snapshot.data!;
           final record = detail.record;
           final canConfirm = role == UserRole.werka && record.status == DispatchStatus.pending;
+          final canComment = record.note.trim().isNotEmpty ||
+              record.status == DispatchStatus.partial ||
+              record.status == DispatchStatus.rejected ||
+              record.status == DispatchStatus.cancelled;
 
           return RefreshIndicator.adaptive(
             onRefresh: _reload,
@@ -203,26 +207,28 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
                       ),
                     ),
                   ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _commentController,
-                  minLines: 3,
-                  maxLines: 5,
-                  decoration: const InputDecoration(
-                    hintText: 'Izoh yozing',
-                  ),
-                ),
-                if (_hasCommentText) ...[
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _sending ? null : _sendComment,
-                      child: Text(
-                        _sending ? 'Yuborilmoqda...' : 'Comment yuborish',
-                      ),
+                if (canComment) ...[
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _commentController,
+                    minLines: 3,
+                    maxLines: 5,
+                    decoration: const InputDecoration(
+                      hintText: 'Izoh yozing',
                     ),
                   ),
+                  if (_hasCommentText) ...[
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _sending ? null : _sendComment,
+                        child: Text(
+                          _sending ? 'Yuborilmoqda...' : 'Comment yuborish',
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
                 const SizedBox(height: 24),
               ],
