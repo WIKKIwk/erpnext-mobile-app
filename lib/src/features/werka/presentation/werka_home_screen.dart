@@ -17,13 +17,13 @@ class WerkaHomeScreen extends StatefulWidget {
 
 class _WerkaHomeScreenState extends State<WerkaHomeScreen>
     with WidgetsBindingObserver {
-  late Future<_WerkaHomeData> _homeFuture;
+  late Future<List<DispatchRecord>> _historyFuture;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _homeFuture = _loadHome();
+    _historyFuture = MobileApi.instance.werkaHistory();
   }
 
   @override
@@ -40,22 +40,11 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
   }
 
   Future<void> _reload() async {
-    final future = _loadHome();
+    final future = MobileApi.instance.werkaHistory();
     setState(() {
-      _homeFuture = future;
+      _historyFuture = future;
     });
     await future;
-  }
-
-  Future<_WerkaHomeData> _loadHome() async {
-    final results = await Future.wait<dynamic>([
-      MobileApi.instance.werkaPending(),
-      MobileApi.instance.werkaHistory(),
-    ]);
-    return _WerkaHomeData(
-      pending: results[0] as List<DispatchRecord>,
-      history: results[1] as List<DispatchRecord>,
-    );
   }
 
   @override
@@ -67,8 +56,8 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
       child: Column(
         children: [
           Expanded(
-            child: FutureBuilder<_WerkaHomeData>(
-              future: _homeFuture,
+            child: FutureBuilder<List<DispatchRecord>>(
+              future: _historyFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState != ConnectionState.done) {
                   return const Center(child: CircularProgressIndicator());
@@ -109,13 +98,13 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
                   );
                 }
 
-                final data = snapshot.data ??
-                    const _WerkaHomeData(
-                      pending: <DispatchRecord>[],
-                      history: <DispatchRecord>[],
-                    );
-                final items = data.pending;
-                final confirmedCount = data.history
+                final history = snapshot.data ?? <DispatchRecord>[];
+                final items = history
+                    .where((item) =>
+                        item.status == DispatchStatus.draft ||
+                        item.status == DispatchStatus.pending)
+                    .toList();
+                final confirmedCount = history
                     .where((item) =>
                         item.status == DispatchStatus.accepted ||
                         item.status == DispatchStatus.partial)
@@ -175,8 +164,7 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
                                                   .textTheme
                                                   .titleLarge),
                                         ),
-                                        const StatusPill(
-                                            status: DispatchStatus.pending),
+                                        StatusPill(status: record.status),
                                       ],
                                     ),
                                     const SizedBox(height: 10),
@@ -211,16 +199,6 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
       ),
     );
   }
-}
-
-class _WerkaHomeData {
-  const _WerkaHomeData({
-    required this.pending,
-    required this.history,
-  });
-
-  final List<DispatchRecord> pending;
-  final List<DispatchRecord> history;
 }
 
 class _WerkaStatCard extends StatelessWidget {

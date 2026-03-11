@@ -131,7 +131,9 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
 
           final detail = snapshot.data!;
           final record = detail.record;
-          final canConfirm = role == UserRole.werka && record.status == DispatchStatus.pending;
+          final canConfirm = role == UserRole.werka &&
+              (record.status == DispatchStatus.pending ||
+                  record.status == DispatchStatus.draft);
           final canComment = record.note.trim().isNotEmpty ||
               record.status == DispatchStatus.partial ||
               record.status == DispatchStatus.rejected ||
