@@ -45,6 +45,7 @@ class DispatchRecord {
     required this.uom,
     required this.sentQty,
     required this.acceptedQty,
+    required this.note,
     required this.status,
     required this.createdLabel,
   });
@@ -56,6 +57,7 @@ class DispatchRecord {
   final String uom;
   final double sentQty;
   final double acceptedQty;
+  final String note;
   final DispatchStatus status;
   final String createdLabel;
 
@@ -68,6 +70,7 @@ class DispatchRecord {
       uom: json['uom'] as String? ?? '',
       sentQty: (json['sent_qty'] as num?)?.toDouble() ?? 0,
       acceptedQty: (json['accepted_qty'] as num?)?.toDouble() ?? 0,
+      note: json['note'] as String? ?? '',
       status: parseDispatchStatus(json['status'] as String? ?? ''),
       createdLabel: json['created_label'] as String? ?? '',
     );

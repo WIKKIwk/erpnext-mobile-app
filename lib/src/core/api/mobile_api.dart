@@ -223,6 +223,8 @@ class MobileApi {
   Future<DispatchRecord> confirmReceipt({
     required String receiptID,
     required double acceptedQty,
+    double returnedQty = 0,
+    String returnReason = '',
   }) async {
     final http.Response response = await _sendAuthorized(
       () => http.post(
@@ -232,6 +234,8 @@ class MobileApi {
         body: jsonEncode({
           'receipt_id': receiptID,
           'accepted_qty': acceptedQty,
+          'returned_qty': returnedQty,
+          'return_reason': returnReason,
         }),
       ),
     );

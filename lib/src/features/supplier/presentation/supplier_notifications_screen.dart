@@ -174,19 +174,20 @@ String notificationTitle(DispatchRecord record) {
 }
 
 String notificationBody(DispatchRecord record) {
+  final String suffix = record.note.trim().isEmpty ? '' : '\n${record.note}';
   switch (record.status) {
     case DispatchStatus.accepted:
-      return 'Werka ${record.acceptedQty.toStringAsFixed(0)} ${record.uom} oldi.';
+      return 'Werka ${record.acceptedQty.toStringAsFixed(0)} ${record.uom} oldi.$suffix';
     case DispatchStatus.partial:
-      return 'Qisman olindi: ${record.acceptedQty.toStringAsFixed(0)} ${record.uom}.';
+      return 'Qisman olindi: ${record.acceptedQty.toStringAsFixed(0)} ${record.uom}.$suffix';
     case DispatchStatus.rejected:
-      return 'Rad etildi.';
+      return 'Rad etildi.$suffix';
     case DispatchStatus.cancelled:
-      return 'Bekor qilindi.';
+      return 'Bekor qilindi.$suffix';
     case DispatchStatus.draft:
-      return 'Draft holatda.';
+      return 'Draft holatda.$suffix';
     case DispatchStatus.pending:
-      return 'Hali kutilmoqda.';
+      return 'Hali kutilmoqda.$suffix';
   }
 }
 

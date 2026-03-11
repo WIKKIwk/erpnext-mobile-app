@@ -169,19 +169,20 @@ String _notificationTitle(DispatchRecord record) {
 }
 
 String _notificationBody(DispatchRecord record) {
+  final suffix = record.note.trim().isEmpty ? '' : '\n${record.note}';
   switch (record.status) {
     case DispatchStatus.pending:
-      return '${record.itemCode} • ${record.sentQty.toStringAsFixed(0)} ${record.uom} qabul kutmoqda.';
+      return '${record.itemCode} • ${record.sentQty.toStringAsFixed(0)} ${record.uom} qabul kutmoqda.$suffix';
     case DispatchStatus.accepted:
-      return '${record.acceptedQty.toStringAsFixed(0)} ${record.uom} qabul qilindi.';
+      return '${record.acceptedQty.toStringAsFixed(0)} ${record.uom} qabul qilindi.$suffix';
     case DispatchStatus.partial:
-      return 'Qisman qabul qilindi: ${record.acceptedQty.toStringAsFixed(0)} ${record.uom}.';
+      return 'Qisman qabul qilindi: ${record.acceptedQty.toStringAsFixed(0)} ${record.uom}.$suffix';
     case DispatchStatus.rejected:
-      return 'Qabul rad etildi.';
+      return 'Qabul rad etildi.$suffix';
     case DispatchStatus.cancelled:
-      return 'Jarayon bekor qilindi.';
+      return 'Jarayon bekor qilindi.$suffix';
     case DispatchStatus.draft:
-      return 'Draft holatida.';
+      return 'Draft holatida.$suffix';
   }
 }
 
