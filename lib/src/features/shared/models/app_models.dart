@@ -90,6 +90,26 @@ class DispatchRecord {
       createdLabel: json['created_label'] as String? ?? '',
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'supplier_ref': supplierRef,
+      'supplier_name': supplierName,
+      'item_code': itemCode,
+      'item_name': itemName,
+      'uom': uom,
+      'sent_qty': sentQty,
+      'accepted_qty': acceptedQty,
+      'amount': amount,
+      'currency': currency,
+      'note': note,
+      'event_type': eventType,
+      'highlight': highlight,
+      'status': status.name,
+      'created_label': createdLabel,
+    };
+  }
 }
 
 class NotificationComment {
@@ -322,6 +342,14 @@ class AdminSupplierSummary {
       activeSuppliers: json['active_suppliers'] as int? ?? 0,
       blockedSuppliers: json['blocked_suppliers'] as int? ?? 0,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'total_suppliers': totalSuppliers,
+      'active_suppliers': activeSuppliers,
+      'blocked_suppliers': blockedSuppliers,
+    };
   }
 }
 

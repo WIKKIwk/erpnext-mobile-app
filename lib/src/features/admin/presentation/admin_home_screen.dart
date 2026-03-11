@@ -1,5 +1,6 @@
 import '../../../core/api/mobile_api.dart';
 import '../../../app/app_router.dart';
+import '../../../core/cache/json_cache_store.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
@@ -16,14 +17,27 @@ class AdminHomeScreen extends StatefulWidget {
 }
 
 class _AdminHomeScreenState extends State<AdminHomeScreen> {
+  static const String _cacheKey = 'cache_admin_summary';
   late Future<AdminSupplierSummary> _summaryFuture;
+  AdminSupplierSummary? _cachedSummary;
   int _refreshVersion = 0;
 
   @override
   void initState() {
     super.initState();
     _summaryFuture = MobileApi.instance.adminSupplierSummary();
+    _loadCache();
     RefreshHub.instance.addListener(_handlePushRefresh);
+  }
+
+  Future<void> _loadCache() async {
+    final raw = await JsonCacheStore.instance.readMap(_cacheKey);
+    if (raw == null || !mounted) {
+      return;
+    }
+    setState(() {
+      _cachedSummary = AdminSupplierSummary.fromJson(raw);
+    });
   }
 
   @override
@@ -48,7 +62,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     setState(() {
       _summaryFuture = future;
     });
-    await future;
+    final summary = await future;
+    await JsonCacheStore.instance.writeMap(_cacheKey, summary.toJson());
   }
 
   @override
@@ -60,10 +75,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       child: FutureBuilder<AdminSupplierSummary>(
         future: _summaryFuture,
         builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
+          final summary = snapshot.data ?? _cachedSummary;
+          if (snapshot.connectionState != ConnectionState.done &&
+              summary == null) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snapshot.hasError) {
+          if (snapshot.hasError && summary == null) {
             return Center(
               child: SoftCard(
                 child: Column(
@@ -81,13 +98,13 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             );
           }
 
-          final summary = snapshot.data!;
+          final summaryValue = summary!;
           return RefreshIndicator(
             onRefresh: _reload,
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
-                if (summary.blockedSuppliers > 0) ...[
+                if (summaryValue.blockedSuppliers > 0) ...[
                   InkWell(
                     borderRadius: BorderRadius.circular(24),
                     onTap: () => Navigator.of(context)
@@ -102,7 +119,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'Bloklangan supplierlar: ${summary.blockedSuppliers} ta',
+                              'Bloklangan supplierlar: ${summaryValue.blockedSuppliers} ta',
                               style: Theme.of(context).textTheme.titleMedium,
                             ),
                           ),
@@ -118,14 +135,14 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     Expanded(
                       child: MetricBadge(
                         label: 'Aktiv supplierlar',
-                        value: '${summary.activeSuppliers}',
+                        value: '${summaryValue.activeSuppliers}',
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: MetricBadge(
                         label: 'Jami supplierlar',
-                        value: '${summary.totalSuppliers}',
+                        value: '${summaryValue.totalSuppliers}',
                       ),
                     ),
                   ],

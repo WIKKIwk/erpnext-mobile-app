@@ -1,5 +1,6 @@
 import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
+import '../../../core/cache/json_cache_store.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/motion_widgets.dart';
@@ -18,7 +19,9 @@ class WerkaHomeScreen extends StatefulWidget {
 
 class _WerkaHomeScreenState extends State<WerkaHomeScreen>
     with WidgetsBindingObserver {
+  static const String _cacheKey = 'cache_werka_home_history';
   late Future<List<DispatchRecord>> _historyFuture;
+  List<DispatchRecord>? _cachedHistory;
   int _refreshVersion = 0;
 
   @override
@@ -26,7 +29,19 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _historyFuture = MobileApi.instance.werkaHistory();
+    _loadCache();
     RefreshHub.instance.addListener(_handlePushRefresh);
+  }
+
+  Future<void> _loadCache() async {
+    final raw = await JsonCacheStore.instance.readList(_cacheKey);
+    if (raw == null || !mounted) {
+      return;
+    }
+    setState(() {
+      _cachedHistory =
+          raw.map((item) => DispatchRecord.fromJson(item)).toList();
+    });
   }
 
   @override
@@ -59,7 +74,11 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
     setState(() {
       _historyFuture = future;
     });
-    await future;
+    final items = await future;
+    await JsonCacheStore.instance.writeList(
+      _cacheKey,
+      items.map((item) => item.toJson()).toList(),
+    );
   }
 
   @override
@@ -74,10 +93,12 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
             child: FutureBuilder<List<DispatchRecord>>(
               future: _historyFuture,
               builder: (context, snapshot) {
-                if (snapshot.connectionState != ConnectionState.done) {
+                final history = snapshot.data ?? _cachedHistory ?? <DispatchRecord>[];
+                if (snapshot.connectionState != ConnectionState.done &&
+                    history.isEmpty) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                if (snapshot.hasError) {
+                if (snapshot.hasError && history.isEmpty) {
                   return RefreshIndicator.adaptive(
                     onRefresh: _reload,
                     child: ListView(
@@ -113,7 +134,6 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
                   );
                 }
 
-                final history = snapshot.data ?? <DispatchRecord>[];
                 final items = history
                     .where((item) =>
                         item.eventType.isEmpty &&

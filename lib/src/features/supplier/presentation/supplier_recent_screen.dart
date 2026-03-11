@@ -1,5 +1,6 @@
 import '../../../core/api/mobile_api.dart';
 import '../../../app/app_router.dart';
+import '../../../core/cache/json_cache_store.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
@@ -17,7 +18,9 @@ class SupplierRecentScreen extends StatefulWidget {
 
 class _SupplierRecentScreenState extends State<SupplierRecentScreen>
     with WidgetsBindingObserver {
+  static const String _cacheKey = 'cache_supplier_recent';
   late Future<List<DispatchRecord>> _itemsFuture;
+  List<DispatchRecord>? _cachedItems;
   int _refreshVersion = 0;
 
   @override
@@ -25,7 +28,18 @@ class _SupplierRecentScreenState extends State<SupplierRecentScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _itemsFuture = MobileApi.instance.supplierHistory();
+    _loadCache();
     RefreshHub.instance.addListener(_handlePushRefresh);
+  }
+
+  Future<void> _loadCache() async {
+    final raw = await JsonCacheStore.instance.readList(_cacheKey);
+    if (raw == null || !mounted) {
+      return;
+    }
+    setState(() {
+      _cachedItems = raw.map((item) => DispatchRecord.fromJson(item)).toList();
+    });
   }
 
   @override
@@ -58,7 +72,11 @@ class _SupplierRecentScreenState extends State<SupplierRecentScreen>
     setState(() {
       _itemsFuture = future;
     });
-    await future;
+    final items = await future;
+    await JsonCacheStore.instance.writeList(
+      _cacheKey,
+      items.map((item) => item.toJson()).toList(),
+    );
   }
 
   @override
@@ -70,10 +88,12 @@ class _SupplierRecentScreenState extends State<SupplierRecentScreen>
       child: FutureBuilder<List<DispatchRecord>>(
         future: _itemsFuture,
         builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
+          final items = snapshot.data ?? _cachedItems ?? <DispatchRecord>[];
+          if (snapshot.connectionState != ConnectionState.done &&
+              items.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snapshot.hasError) {
+          if (snapshot.hasError && items.isEmpty) {
             return RefreshIndicator.adaptive(
               onRefresh: _reload,
               child: ListView(
@@ -110,7 +130,6 @@ class _SupplierRecentScreenState extends State<SupplierRecentScreen>
             );
           }
 
-          final items = snapshot.data ?? <DispatchRecord>[];
           if (items.isEmpty) {
             return const Center(
               child: SoftCard(

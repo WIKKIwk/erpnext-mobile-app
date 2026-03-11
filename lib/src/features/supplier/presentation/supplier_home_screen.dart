@@ -1,4 +1,5 @@
 import '../../../core/api/mobile_api.dart';
+import '../../../core/cache/json_cache_store.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_shell.dart';
@@ -17,7 +18,9 @@ class SupplierHomeScreen extends StatefulWidget {
 
 class _SupplierHomeScreenState extends State<SupplierHomeScreen>
     with WidgetsBindingObserver {
+  static const String _cacheKey = 'cache_supplier_home_history';
   late Future<List<DispatchRecord>> _historyFuture;
+  List<DispatchRecord>? _cachedHistory;
   int _refreshVersion = 0;
 
   @override
@@ -25,7 +28,19 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _historyFuture = MobileApi.instance.supplierHistory();
+    _loadCache();
     RefreshHub.instance.addListener(_handlePushRefresh);
+  }
+
+  Future<void> _loadCache() async {
+    final raw = await JsonCacheStore.instance.readList(_cacheKey);
+    if (raw == null || !mounted) {
+      return;
+    }
+    setState(() {
+      _cachedHistory =
+          raw.map((item) => DispatchRecord.fromJson(item)).toList();
+    });
   }
 
   @override
@@ -58,7 +73,11 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
     setState(() {
       _historyFuture = future;
     });
-    await future;
+    final items = await future;
+    await JsonCacheStore.instance.writeList(
+      _cacheKey,
+      items.map((item) => item.toJson()).toList(),
+    );
   }
 
   @override
@@ -70,10 +89,12 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
       child: FutureBuilder<List<DispatchRecord>>(
         future: _historyFuture,
         builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
+          final history = snapshot.data ?? _cachedHistory ?? <DispatchRecord>[];
+          if (snapshot.connectionState != ConnectionState.done &&
+              history.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snapshot.hasError) {
+          if (snapshot.hasError && history.isEmpty) {
             return RefreshIndicator.adaptive(
               onRefresh: _reload,
               child: ListView(
@@ -107,7 +128,6 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
             );
           }
 
-          final history = snapshot.data ?? <DispatchRecord>[];
           final pendingCount = history
               .where((item) =>
                   item.status == DispatchStatus.pending ||

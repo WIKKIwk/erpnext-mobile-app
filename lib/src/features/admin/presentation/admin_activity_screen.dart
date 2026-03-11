@@ -1,4 +1,5 @@
 import '../../../core/api/mobile_api.dart';
+import '../../../core/cache/json_cache_store.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
@@ -14,14 +15,27 @@ class AdminActivityScreen extends StatefulWidget {
 }
 
 class _AdminActivityScreenState extends State<AdminActivityScreen> {
+  static const String _cacheKey = 'cache_admin_activity';
   late Future<List<DispatchRecord>> _future;
+  List<DispatchRecord>? _cachedItems;
   int _refreshVersion = 0;
 
   @override
   void initState() {
     super.initState();
     _future = MobileApi.instance.adminActivity();
+    _loadCache();
     RefreshHub.instance.addListener(_handlePushRefresh);
+  }
+
+  Future<void> _loadCache() async {
+    final raw = await JsonCacheStore.instance.readList(_cacheKey);
+    if (raw == null || !mounted) {
+      return;
+    }
+    setState(() {
+      _cachedItems = raw.map((item) => DispatchRecord.fromJson(item)).toList();
+    });
   }
 
   @override
@@ -46,7 +60,11 @@ class _AdminActivityScreenState extends State<AdminActivityScreen> {
     setState(() {
       _future = future;
     });
-    await future;
+    final items = await future;
+    await JsonCacheStore.instance.writeList(
+      _cacheKey,
+      items.map((item) => item.toJson()).toList(),
+    );
   }
 
   @override
@@ -58,10 +76,12 @@ class _AdminActivityScreenState extends State<AdminActivityScreen> {
       child: FutureBuilder<List<DispatchRecord>>(
         future: _future,
         builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
+          final items = snapshot.data ?? _cachedItems ?? const <DispatchRecord>[];
+          if (snapshot.connectionState != ConnectionState.done &&
+              items.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snapshot.hasError) {
+          if (snapshot.hasError && items.isEmpty) {
             return Center(
               child: SoftCard(
                 child: Column(
@@ -79,7 +99,6 @@ class _AdminActivityScreenState extends State<AdminActivityScreen> {
             );
           }
 
-          final items = snapshot.data ?? const <DispatchRecord>[];
           if (items.isEmpty) {
             return Center(
               child: SoftCard(
