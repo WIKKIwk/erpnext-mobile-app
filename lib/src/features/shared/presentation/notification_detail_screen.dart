@@ -60,7 +60,9 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
         message: message,
       );
       _commentController.clear();
-      setState(() => _future = Future<NotificationDetail>.value(updated));
+      setState(() {
+        _future = Future<NotificationDetail>.value(updated);
+      });
     } catch (error) {
       if (!mounted) {
         return;
