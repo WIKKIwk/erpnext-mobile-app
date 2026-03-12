@@ -320,7 +320,7 @@ class _WerkaSummaryCard extends StatelessWidget {
     return SmoothAppear(
       child: SoftCard(
         padding: EdgeInsets.zero,
-        borderWidth: 1.55,
+        borderWidth: 1.35,
         child: Column(
           children: [
             _WerkaSummaryRow(
@@ -378,7 +378,9 @@ class _WerkaSummaryRow extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: Theme.of(context).textTheme.titleMedium,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontSize: 17,
+                    ),
               ),
             ),
             Text(
