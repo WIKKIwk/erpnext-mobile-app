@@ -319,6 +319,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
                 item.body.toLowerCase().contains('tasdiqlayman'),
           );
           final canAcknowledge = role == UserRole.supplier &&
+              !canRespondWerkaUnannounced &&
               !supplierAcknowledged &&
               (record.status == DispatchStatus.partial ||
                   record.status == DispatchStatus.rejected ||
@@ -329,6 +330,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
               record.status == DispatchStatus.rejected ||
               record.status == DispatchStatus.cancelled;
           final canWriteIssueComment = canComment &&
+              !canRespondWerkaUnannounced &&
               !isSupplierAckEvent &&
               !(role == UserRole.supplier && supplierAcknowledged);
 
