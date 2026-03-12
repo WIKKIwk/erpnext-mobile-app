@@ -14,15 +14,18 @@ class WerkaDock extends StatelessWidget {
     super.key,
     required this.activeTab,
     this.compact = false,
+    this.tightToEdges = false,
   });
 
   final WerkaDockTab? activeTab;
   final bool compact;
+  final bool tightToEdges;
 
   @override
   Widget build(BuildContext context) {
     return ActionDock(
       compact: compact,
+      tightToEdges: tightToEdges,
       leading: [
         DockButton(
           iconWidget: const DockSvgIcon(

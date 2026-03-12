@@ -159,12 +159,14 @@ class ActionDock extends StatelessWidget {
     required this.trailing,
     required this.center,
     this.compact = false,
+    this.tightToEdges = false,
   });
 
   final List<Widget> leading;
   final List<Widget> trailing;
   final Widget center;
   final bool compact;
+  final bool tightToEdges;
 
   double _hostHeightForDevice(_DockDeviceClass deviceClass) {
     final double base = switch (deviceClass) {
@@ -206,19 +208,21 @@ class ActionDock extends StatelessWidget {
             ),
           ),
           Positioned(
-            left: 0,
-            right: 0,
+            left: tightToEdges ? 4 : 0,
+            right: tightToEdges ? 4 : 0,
             bottom: 8,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: tightToEdges
+                  ? MainAxisAlignment.spaceBetween
+                  : MainAxisAlignment.spaceEvenly,
               children: buttons
                   .map(
                     (button) => Padding(
                       padding: EdgeInsets.symmetric(
                         horizontal: switch (deviceClass) {
-                          _DockDeviceClass.small => 1,
-                          _DockDeviceClass.medium => 2,
-                          _DockDeviceClass.large => 3,
+                          _DockDeviceClass.small => tightToEdges ? 0 : 1,
+                          _DockDeviceClass.medium => tightToEdges ? 1 : 2,
+                          _DockDeviceClass.large => tightToEdges ? 1 : 3,
                         },
                       ),
                       child: button,

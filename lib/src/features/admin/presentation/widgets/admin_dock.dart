@@ -16,15 +16,18 @@ class AdminDock extends StatelessWidget {
     super.key,
     required this.activeTab,
     this.compact = false,
+    this.tightToEdges = false,
   });
 
   final AdminDockTab activeTab;
   final bool compact;
+  final bool tightToEdges;
 
   @override
   Widget build(BuildContext context) {
     return ActionDock(
       compact: compact,
+      tightToEdges: tightToEdges,
       leading: [
         DockButton(
           icon: Icons.home_rounded,

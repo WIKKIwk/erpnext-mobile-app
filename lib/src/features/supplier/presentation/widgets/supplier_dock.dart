@@ -16,16 +16,19 @@ class SupplierDock extends StatelessWidget {
     required this.activeTab,
     this.centerActive = false,
     this.compact = false,
+    this.tightToEdges = false,
   });
 
   final SupplierDockTab? activeTab;
   final bool centerActive;
   final bool compact;
+  final bool tightToEdges;
 
   @override
   Widget build(BuildContext context) {
     return ActionDock(
       compact: compact,
+      tightToEdges: tightToEdges,
       leading: [
         DockButton(
           iconWidget: const DockSvgIcon(
