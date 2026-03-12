@@ -110,6 +110,14 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
     return AppShell(
       title: 'Werka',
       subtitle: '',
+      actions: [
+        AppShellIconAction(
+          icon: Icons.notifications_none_rounded,
+          onTap: () => Navigator.of(context).pushNamed(
+            AppRoutes.werkaNotifications,
+          ),
+        ),
+      ],
       bottom: const WerkaDock(activeTab: WerkaDockTab.home),
       contentPadding: const EdgeInsets.fromLTRB(14, 0, 16, 0),
       child: Column(
