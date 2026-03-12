@@ -107,6 +107,10 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
         future: _itemsFuture,
         builder: (context, snapshot) {
           final items = snapshot.data ?? _cachedItems ?? <DispatchRecord>[];
+          final orderedItems = [
+            ...items.where((item) => _highlightedUnreadIds.contains(item.id)),
+            ...items.where((item) => !_highlightedUnreadIds.contains(item.id)),
+          ];
           if (snapshot.connectionState != ConnectionState.done &&
               items.isEmpty) {
             return const Center(child: CircularProgressIndicator());
@@ -164,7 +168,7 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: _WerkaNotificationsSection(
-                    items: items,
+                    items: orderedItems,
                     highlightedUnreadIds: _highlightedUnreadIds,
                   ),
                 ),

@@ -106,6 +106,10 @@ class _SupplierNotificationsScreenState
         future: _itemsFuture,
         builder: (context, snapshot) {
           final items = snapshot.data ?? _cachedItems ?? <DispatchRecord>[];
+          final orderedItems = [
+            ...items.where((item) => _highlightedUnreadIds.contains(item.id)),
+            ...items.where((item) => !_highlightedUnreadIds.contains(item.id)),
+          ];
           if (snapshot.connectionState != ConnectionState.done &&
               items.isEmpty) {
             return const Center(child: CircularProgressIndicator());
@@ -159,10 +163,10 @@ class _SupplierNotificationsScreenState
             onRefresh: _reload,
             child: ListView.separated(
               physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: items.length,
+              itemCount: orderedItems.length,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
-                final record = items[index];
+                final record = orderedItems[index];
                 return InkWell(
                   borderRadius: BorderRadius.circular(24),
                   onTap: () => Navigator.of(context).pushNamed(
