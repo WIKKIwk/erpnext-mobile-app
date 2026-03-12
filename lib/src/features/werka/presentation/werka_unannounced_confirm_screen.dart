@@ -77,15 +77,30 @@ class _WerkaUnannouncedConfirmScreenState extends State<WerkaUnannouncedConfirmS
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          Text('Supplier: ${widget.args.supplier.name}'),
+          Text(
+            'Supplier: ${widget.args.supplier.name}',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
           const SizedBox(height: 8),
-          Text('Mahsulot: ${widget.args.item.name}'),
+          Text(
+            'Mahsulot: ${widget.args.item.name}',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
           const SizedBox(height: 8),
-          Text('Miqdor: ${widget.args.qty.toStringAsFixed(2)} ${widget.args.item.uom}'),
+          Text(
+            'Miqdor: ${widget.args.qty.toStringAsFixed(2)} ${widget.args.item.uom}',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
           const SizedBox(height: 18),
-          FilledButton(
-            onPressed: _saving ? null : _submit,
-            child: Text(_saving ? 'Saqlanmoqda...' : 'Tasdiqlash'),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 18),
+              ),
+              onPressed: _saving ? null : _submit,
+              child: Text(_saving ? 'Saqlanmoqda...' : 'Tasdiqlash'),
+            ),
           ),
         ],
       ),
