@@ -238,35 +238,50 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      record.supplierName,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleLarge,
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      '${record.itemCode} • ${record.itemName}',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium,
-                                    ),
-                                    const SizedBox(height: 10),
                                     Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Expanded(
-                                          child: Text(
-                                            '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .headlineMedium,
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                record.supplierName,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .titleLarge,
+                                              ),
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                '${record.itemCode} • ${record.itemName}',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium,
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                        Text(
-                                          record.createdLabel,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall,
+                                        const SizedBox(width: 12),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .headlineMedium,
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Text(
+                                              record.createdLabel,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall,
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
