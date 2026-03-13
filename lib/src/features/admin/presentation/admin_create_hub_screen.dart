@@ -29,6 +29,13 @@ class AdminCreateHubScreen extends StatelessWidget {
                 ),
                 const Divider(height: 1, thickness: 1),
                 _CreateHubRow(
+                  title: 'Customer qo‘shish',
+                  subtitle: 'Customer yaratish va jo‘natma qabul oqimi',
+                  onTap: () => Navigator.of(context)
+                      .pushNamed(AppRoutes.adminCustomerCreate),
+                ),
+                const Divider(height: 1, thickness: 1),
+                _CreateHubRow(
                   title: 'Werka qo‘shish',
                   subtitle: 'Omborchi phone va name sozlash',
                   onTap: () =>
