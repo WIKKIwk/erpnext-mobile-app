@@ -1,5 +1,6 @@
 import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
+import '../../../core/notifications/notification_unread_store.dart';
 import '../../../core/session/app_session.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
@@ -33,6 +34,10 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
   void initState() {
     super.initState();
     _accountKey = _currentAccountKey();
+    NotificationUnreadStore.instance.markSeen(
+      profile: AppSession.instance.profile,
+      ids: [widget.receiptID],
+    );
     _future = _load();
     _commentController.addListener(_handleCommentChanged);
   }
