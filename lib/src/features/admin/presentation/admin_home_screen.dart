@@ -104,48 +104,14 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
-                if (summaryValue.blockedSuppliers > 0) ...[
-                  InkWell(
-                    borderRadius: BorderRadius.circular(24),
-                    onTap: () => Navigator.of(context)
-                        .pushNamed(AppRoutes.adminInactiveSuppliers),
-                    child: SoftCard(
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.block_rounded,
-                            color: Colors.white,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'Bloklangan supplierlar: ${summaryValue.blockedSuppliers} ta',
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                          ),
-                          const Icon(Icons.arrow_forward_rounded),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                ],
-                Row(
-                  children: [
-                    Expanded(
-                      child: MetricBadge(
-                        label: 'Aktiv supplierlar',
-                        value: '${summaryValue.activeSuppliers}',
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: MetricBadge(
-                        label: 'Jami supplierlar',
-                        value: '${summaryValue.totalSuppliers}',
-                      ),
-                    ),
-                  ],
+                _AdminSummarySection(
+                  summary: summaryValue,
+                  onTapActive: () =>
+                      Navigator.of(context).pushNamed(AppRoutes.adminSuppliers),
+                  onTapTotal: () =>
+                      Navigator.of(context).pushNamed(AppRoutes.adminSuppliers),
+                  onTapBlocked: () => Navigator.of(context)
+                      .pushNamed(AppRoutes.adminInactiveSuppliers),
                 ),
                 const SizedBox(height: 12),
                 AdminModuleCard(
@@ -173,6 +139,98 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           );
         },
       ),
+    );
+  }
+}
+
+class _AdminSummarySection extends StatelessWidget {
+  const _AdminSummarySection({
+    required this.summary,
+    required this.onTapActive,
+    required this.onTapTotal,
+    required this.onTapBlocked,
+  });
+
+  final AdminSupplierSummary summary;
+  final VoidCallback onTapActive;
+  final VoidCallback onTapTotal;
+  final VoidCallback onTapBlocked;
+
+  @override
+  Widget build(BuildContext context) {
+    return SoftCard(
+      padding: EdgeInsets.zero,
+      child: Column(
+        children: [
+          _AdminSummaryRow(
+            label: 'Aktiv supplierlar',
+            value: '${summary.activeSuppliers}',
+            onTap: onTapActive,
+          ),
+          const _AdminSummaryDivider(),
+          _AdminSummaryRow(
+            label: 'Jami supplierlar',
+            value: '${summary.totalSuppliers}',
+            onTap: onTapTotal,
+          ),
+          const _AdminSummaryDivider(),
+          _AdminSummaryRow(
+            label: 'Bloklangan supplierlar',
+            value: '${summary.blockedSuppliers}',
+            onTap: onTapBlocked,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AdminSummaryRow extends StatelessWidget {
+  const _AdminSummaryRow({
+    required this.label,
+    required this.value,
+    required this.onTap,
+  });
+
+  final String label;
+  final String value;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(24),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AdminSummaryDivider extends StatelessWidget {
+  const _AdminSummaryDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Divider(
+      height: 1,
+      thickness: 1,
+      color: Theme.of(context).dividerColor,
     );
   }
 }
