@@ -4,6 +4,7 @@ import '../../../core/cache/json_cache_store.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/admin_dock.dart';
 import 'package:flutter/material.dart';
@@ -113,8 +114,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 ),
                 if (summaryValue.blockedSuppliers > 0) ...[
                   const SizedBox(height: 12),
-                  InkWell(
-                    borderRadius: BorderRadius.circular(24),
+                  PressableScale(
+                    borderRadius: 24,
                     onTap: () => Navigator.of(context)
                         .pushNamed(AppRoutes.adminInactiveSuppliers),
                     child: SoftCard(
@@ -199,8 +200,8 @@ class _AdminModuleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(24),
+    return PressableScale(
+      borderRadius: 24,
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),

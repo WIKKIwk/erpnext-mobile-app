@@ -2,6 +2,7 @@ import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/supplier_dock.dart';
 import 'package:flutter/material.dart';
@@ -83,8 +84,7 @@ class _SupplierStatusDetailScreenState extends State<SupplierStatusDetailScreen>
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final record = items[index];
-                return InkWell(
-                  borderRadius: BorderRadius.circular(24),
+                return PressableScale(
                   onTap: () => Navigator.of(context).pushNamed(
                     AppRoutes.notificationDetail,
                     arguments: record.id,

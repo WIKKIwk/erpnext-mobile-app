@@ -1,5 +1,6 @@
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/common_widgets.dart';
+import '../../../../core/widgets/motion_widgets.dart';
 import '../../../shared/models/app_models.dart';
 import 'package:flutter/material.dart';
 
@@ -56,9 +57,9 @@ class _AdminSupplierRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return PressableScale(
+      borderRadius: 24,
       onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(

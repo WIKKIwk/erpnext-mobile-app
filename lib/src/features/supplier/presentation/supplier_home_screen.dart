@@ -205,7 +205,8 @@ class _SupplierSummaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return PressableScale(
+      borderRadius: 24,
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),

@@ -6,6 +6,7 @@ import '../../../core/notifications/notification_unread_store.dart';
 import '../../../core/session/app_session.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/supplier_dock.dart';
 import 'package:flutter/material.dart';
@@ -227,8 +228,8 @@ class _SupplierNotificationRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(24),
+    return PressableScale(
+      borderRadius: 20,
       onTap: () => Navigator.of(context).pushNamed(
         AppRoutes.notificationDetail,
         arguments: record.id,

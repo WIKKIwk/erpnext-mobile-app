@@ -2,6 +2,7 @@ import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/admin_dock.dart';
 import 'widgets/admin_supplier_list_module.dart';
@@ -206,8 +207,8 @@ class _AdminSuppliersSummaryRow extends StatelessWidget {
     if (onTap == null) {
       return row;
     }
-    return InkWell(
-      borderRadius: BorderRadius.circular(24),
+    return PressableScale(
+      borderRadius: 24,
       onTap: onTap,
       child: row,
     );

@@ -4,6 +4,7 @@ import '../../../core/cache/json_cache_store.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'supplier_qty_screen.dart';
 import 'widgets/supplier_dock.dart';
@@ -156,8 +157,8 @@ class _SupplierRecentScreenState extends State<SupplierRecentScreen>
                   uom: record.uom,
                   warehouse: '',
                 );
-                return InkWell(
-                  borderRadius: BorderRadius.circular(18),
+                return PressableScale(
+                  borderRadius: 18,
                   onTap: () => Navigator.of(context).pushNamed(
                     AppRoutes.supplierQty,
                     arguments: SupplierQtyArgs(

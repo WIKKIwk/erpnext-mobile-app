@@ -49,10 +49,18 @@ class PressableScale extends StatefulWidget {
     super.key,
     required this.child,
     this.onTap,
+    this.borderRadius = 24,
+    this.splashColor = const Color(0x33212121),
+    this.highlightColor = const Color(0x14212121),
+    this.scale = 0.985,
   });
 
   final Widget child;
   final VoidCallback? onTap;
+  final double borderRadius;
+  final Color splashColor;
+  final Color highlightColor;
+  final double scale;
 
   @override
   State<PressableScale> createState() => _PressableScaleState();
@@ -63,16 +71,22 @@ class _PressableScaleState extends State<PressableScale> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => pressed = true),
-      onTapCancel: () => setState(() => pressed = false),
-      onTapUp: (_) => setState(() => pressed = false),
-      onTap: widget.onTap,
-      child: AnimatedScale(
-        scale: pressed ? 0.985 : 1,
-        duration: AppMotion.fast,
-        curve: AppMotion.smooth,
-        child: widget.child,
+    return AnimatedScale(
+      scale: pressed ? widget.scale : 1,
+      duration: AppMotion.fast,
+      curve: AppMotion.smooth,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(widget.borderRadius),
+          splashColor: widget.splashColor,
+          highlightColor: widget.highlightColor,
+          onTapDown: (_) => setState(() => pressed = true),
+          onTapCancel: () => setState(() => pressed = false),
+          onTapUp: (_) => setState(() => pressed = false),
+          onTap: widget.onTap,
+          child: widget.child,
+        ),
       ),
     );
   }
