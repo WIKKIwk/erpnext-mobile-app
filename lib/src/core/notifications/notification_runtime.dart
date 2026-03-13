@@ -83,6 +83,11 @@ class _NotificationRuntimeState extends State<NotificationRuntime>
           ? await MobileApi.instance.supplierHistory()
           : await MobileApi.instance.werkaHistory();
 
+      await NotificationUnreadStore.instance.retainForProfile(
+        profile: profile,
+        ids: records.map((item) => item.id),
+      );
+
       final current = <String, String>{
         for (final item in records) item.id: _signature(item),
       };
