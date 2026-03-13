@@ -1,6 +1,7 @@
 import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
 import '../../../core/cache/json_cache_store.dart';
+import '../../../core/notifications/notification_hidden_store.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/notifications/notification_unread_store.dart';
 import '../../../core/session/app_session.dart';
@@ -32,6 +33,9 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _itemsFuture = _loadAndTrack();
+    NotificationHiddenStore.instance.load().then((_) {
+      if (mounted) setState(() {});
+    });
     _loadCache();
     RefreshHub.instance.addListener(_handlePushRefresh);
   }
@@ -43,6 +47,26 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
     }
     setState(() {
       _cachedItems = raw.map((item) => DispatchRecord.fromJson(item)).toList();
+    });
+  }
+
+  Future<void> _clearAll() async {
+    final current = _cachedItems ?? await _itemsFuture;
+    await NotificationHiddenStore.instance.hideAll(
+      profile: AppSession.instance.profile,
+      ids: current.map((item) => item.id),
+    );
+    await NotificationUnreadStore.instance.markSeen(
+      profile: AppSession.instance.profile,
+      ids: current.map((item) => item.id),
+    );
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _cachedItems = const [];
+      _highlightedUnreadIds.clear();
+      _itemsFuture = Future.value(const <DispatchRecord>[]);
     });
   }
 
@@ -122,12 +146,23 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
     return AppShell(
       title: 'Bildirishnomalar',
       subtitle: '',
+      actions: [
+        AppShellIconAction(
+          icon: Icons.cleaning_services_rounded,
+          onTap: _clearAll,
+        ),
+      ],
       bottom: const WerkaDock(activeTab: WerkaDockTab.notifications),
       contentPadding: const EdgeInsets.fromLTRB(10, 0, 12, 0),
       child: FutureBuilder<List<DispatchRecord>>(
         future: _itemsFuture,
         builder: (context, snapshot) {
-          final items = snapshot.data ?? _cachedItems ?? <DispatchRecord>[];
+          final hidden = NotificationHiddenStore.instance.hiddenIdsForProfile(
+            AppSession.instance.profile,
+          );
+          final items = (snapshot.data ?? _cachedItems ?? <DispatchRecord>[])
+              .where((item) => !hidden.contains(item.id))
+              .toList();
           final orderedItems = [
             ...items.where((item) => _highlightedUnreadIds.contains(item.id)),
             ...items.where((item) => !_highlightedUnreadIds.contains(item.id)),

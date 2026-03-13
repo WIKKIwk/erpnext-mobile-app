@@ -1,6 +1,8 @@
 import '../../../core/api/mobile_api.dart';
 import '../../../core/cache/json_cache_store.dart';
+import '../../../core/notifications/notification_hidden_store.dart';
 import '../../../core/notifications/refresh_hub.dart';
+import '../../../core/session/app_session.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../shared/models/app_models.dart';
@@ -24,6 +26,9 @@ class _AdminActivityScreenState extends State<AdminActivityScreen> {
   void initState() {
     super.initState();
     _future = MobileApi.instance.adminActivity();
+    NotificationHiddenStore.instance.load().then((_) {
+      if (mounted) setState(() {});
+    });
     _loadCache();
     RefreshHub.instance.addListener(_handlePushRefresh);
   }
@@ -35,6 +40,21 @@ class _AdminActivityScreenState extends State<AdminActivityScreen> {
     }
     setState(() {
       _cachedItems = raw.map((item) => DispatchRecord.fromJson(item)).toList();
+    });
+  }
+
+  Future<void> _clearAll() async {
+    final current = _cachedItems ?? await _future;
+    await NotificationHiddenStore.instance.hideAll(
+      profile: AppSession.instance.profile,
+      ids: current.map((item) => item.id),
+    );
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _cachedItems = const [];
+      _future = Future.value(const <DispatchRecord>[]);
     });
   }
 
@@ -72,11 +92,22 @@ class _AdminActivityScreenState extends State<AdminActivityScreen> {
     return AppShell(
       title: 'Harakatlar',
       subtitle: '',
+      actions: [
+        AppShellIconAction(
+          icon: Icons.cleaning_services_rounded,
+          onTap: _clearAll,
+        ),
+      ],
       bottom: const AdminDock(activeTab: AdminDockTab.activity),
       child: FutureBuilder<List<DispatchRecord>>(
         future: _future,
         builder: (context, snapshot) {
-          final items = snapshot.data ?? _cachedItems ?? const <DispatchRecord>[];
+          final hidden = NotificationHiddenStore.instance.hiddenIdsForProfile(
+            AppSession.instance.profile,
+          );
+          final items = (snapshot.data ?? _cachedItems ?? const <DispatchRecord>[])
+              .where((item) => !hidden.contains(item.id))
+              .toList();
           if (snapshot.connectionState != ConnectionState.done &&
               items.isEmpty) {
             return const Center(child: CircularProgressIndicator());
