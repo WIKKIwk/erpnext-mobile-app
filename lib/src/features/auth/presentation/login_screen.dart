@@ -46,14 +46,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> loadRememberedCode() async {
     final prefs = await SharedPreferences.getInstance();
-    final savedCode = prefs.getString(lastCodeKey);
-    final savedPhone = prefs.getString(lastPhoneKey);
+    final savedCode = (prefs.getString(lastCodeKey) ?? '').trim();
+    final savedPhone = (prefs.getString(lastPhoneKey) ?? '').trim();
+    final hasPair = savedCode.isNotEmpty && savedPhone.isNotEmpty;
+    if (!hasPair) {
+      await prefs.remove(lastCodeKey);
+      await prefs.remove(lastPhoneKey);
+    }
     if (!mounted) {
       return;
     }
     setState(() {
-      rememberedCode = savedCode;
-      rememberedPhone = savedPhone;
+      rememberedCode = hasPair ? savedCode : null;
+      rememberedPhone = hasPair ? savedPhone : null;
     });
   }
 
@@ -118,7 +123,9 @@ class _LoginScreenState extends State<LoginScreen> {
       phoneFocusNode.hasFocus &&
       phoneController.text.trim().isEmpty &&
       rememberedPhone != null &&
-      rememberedPhone!.isNotEmpty;
+      rememberedPhone!.isNotEmpty &&
+      rememberedCode != null &&
+      rememberedCode!.isNotEmpty;
 
   void _applyRememberedLogin() {
     if (rememberedPhone == null || rememberedPhone!.isEmpty) {
