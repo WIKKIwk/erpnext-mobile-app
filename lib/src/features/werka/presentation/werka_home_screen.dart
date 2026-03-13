@@ -382,7 +382,15 @@ class _WerkaPendingSection extends StatelessWidget {
         borderRadius: 20,
         child: Column(
           children: [
-            Padding(
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: AppTheme.actionSurface(context),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
               padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
               child: Row(
                 children: [
