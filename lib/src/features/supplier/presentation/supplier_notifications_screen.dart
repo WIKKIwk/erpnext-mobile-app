@@ -135,6 +135,15 @@ class _SupplierNotificationsScreenState
 
   Future<List<DispatchRecord>> _loadAndTrack() async {
     final items = await MobileApi.instance.supplierHistory();
+    final hidden = NotificationHiddenStore.instance.hiddenIdsForProfile(
+      AppSession.instance.profile,
+    );
+    if (hidden.isNotEmpty) {
+      await NotificationUnreadStore.instance.markSeen(
+        profile: AppSession.instance.profile,
+        ids: hidden,
+      );
+    }
     await NotificationUnreadStore.instance.retainForProfile(
       profile: AppSession.instance.profile,
       ids: items.map((item) => item.id),
