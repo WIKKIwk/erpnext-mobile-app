@@ -326,37 +326,49 @@ class AppRouter {
       transitionDuration: AppMotion.pageEnter,
       reverseTransitionDuration: AppMotion.pageExit,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        final CurvedAnimation primary = CurvedAnimation(
+        final CurvedAnimation incoming = CurvedAnimation(
           parent: animation,
           curve: AppMotion.pageIn,
           reverseCurve: AppMotion.pageOut,
         );
-        final Animation<double> opacity = Tween<double>(
+        final CurvedAnimation outgoing = CurvedAnimation(
+          parent: secondaryAnimation,
+          curve: AppMotion.pageIn,
+          reverseCurve: AppMotion.pageOut,
+        );
+        final Animation<double> fade = Tween<double>(
           begin: 0,
           end: 1,
         ).animate(
           CurvedAnimation(
             parent: animation,
-            curve: const Interval(0.08, 1, curve: AppMotion.pageIn),
-            reverseCurve: const Interval(0, 0.82, curve: AppMotion.pageOut),
+            curve: const Interval(0.0, 1.0, curve: AppMotion.pageIn),
+            reverseCurve: const Interval(0.0, 1.0, curve: AppMotion.pageOut),
           ),
         );
-        final Animation<Offset> offset = Tween<Offset>(
-          begin: const Offset(0.0, 0.03),
+        final Animation<Offset> slideIn = Tween<Offset>(
+          begin: const Offset(0.08, 0.0),
           end: Offset.zero,
-        ).animate(primary);
+        ).animate(incoming);
+        final Animation<Offset> slideOut = Tween<Offset>(
+          begin: Offset.zero,
+          end: const Offset(-0.02, 0.0),
+        ).animate(outgoing);
         final Animation<double> scale = Tween<double>(
-          begin: 0.988,
+          begin: 0.992,
           end: 1,
-        ).animate(primary);
+        ).animate(incoming);
 
-        return FadeTransition(
-          opacity: opacity,
-          child: ScaleTransition(
-            scale: scale,
-            child: SlideTransition(
-              position: offset,
-              child: child,
+        return SlideTransition(
+          position: slideOut,
+          child: FadeTransition(
+            opacity: fade,
+            child: ScaleTransition(
+              scale: scale,
+              child: SlideTransition(
+                position: slideIn,
+                child: child,
+              ),
             ),
           ),
         );
