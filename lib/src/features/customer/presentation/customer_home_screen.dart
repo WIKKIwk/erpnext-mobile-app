@@ -146,11 +146,13 @@ class _QuietPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final bool isDark = theme.brightness == Brightness.dark;
     return Card.filled(
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
-      color: scheme.surfaceContainerLow,
+      color: isDark ? const Color(0xFF25242B) : scheme.surfaceContainerLow,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
       ),
@@ -313,6 +315,7 @@ class _CustomerShipmentsPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
+    final bool isDark = theme.brightness == Brightness.dark;
 
     return _QuietPanel(
       child: Column(
@@ -325,7 +328,7 @@ class _CustomerShipmentsPanel extends StatelessWidget {
           else
             Card.filled(
               margin: EdgeInsets.zero,
-              color: scheme.surfaceContainer,
+              color: isDark ? const Color(0xFF2A2931) : scheme.surfaceContainer,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
               ),
