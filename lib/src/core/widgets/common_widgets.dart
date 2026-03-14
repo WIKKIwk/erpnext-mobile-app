@@ -2,6 +2,7 @@ import '../../features/shared/models/app_models.dart';
 import '../theme/app_motion.dart';
 import '../theme/app_theme.dart';
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -206,21 +207,33 @@ class ActionDock extends StatelessWidget {
             left: tightToEdges ? 0 : 12,
             right: tightToEdges ? 0 : 12,
             bottom: 0,
-            child: Container(
-              height: compact ? hostHeight - 18 : hostHeight - 14,
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(32),
-                border: Border.all(color: AppTheme.cardBorder(context)),
-                boxShadow: [
-                  BoxShadow(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(32),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                child: Container(
+                  height: compact ? hostHeight - 18 : hostHeight - 14,
+                  decoration: BoxDecoration(
                     color: isDark
-                        ? const Color(0x28000000)
-                        : const Color(0x100E1525),
-                    blurRadius: isDark ? 20 : 16,
-                    offset: const Offset(0, 8),
+                        ? const Color(0x66121822)
+                        : const Color(0xB3FBFAF7),
+                    borderRadius: BorderRadius.circular(32),
+                    border: Border.all(
+                      color: AppTheme.cardBorder(context).withValues(
+                        alpha: isDark ? 0.82 : 0.9,
+                      ),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isDark
+                            ? const Color(0x24000000)
+                            : const Color(0x100E1525),
+                        blurRadius: isDark ? 20 : 16,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
