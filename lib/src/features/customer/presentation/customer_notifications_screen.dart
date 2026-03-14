@@ -85,20 +85,53 @@ class _CustomerNotificationsScreenState
   Future<void> _clearAll() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Tozalash'),
-        content: const Text('Hamma bildirishnomalarni tozalaysizmi?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Yo‘q'),
+      builder: (dialogContext) {
+        final theme = Theme.of(dialogContext);
+        final scheme = theme.colorScheme;
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 28),
+          backgroundColor: scheme.surfaceContainerHigh,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
           ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Ha'),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Tozalash', style: theme.textTheme.headlineSmall),
+                const SizedBox(height: 10),
+                Text(
+                  'Hamma bildirishnomalarni tozalaysizmi?',
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                    height: 1.45,
+                  ),
+                ),
+                const SizedBox(height: 22),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.of(dialogContext).pop(false),
+                        child: const Text('Yo‘q'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: () => Navigator.of(dialogContext).pop(true),
+                        child: const Text('Ha'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
     if (confirmed != true) {
       return;
