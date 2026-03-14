@@ -147,13 +147,18 @@ class _QuietPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: scheme.surfaceContainerLow,
+        color: isDark ? scheme.surfaceContainerLow : scheme.surfaceContainer,
         borderRadius: BorderRadius.circular(26),
-        border: Border.all(
-          color: scheme.outlineVariant.withValues(alpha: 0.55),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: scheme.shadow.withValues(alpha: isDark ? 0.16 : 0.08),
+            blurRadius: isDark ? 14 : 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       padding: padding,
       child: child,
@@ -185,13 +190,25 @@ class _CustomerStatusPanel extends StatelessWidget {
             onTap: () => onOpenStatus(CustomerStatusKind.pending),
             isFirst: true,
           ),
-          Divider(height: 1, thickness: 1, color: scheme.outlineVariant),
+          Divider(
+            height: 1,
+            thickness: 1,
+            indent: 18,
+            endIndent: 18,
+            color: scheme.outlineVariant.withValues(alpha: 0.55),
+          ),
           _CustomerStatusRow(
             label: 'Confirmed',
             value: summary.confirmedCount.toString(),
             onTap: () => onOpenStatus(CustomerStatusKind.confirmed),
           ),
-          Divider(height: 1, thickness: 1, color: scheme.outlineVariant),
+          Divider(
+            height: 1,
+            thickness: 1,
+            indent: 18,
+            endIndent: 18,
+            color: scheme.outlineVariant.withValues(alpha: 0.55),
+          ),
           _CustomerStatusRow(
             label: 'Rejected',
             value: summary.rejectedCount.toString(),
@@ -270,7 +287,7 @@ class _CustomerStatusRow extends StatelessWidget {
               decoration: BoxDecoration(
                 color: highlighted
                     ? scheme.secondaryContainer
-                    : scheme.surfaceContainerHighest,
+                    : scheme.surfaceContainerHigh,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Text(
@@ -316,33 +333,29 @@ class _CustomerShipmentsPanel extends StatelessWidget {
         children: [
           Text('Recent shipments', style: theme.textTheme.titleLarge),
           const SizedBox(height: 14),
-          Container(
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainer,
-              borderRadius: BorderRadius.circular(22),
-            ),
-            child: items.isEmpty
-                ? const _CustomerEmptyState()
-                : Column(
-                    children: [
-                      for (int index = 0; index < items.length; index++) ...[
-                        _CustomerPreviewRow(
-                          record: items[index],
-                          isFirst: index == 0,
-                          isLast: index == items.length - 1,
-                          onTap: () => onTapRecord(items[index].id),
-                        ),
-                        if (index != items.length - 1)
-                          Divider(
-                            height: 1,
-                            thickness: 1,
-                            color:
-                                scheme.outlineVariant.withValues(alpha: 0.72),
-                          ),
-                      ],
-                    ],
+          if (items.isEmpty)
+            const _CustomerEmptyState()
+          else
+            Column(
+              children: [
+                for (int index = 0; index < items.length; index++) ...[
+                  _CustomerPreviewRow(
+                    record: items[index],
+                    isFirst: index == 0,
+                    isLast: index == items.length - 1,
+                    onTap: () => onTapRecord(items[index].id),
                   ),
-          ),
+                  if (index != items.length - 1)
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      indent: 16,
+                      endIndent: 16,
+                      color: scheme.outlineVariant.withValues(alpha: 0.55),
+                    ),
+                ],
+              ],
+            ),
         ],
       ),
     );
@@ -356,7 +369,7 @@ class _CustomerEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 2),
       child: Text(
         'No shipments',
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -389,7 +402,7 @@ class _CustomerPreviewRow extends StatelessWidget {
       borderRadius: 22,
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(isFirst ? 22 : 0),
@@ -404,7 +417,7 @@ class _CustomerPreviewRow extends StatelessWidget {
               height: 38,
               width: 38,
               decoration: BoxDecoration(
-                color: scheme.primaryContainer.withValues(alpha: 0.78),
+                color: scheme.secondaryContainer,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
