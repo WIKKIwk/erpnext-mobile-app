@@ -225,6 +225,9 @@ class _CustomerNotificationsScreenState
                   borderRadius: 20,
                   child: Column(
                     children: [
+                      const _CustomerFeedSectionHeader(
+                        label: 'Jo‘natmalar oqimi',
+                      ),
                       for (int index = 0;
                           index < orderedItems.length;
                           index++) ...[
@@ -293,7 +296,7 @@ class _CustomerFeedRow extends StatelessWidget {
             bottomRight: Radius.circular(isLast ? 20 : 0),
           ),
         ),
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -302,15 +305,15 @@ class _CustomerFeedRow extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    record.itemCode,
+                    record.itemName,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: highlighted ? Colors.white : null,
                         ),
                   ),
                 ),
                 Container(
-                  height: 36,
-                  width: 36,
+                  height: 34,
+                  width: 34,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(color: Theme.of(context).dividerColor),
@@ -325,7 +328,7 @@ class _CustomerFeedRow extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              record.itemName,
+              record.itemCode,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: highlighted ? Colors.white70 : null,
                   ),
@@ -337,7 +340,9 @@ class _CustomerFeedRow extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    '${record.sentQty.toStringAsFixed(0)} ${record.uom} jo‘natildi',
+                    record.note.trim().isNotEmpty
+                        ? record.note
+                        : '${record.sentQty.toStringAsFixed(0)} ${record.uom} jo‘natildi',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: highlighted ? Colors.white70 : null,
                         ),
@@ -356,6 +361,35 @@ class _CustomerFeedRow extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _CustomerFeedSectionHeader extends StatelessWidget {
+  const _CustomerFeedSectionHeader({
+    required this.label,
+  });
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      decoration: const BoxDecoration(
+        color: Color(0xFF161616),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
       ),
     );
   }
