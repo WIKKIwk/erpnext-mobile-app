@@ -135,41 +135,44 @@ class _CustomerSummaryCard extends StatelessWidget {
         children: [
           const _CustomerSectionLabel(label: 'Holatlar'),
           const SizedBox(height: 14),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(18),
-            child: Container(
-              color: const Color(0xFF000000),
-              child: Column(
-                children: [
-                  _CustomerSummaryRow(
-                    label: 'Kutilmoqda',
-                    value: summary.pendingCount.toString(),
-                    onTap: () => Navigator.of(context).pushNamed(
-                      AppRoutes.customerStatusDetail,
-                      arguments: CustomerStatusKind.pending,
+          SizedBox(
+            width: double.infinity,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: Container(
+                color: const Color(0xFF000000),
+                child: Column(
+                  children: [
+                    _CustomerSummaryRow(
+                      label: 'Kutilmoqda',
+                      value: summary.pendingCount.toString(),
+                      onTap: () => Navigator.of(context).pushNamed(
+                        AppRoutes.customerStatusDetail,
+                        arguments: CustomerStatusKind.pending,
+                      ),
+                      isFirst: true,
                     ),
-                    isFirst: true,
-                  ),
-                  const Divider(height: 1, thickness: 1),
-                  _CustomerSummaryRow(
-                    label: 'Tasdiqlangan',
-                    value: summary.confirmedCount.toString(),
-                    onTap: () => Navigator.of(context).pushNamed(
-                      AppRoutes.customerStatusDetail,
-                      arguments: CustomerStatusKind.confirmed,
+                    const Divider(height: 1, thickness: 1),
+                    _CustomerSummaryRow(
+                      label: 'Tasdiqlangan',
+                      value: summary.confirmedCount.toString(),
+                      onTap: () => Navigator.of(context).pushNamed(
+                        AppRoutes.customerStatusDetail,
+                        arguments: CustomerStatusKind.confirmed,
+                      ),
                     ),
-                  ),
-                  const Divider(height: 1, thickness: 1),
-                  _CustomerSummaryRow(
-                    label: 'Rad etilgan',
-                    value: summary.rejectedCount.toString(),
-                    onTap: () => Navigator.of(context).pushNamed(
-                      AppRoutes.customerStatusDetail,
-                      arguments: CustomerStatusKind.rejected,
+                    const Divider(height: 1, thickness: 1),
+                    _CustomerSummaryRow(
+                      label: 'Rad etilgan',
+                      value: summary.rejectedCount.toString(),
+                      onTap: () => Navigator.of(context).pushNamed(
+                        AppRoutes.customerStatusDetail,
+                        arguments: CustomerStatusKind.rejected,
+                      ),
+                      isLast: true,
                     ),
-                    isLast: true,
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -254,32 +257,37 @@ class _CustomerPendingPreviewCard extends StatelessWidget {
         children: [
           const _CustomerSectionLabel(label: 'Kutilayotgan jo‘natmalar'),
           const SizedBox(height: 14),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(18),
-            child: Container(
-              color: const Color(0xFF000000),
-              child: items.isEmpty
-                  ? Padding(
-                      padding: const EdgeInsets.all(18),
-                      child: Text(
-                        'Hozircha kutilayotgan jo‘natmalar yo‘q.',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    )
-                  : Column(
-                      children: [
-                        for (int index = 0; index < items.length; index++) ...[
-                          _CustomerPreviewRow(
-                            record: items[index],
-                            isFirst: index == 0,
-                            isLast: index == items.length - 1,
-                            onTap: () => onTapRecord(items[index].id),
-                          ),
-                          if (index != items.length - 1)
-                            const Divider(height: 1, thickness: 1),
+          SizedBox(
+            width: double.infinity,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: Container(
+                color: const Color(0xFF000000),
+                child: items.isEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.all(18),
+                        child: Text(
+                          'Hozircha kutilayotgan jo‘natmalar yo‘q.',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      )
+                    : Column(
+                        children: [
+                          for (int index = 0;
+                              index < items.length;
+                              index++) ...[
+                            _CustomerPreviewRow(
+                              record: items[index],
+                              isFirst: index == 0,
+                              isLast: index == items.length - 1,
+                              onTap: () => onTapRecord(items[index].id),
+                            ),
+                            if (index != items.length - 1)
+                              const Divider(height: 1, thickness: 1),
+                          ],
                         ],
-                      ],
-                    ),
+                      ),
+              ),
             ),
           ),
         ],
