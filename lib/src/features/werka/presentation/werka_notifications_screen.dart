@@ -292,7 +292,7 @@ class _WerkaNotificationsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SoftCard(
-      padding: const EdgeInsets.all(10),
+      padding: EdgeInsets.zero,
       borderWidth: 1.45,
       borderRadius: 20,
       child: ClipRRect(
