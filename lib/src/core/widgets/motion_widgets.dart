@@ -20,7 +20,7 @@ class SmoothAppear extends StatelessWidget {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
       duration: duration + delay,
-      curve: AppMotion.settle,
+      curve: AppMotion.emphasizedDecelerate,
       builder: (context, value, animatedChild) {
         final double delayedValue = delay == Duration.zero
             ? value
@@ -65,7 +65,7 @@ class SoftReveal extends StatelessWidget {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
       duration: duration + delay,
-      curve: AppMotion.smooth,
+      curve: AppMotion.emphasized,
       builder: (context, value, animatedChild) {
         final double delayedValue = delay == Duration.zero
             ? value
@@ -74,7 +74,7 @@ class SoftReveal extends StatelessWidget {
                     .clamp(0, duration.inMilliseconds)
                     .toDouble() /
                 duration.inMilliseconds;
-        final eased = Curves.easeOutCubic.transform(delayedValue);
+        final eased = AppMotion.emphasizedDecelerate.transform(delayedValue);
         final scale = beginScale + ((1 - beginScale) * eased);
 
         return Opacity(
