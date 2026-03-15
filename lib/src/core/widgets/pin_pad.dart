@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import '../theme/app_motion.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -242,18 +241,18 @@ class _PinGlyph extends StatelessWidget {
     return TweenAnimationBuilder<double>(
       key: ValueKey<String>('glyph-$variant-$animateTick'),
       tween: Tween(begin: 0, end: 1),
-      duration: const Duration(milliseconds: 760),
-      curve: AppMotion.emphasizedDecelerate,
+      duration: const Duration(milliseconds: 1600),
+      curve: Curves.easeInOutCubic,
       builder: (context, value, _) {
-        final polygonOpacity = (1 - (value * 1.1)).clamp(0.0, 1.0);
-        final circleOpacity = ((value - 0.34) / 0.66).clamp(0.0, 1.0);
+        final polygonOpacity = (1 - (value * 0.92)).clamp(0.0, 1.0);
+        final circleOpacity = ((value - 0.5) / 0.5).clamp(0.0, 1.0);
         return Stack(
           alignment: Alignment.center,
           children: [
             Opacity(
               opacity: polygonOpacity,
               child: Transform.scale(
-                scale: 1.6 - (0.72 * value),
+                scale: 1.8 - (0.88 * value),
                 child: _GlyphSurface(
                   shape: _polygonShape(),
                   color: scheme.onSurface,
@@ -263,7 +262,7 @@ class _PinGlyph extends StatelessWidget {
             Opacity(
               opacity: circleOpacity,
               child: Transform.scale(
-                scale: 0.72 + (0.28 * value),
+                scale: 0.66 + (0.34 * value),
                 child: _GlyphSurface(
                   shape: const CircleBorder(),
                   color: scheme.onSurface,
@@ -360,7 +359,7 @@ class _PinDigitButtonState extends State<_PinDigitButton> {
 
   void _releaseSoon() {
     _releaseTimer?.cancel();
-    _releaseTimer = Timer(const Duration(milliseconds: 140), () {
+    _releaseTimer = Timer(const Duration(milliseconds: 380), () {
       if (mounted) {
         setState(() => _pressed = false);
       }
@@ -389,8 +388,8 @@ class _PinDigitButtonState extends State<_PinDigitButton> {
             }
           : null,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 340),
-        curve: AppMotion.emphasizedDecelerate,
+        duration: const Duration(milliseconds: 720),
+        curve: Curves.easeInOutCubic,
         width: 78,
         height: 78,
         decoration: BoxDecoration(
@@ -450,7 +449,7 @@ class _PinActionButtonState extends State<_PinActionButton> {
 
   void _releaseSoon() {
     _releaseTimer?.cancel();
-    _releaseTimer = Timer(const Duration(milliseconds: 140), () {
+    _releaseTimer = Timer(const Duration(milliseconds: 380), () {
       if (mounted) {
         setState(() => _pressed = false);
       }
@@ -483,8 +482,8 @@ class _PinActionButtonState extends State<_PinActionButton> {
             }
           : null,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 340),
-        curve: AppMotion.emphasizedDecelerate,
+        duration: const Duration(milliseconds: 720),
+        curve: Curves.easeInOutCubic,
         width: 78,
         height: 78,
         decoration: BoxDecoration(
