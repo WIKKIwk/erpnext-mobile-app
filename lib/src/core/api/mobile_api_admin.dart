@@ -195,6 +195,27 @@ extension MobileApiAdmin on MobileApi {
     }
   }
 
+  Future<AdminCustomerDetail> adminAssignCustomerItem({
+    required String ref,
+    required String itemCode,
+  }) async {
+    final response = await _sendAuthorized(
+      () => http.post(
+        Uri.parse('$baseUrl/v1/mobile/admin/customers/items/add')
+            .replace(queryParameters: {'ref': ref}),
+        headers: _headers(requireToken())
+          ..['Content-Type'] = 'application/json',
+        body: jsonEncode({'item_code': itemCode}),
+      ),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Admin customer item add failed');
+    }
+    return AdminCustomerDetail.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  }
+
   Future<List<SupplierItem>> adminItems({String query = ''}) async {
     final response = await _sendAuthorized(
       () => http.get(

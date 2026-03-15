@@ -28,6 +28,7 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
   bool _savingPhone = false;
   bool _regeneratingCode = false;
   bool _removing = false;
+  bool _addingItem = false;
   int _retryAfterSec = 0;
   Timer? _retryTimer;
 
@@ -239,6 +240,114 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
     }
   }
 
+  Future<void> _addItem() async {
+    final detail = _detail;
+    if (detail == null) {
+      return;
+    }
+
+    final allItems = await MobileApi.instance.adminItems();
+    if (!mounted) {
+      return;
+    }
+    final assignedCodes = detail.assignedItems.map((item) => item.code).toSet();
+    final availableItems =
+        allItems.where((item) => !assignedCodes.contains(item.code)).toList();
+    if (availableItems.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Biriktirilmagan mahsulot topilmadi')),
+      );
+      return;
+    }
+
+    final SupplierItem? selected = await showModalBottomSheet<SupplierItem>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      builder: (context) {
+        final theme = Theme.of(context);
+        final scheme = theme.colorScheme;
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Mahsulot qo‘shish',
+                      style: theme.textTheme.titleLarge,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                detail.name,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Flexible(
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: availableItems.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  itemBuilder: (context, index) {
+                    final item = availableItems[index];
+                    return ListTile(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      tileColor: scheme.surfaceContainerHighest,
+                      title: Text(item.name),
+                      subtitle: Text(item.code),
+                      trailing: const Icon(Icons.add_rounded),
+                      onTap: () => Navigator.of(context).pop(item),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (selected == null) {
+      return;
+    }
+
+    setState(() => _addingItem = true);
+    try {
+      final updated = await MobileApi.instance.adminAssignCustomerItem(
+        ref: widget.customerRef,
+        itemCode: selected.code,
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() => _detail = updated);
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Mahsulot biriktirilmadi: $error')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _addingItem = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -291,7 +400,9 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
               savingPhone: _savingPhone || _loading,
               regeneratingCode: _regeneratingCode,
               removing: _removing,
+              addingItem: _addingItem,
               onAddPhone: _addPhone,
+              onAddItem: _addItem,
               onRegenerateCode: _regenerateCode,
               onCopyCode: _copyCode,
               onRemove: _removeCustomer,
@@ -332,7 +443,9 @@ class _AdminCustomerDetailCard extends StatelessWidget {
     required this.savingPhone,
     required this.regeneratingCode,
     required this.removing,
+    required this.addingItem,
     required this.onAddPhone,
+    required this.onAddItem,
     required this.onRegenerateCode,
     required this.onCopyCode,
     required this.onRemove,
@@ -343,7 +456,9 @@ class _AdminCustomerDetailCard extends StatelessWidget {
   final bool savingPhone;
   final bool regeneratingCode;
   final bool removing;
+  final bool addingItem;
   final Future<void> Function(AdminCustomerDetail detail) onAddPhone;
+  final Future<void> Function() onAddItem;
   final Future<void> Function() onRegenerateCode;
   final Future<void> Function(String code) onCopyCode;
   final Future<void> Function() onRemove;
@@ -449,14 +564,24 @@ class _AdminCustomerDetailCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: detail.assignedItems.isEmpty
-                    ? null
-                    : () => _showAssignedItemsSheet(context, detail),
-                child: const Text('Ko‘rish'),
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: detail.assignedItems.isEmpty
+                        ? null
+                        : () => _showAssignedItemsSheet(context, detail),
+                    child: const Text('Ko‘rish'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: addingItem ? null : onAddItem,
+                    child: Text(addingItem ? 'Qo‘shilmoqda...' : 'Qo‘shish'),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             SizedBox(
