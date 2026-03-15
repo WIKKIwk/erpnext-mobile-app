@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../theme/app_motion.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -217,7 +219,7 @@ class _PinGlyph extends StatelessWidget {
       case 0:
         return const StarBorder.polygon(sides: 5);
       case 1:
-        return const StarBorder.polygon(sides: 4);
+        return const StarBorder.polygon(sides: 6);
       default:
         return const StarBorder.polygon(sides: 3);
     }
@@ -227,7 +229,7 @@ class _PinGlyph extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     if (!filled) {
-      return const SizedBox(width: 18, height: 18);
+      return const SizedBox(width: 20, height: 20);
     }
 
     if (!animate) {
@@ -240,18 +242,18 @@ class _PinGlyph extends StatelessWidget {
     return TweenAnimationBuilder<double>(
       key: ValueKey<String>('glyph-$variant-$animateTick'),
       tween: Tween(begin: 0, end: 1),
-      duration: AppMotion.slow,
+      duration: const Duration(milliseconds: 760),
       curve: AppMotion.emphasizedDecelerate,
       builder: (context, value, _) {
-        final polygonOpacity = (1 - (value * 1.4)).clamp(0.0, 1.0);
-        final circleOpacity = ((value - 0.18) / 0.82).clamp(0.0, 1.0);
+        final polygonOpacity = (1 - (value * 1.1)).clamp(0.0, 1.0);
+        final circleOpacity = ((value - 0.34) / 0.66).clamp(0.0, 1.0);
         return Stack(
           alignment: Alignment.center,
           children: [
             Opacity(
               opacity: polygonOpacity,
               child: Transform.scale(
-                scale: 1.28 - (0.42 * value),
+                scale: 1.6 - (0.72 * value),
                 child: _GlyphSurface(
                   shape: _polygonShape(),
                   color: scheme.onSurface,
@@ -261,7 +263,7 @@ class _PinGlyph extends StatelessWidget {
             Opacity(
               opacity: circleOpacity,
               child: Transform.scale(
-                scale: 0.78 + (0.22 * value),
+                scale: 0.72 + (0.28 * value),
                 child: _GlyphSurface(
                   shape: const CircleBorder(),
                   color: scheme.onSurface,
@@ -287,8 +289,8 @@ class _GlyphSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 18,
-      height: 18,
+      width: 20,
+      height: 20,
       child: DecoratedBox(
         decoration: ShapeDecoration(
           color: color,
@@ -341,6 +343,29 @@ class _PinDigitButton extends StatefulWidget {
 
 class _PinDigitButtonState extends State<_PinDigitButton> {
   bool _pressed = false;
+  Timer? _releaseTimer;
+
+  @override
+  void dispose() {
+    _releaseTimer?.cancel();
+    super.dispose();
+  }
+
+  void _press() {
+    _releaseTimer?.cancel();
+    if (!_pressed) {
+      setState(() => _pressed = true);
+    }
+  }
+
+  void _releaseSoon() {
+    _releaseTimer?.cancel();
+    _releaseTimer = Timer(const Duration(milliseconds: 140), () {
+      if (mounted) {
+        setState(() => _pressed = false);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -349,14 +374,23 @@ class _PinDigitButtonState extends State<_PinDigitButton> {
     final pressedColor = scheme.secondaryContainer.withValues(alpha: 0.78);
     final foreground = scheme.onSurface;
     return GestureDetector(
-      onTapDown: widget.enabled ? (_) => setState(() => _pressed = true) : null,
-      onTapUp: widget.enabled ? (_) => setState(() => _pressed = false) : null,
-      onTapCancel:
-          widget.enabled ? () => setState(() => _pressed = false) : null,
-      onTap: widget.enabled ? widget.onTap : null,
+      onTapDown: widget.enabled ? (_) => _press() : null,
+      onTapUp: widget.enabled ? (_) => _releaseSoon() : null,
+      onTapCancel: widget.enabled
+          ? () {
+              _releaseTimer?.cancel();
+              setState(() => _pressed = false);
+            }
+          : null,
+      onTap: widget.enabled
+          ? () {
+              widget.onTap();
+              _releaseSoon();
+            }
+          : null,
       child: AnimatedContainer(
-        duration: AppMotion.fast,
-        curve: AppMotion.smooth,
+        duration: const Duration(milliseconds: 340),
+        curve: AppMotion.emphasizedDecelerate,
         width: 78,
         height: 78,
         decoration: BoxDecoration(
@@ -399,6 +433,29 @@ class _PinActionButton extends StatefulWidget {
 
 class _PinActionButtonState extends State<_PinActionButton> {
   bool _pressed = false;
+  Timer? _releaseTimer;
+
+  @override
+  void dispose() {
+    _releaseTimer?.cancel();
+    super.dispose();
+  }
+
+  void _press() {
+    _releaseTimer?.cancel();
+    if (!_pressed) {
+      setState(() => _pressed = true);
+    }
+  }
+
+  void _releaseSoon() {
+    _releaseTimer?.cancel();
+    _releaseTimer = Timer(const Duration(milliseconds: 140), () {
+      if (mounted) {
+        setState(() => _pressed = false);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -411,14 +468,23 @@ class _PinActionButtonState extends State<_PinActionButton> {
         : scheme.secondaryContainer.withValues(alpha: 0.82);
     final foreground = widget.emphasized ? scheme.onPrimary : scheme.onSurface;
     return GestureDetector(
-      onTapDown: widget.enabled ? (_) => setState(() => _pressed = true) : null,
-      onTapUp: widget.enabled ? (_) => setState(() => _pressed = false) : null,
-      onTapCancel:
-          widget.enabled ? () => setState(() => _pressed = false) : null,
-      onTap: widget.enabled ? widget.onTap : null,
+      onTapDown: widget.enabled ? (_) => _press() : null,
+      onTapUp: widget.enabled ? (_) => _releaseSoon() : null,
+      onTapCancel: widget.enabled
+          ? () {
+              _releaseTimer?.cancel();
+              setState(() => _pressed = false);
+            }
+          : null,
+      onTap: widget.enabled
+          ? () {
+              widget.onTap();
+              _releaseSoon();
+            }
+          : null,
       child: AnimatedContainer(
-        duration: AppMotion.fast,
-        curve: AppMotion.smooth,
+        duration: const Duration(milliseconds: 340),
+        curve: AppMotion.emphasizedDecelerate,
         width: 78,
         height: 78,
         decoration: BoxDecoration(
