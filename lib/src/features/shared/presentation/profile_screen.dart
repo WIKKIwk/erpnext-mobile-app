@@ -574,11 +574,17 @@ class _ProfilePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card.filled(
-      margin: EdgeInsets.zero,
-      color: Theme.of(context).colorScheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    return Container(
+      decoration: BoxDecoration(
+        color:
+            isDark ? scheme.surfaceContainerLow : scheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(26),
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: isDark ? 0.50 : 0.42),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
