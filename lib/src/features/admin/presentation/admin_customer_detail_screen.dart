@@ -168,6 +168,13 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
         child: FutureBuilder<AdminCustomerDetail>(
           future: _future,
           builder: (context, snapshot) {
+            final stateLabel = snapshot.connectionState != ConnectionState.done
+                ? 'Yuklanmoqda'
+                : snapshot.hasError
+                    ? 'Xato'
+                    : snapshot.hasData
+                        ? 'Tayyor'
+                        : 'Bo‘sh';
             return ListView(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
               children: [
@@ -187,6 +194,36 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
+                _AdminCustomerInfoCard(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Ref: ${widget.customerRef}',
+                          style: theme.textTheme.titleMedium,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.secondaryContainer,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          stateLabel,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSecondaryContainer,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
                 if (snapshot.connectionState != ConnectionState.done)
                   _AdminCustomerInfoCard(
                     child: Column(
@@ -261,6 +298,9 @@ class _AdminCustomerInfoCard extends StatelessWidget {
       color: scheme.surfaceContainerLow,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
+        side: BorderSide(
+          color: scheme.outlineVariant.withValues(alpha: 0.7),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(18),
@@ -300,6 +340,9 @@ class _AdminCustomerDetailCard extends StatelessWidget {
       color: scheme.surfaceContainerLow,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
+        side: BorderSide(
+          color: scheme.outlineVariant.withValues(alpha: 0.7),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(18),
