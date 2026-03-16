@@ -1,8 +1,6 @@
 import '../../../core/api/mobile_api.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/common_widgets.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../shared/models/app_models.dart';
-import 'widgets/admin_dock.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -123,106 +121,230 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AppShell(
-      leading: AppShellIconAction(
-        icon: Icons.arrow_back_rounded,
-        onTap: () => Navigator.of(context).maybePop(),
-      ),
-      title: 'Werka',
-      subtitle: '',
-      bottom: const AdminDock(activeTab: AdminDockTab.settings),
-      child: FutureBuilder<AdminSettings>(
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      backgroundColor: AppTheme.shellStart(context),
+      body: SafeArea(
+        child: FutureBuilder<AdminSettings>(
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(
-              child: SoftCard(
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+              children: [
+                _AdminWerkaHeader(theme: theme),
+                const SizedBox(height: 20),
+                _AdminWerkaNoticeCard(
                 child: Text('Werka yuklanmadi: ${snapshot.error}'),
-              ),
+                ),
+              ],
             );
           }
           final current = snapshot.data!;
           _fill(current);
+          final scheme = theme.colorScheme;
           return ListView(
-            padding: EdgeInsets.zero,
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
             children: [
-              SoftCard(
+              _AdminWerkaHeader(theme: theme),
+              const SizedBox(height: 20),
+              Card.filled(
+                margin: EdgeInsets.zero,
+                color: scheme.surfaceContainerLow,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(28),
+                  side: BorderSide(
+                    color: scheme.outlineVariant.withValues(alpha: 0.7),
+                  ),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      name.text.trim().isEmpty ? 'Werka' : name.text.trim(),
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(phone.text.trim(),
-                        style: Theme.of(context).textTheme.bodySmall),
-                    const SizedBox(height: 14),
-                    Text('Code', style: Theme.of(context).textTheme.bodySmall),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: SelectableText(
-                            werkaCode,
-                            style: Theme.of(context).textTheme.titleLarge,
+                    Padding(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name.text.trim().isEmpty ? 'Werka' : name.text.trim(),
+                            style: theme.textTheme.headlineMedium,
                           ),
-                        ),
-                        IconButton(
-                          onPressed:
-                              werkaCode.trim().isEmpty ? null : _copyCode,
-                          icon: const Icon(Icons.content_copy_outlined),
-                        ),
-                        IconButton(
-                          onPressed: regenerating || _retryAfterSec > 0
-                              ? null
-                              : _regenerate,
-                          icon: regenerating
-                              ? const SizedBox(
-                                  height: 18,
-                                  width: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
+                          const SizedBox(height: 8),
+                          Text(
+                            phone.text.trim().isEmpty
+                                ? 'Telefon raqam berilmagan'
+                                : phone.text.trim(),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          Text('Code', style: theme.textTheme.bodySmall),
+                          const SizedBox(height: 6),
+                          _AdminWerkaField(
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: SelectableText(
+                                    werkaCode,
+                                    style: theme.textTheme.titleMedium,
                                   ),
-                                )
-                              : const Icon(Icons.refresh_rounded),
-                        ),
-                      ],
-                    ),
-                    if (_retryAfterSec > 0) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        'Keyingi code uchun $_retryAfterSec soniyadan keyin qayta urining.',
-                        style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                                IconButton(
+                                  onPressed:
+                                      werkaCode.trim().isEmpty ? null : _copyCode,
+                                  icon: const Icon(Icons.content_copy_outlined),
+                                ),
+                                IconButton(
+                                  onPressed: regenerating || _retryAfterSec > 0
+                                      ? null
+                                      : _regenerate,
+                                  icon: regenerating
+                                      ? const SizedBox(
+                                          height: 18,
+                                          width: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : const Icon(Icons.refresh_rounded),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (_retryAfterSec > 0) ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              'Keyingi code uchun $_retryAfterSec soniya kuting.',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 18),
+                          Text('Werka name', style: theme.textTheme.bodySmall),
+                          const SizedBox(height: 6),
+                          _AdminWerkaField(
+                            child: TextField(
+                              controller: name,
+                              decoration: const InputDecoration(
+                                isDense: true,
+                                border: InputBorder.none,
+                                hintText: 'Werka',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          Text('Werka phone', style: theme.textTheme.bodySmall),
+                          const SizedBox(height: 6),
+                          _AdminWerkaField(
+                            child: TextField(
+                              controller: phone,
+                              keyboardType: TextInputType.phone,
+                              decoration: const InputDecoration(
+                                isDense: true,
+                                border: InputBorder.none,
+                                hintText: '+998901234567',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton(
+                              onPressed: saving ? null : () => _save(current),
+                              child: Text(
+                                saving ? 'Saqlanmoqda...' : 'Saqlash',
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: name,
-                decoration: const InputDecoration(labelText: 'Werka name'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: phone,
-                decoration: const InputDecoration(labelText: 'Werka phone'),
-              ),
-              const SizedBox(height: 18),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: saving ? null : () => _save(current),
-                  child: Text(saving ? 'Saqlanmoqda...' : 'Saqlash'),
                 ),
               ),
             ],
           );
         },
+      ),
+      ),
+    );
+  }
+}
+
+class _AdminWerkaHeader extends StatelessWidget {
+  const _AdminWerkaHeader({required this.theme});
+
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(
+          height: 52,
+          width: 52,
+          child: IconButton.filledTonal(
+            onPressed: () => Navigator.of(context).maybePop(),
+            icon: const Icon(Icons.arrow_back_rounded, size: 28),
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Text(
+            'Werka',
+            style: theme.textTheme.headlineMedium,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AdminWerkaField extends StatelessWidget {
+  const _AdminWerkaField({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: child,
+    );
+  }
+}
+
+class _AdminWerkaNoticeCard extends StatelessWidget {
+  const _AdminWerkaNoticeCard({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Card.filled(
+      margin: EdgeInsets.zero,
+      color: scheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+        side: BorderSide(
+          color: scheme.outlineVariant.withValues(alpha: 0.7),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: child,
       ),
     );
   }
