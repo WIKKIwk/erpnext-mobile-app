@@ -127,151 +127,146 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
       backgroundColor: AppTheme.shellStart(context),
       body: SafeArea(
         child: FutureBuilder<AdminSettings>(
-        future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
+          future: _future,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return ListView(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+                children: [
+                  _AdminWerkaHeader(theme: theme),
+                  const SizedBox(height: 20),
+                  _AdminWerkaNoticeCard(
+                    child: Text('Werka yuklanmadi: ${snapshot.error}'),
+                  ),
+                ],
+              );
+            }
+            final current = snapshot.data!;
+            _fill(current);
+            final scheme = theme.colorScheme;
             return ListView(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
               children: [
                 _AdminWerkaHeader(theme: theme),
                 const SizedBox(height: 20),
-                _AdminWerkaNoticeCard(
-                child: Text('Werka yuklanmadi: ${snapshot.error}'),
-                ),
-              ],
-            );
-          }
-          final current = snapshot.data!;
-          _fill(current);
-          final scheme = theme.colorScheme;
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-            children: [
-              _AdminWerkaHeader(theme: theme),
-              const SizedBox(height: 20),
-              Card.filled(
-                margin: EdgeInsets.zero,
-                color: scheme.surfaceContainerLow,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(28),
-                  side: BorderSide(
-                    color: scheme.outlineVariant.withValues(alpha: 0.7),
+                Card.filled(
+                  margin: EdgeInsets.zero,
+                  color: scheme.surfaceContainerLow,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(28),
+                    side: BorderSide(
+                      color: scheme.outlineVariant.withValues(alpha: 0.7),
+                    ),
                   ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(18),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            name.text.trim().isEmpty ? 'Werka' : name.text.trim(),
-                            style: theme.textTheme.headlineMedium,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            phone.text.trim().isEmpty
-                                ? 'Telefon raqam berilmagan'
-                                : phone.text.trim(),
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                            ),
-                          ),
-                          const SizedBox(height: 18),
-                          Text('Code', style: theme.textTheme.bodySmall),
-                          const SizedBox(height: 6),
-                          _AdminWerkaField(
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: SelectableText(
-                                    werkaCode,
-                                    style: theme.textTheme.titleMedium,
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed:
-                                      werkaCode.trim().isEmpty ? null : _copyCode,
-                                  icon: const Icon(Icons.content_copy_outlined),
-                                ),
-                                IconButton(
-                                  onPressed: regenerating || _retryAfterSec > 0
-                                      ? null
-                                      : _regenerate,
-                                  icon: regenerating
-                                      ? const SizedBox(
-                                          height: 18,
-                                          width: 18,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                          ),
-                                        )
-                                      : const Icon(Icons.refresh_rounded),
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (_retryAfterSec > 0) ...[
-                            const SizedBox(height: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(18),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                             Text(
-                              'Keyingi code uchun $_retryAfterSec soniya kuting.',
+                              name.text.trim().isEmpty
+                                  ? 'Werka'
+                                  : name.text.trim(),
+                              style: theme.textTheme.headlineMedium,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              phone.text.trim().isEmpty
+                                  ? 'Telefon raqam berilmagan'
+                                  : phone.text.trim(),
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: scheme.onSurfaceVariant,
                               ),
                             ),
-                          ],
-                          const SizedBox(height: 18),
-                          Text('Werka name', style: theme.textTheme.bodySmall),
-                          const SizedBox(height: 6),
-                          _AdminWerkaField(
-                            child: TextField(
+                            const SizedBox(height: 18),
+                            Text('Code', style: theme.textTheme.bodySmall),
+                            const SizedBox(height: 6),
+                            _AdminWerkaField(
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: SelectableText(
+                                      werkaCode,
+                                      style: theme.textTheme.titleMedium,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: werkaCode.trim().isEmpty
+                                        ? null
+                                        : _copyCode,
+                                    icon:
+                                        const Icon(Icons.content_copy_outlined),
+                                  ),
+                                  IconButton(
+                                    onPressed:
+                                        regenerating || _retryAfterSec > 0
+                                            ? null
+                                            : _regenerate,
+                                    icon: regenerating
+                                        ? const SizedBox(
+                                            height: 18,
+                                            width: 18,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : const Icon(Icons.refresh_rounded),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (_retryAfterSec > 0) ...[
+                              const SizedBox(height: 12),
+                              Text(
+                                'Keyingi code uchun $_retryAfterSec soniya kuting.',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: 18),
+                            TextField(
                               controller: name,
                               decoration: const InputDecoration(
-                                isDense: true,
-                                border: InputBorder.none,
+                                labelText: 'Werka name',
                                 hintText: 'Werka',
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 14),
-                          Text('Werka phone', style: theme.textTheme.bodySmall),
-                          const SizedBox(height: 6),
-                          _AdminWerkaField(
-                            child: TextField(
+                            const SizedBox(height: 14),
+                            TextField(
                               controller: phone,
                               keyboardType: TextInputType.phone,
                               decoration: const InputDecoration(
-                                isDense: true,
-                                border: InputBorder.none,
+                                labelText: 'Werka phone',
                                 hintText: '+998901234567',
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 18),
-                          SizedBox(
-                            width: double.infinity,
-                            child: FilledButton(
-                              onPressed: saving ? null : () => _save(current),
-                              child: Text(
-                                saving ? 'Saqlanmoqda...' : 'Saqlash',
+                            const SizedBox(height: 18),
+                            SizedBox(
+                              width: double.infinity,
+                              child: FilledButton(
+                                onPressed: saving ? null : () => _save(current),
+                                child: Text(
+                                  saving ? 'Saqlanmoqda...' : 'Saqlash',
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          );
-        },
-      ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
