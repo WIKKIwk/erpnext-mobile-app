@@ -3,7 +3,6 @@ import '../../../core/api/mobile_api.dart';
 import '../../../core/notifications/notification_unread_store.dart';
 import '../../../core/session/app_session.dart';
 import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/common_widgets.dart';
 import '../../supplier/presentation/widgets/supplier_dock.dart';
 import '../../werka/presentation/widgets/werka_dock.dart';
 import '../models/app_models.dart';
@@ -297,7 +296,6 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final role = AppSession.instance.profile?.role;
-    final textTheme = Theme.of(context).textTheme;
     if (_accountKey != _currentAccountKey()) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _reloadForAccountChange();
@@ -324,6 +322,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
       ),
       title: 'Batafsil',
       subtitle: '',
+      contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
       bottom: role == UserRole.supplier
           ? const SupplierDock(activeTab: null)
           : role == UserRole.werka
@@ -337,8 +336,11 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
           }
           if (snapshot.hasError) {
             return Center(
-              child: SoftCard(
-                child: Column(
+              child: Card.filled(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text('Detail yuklanmadi: ${snapshot.error}'),
@@ -348,6 +350,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
                       child: const Text('Qayta urinish'),
                     ),
                   ],
+                ),
                 ),
               ),
             );
@@ -408,91 +411,24 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.zero,
               children: [
-                Text.rich(
-                  TextSpan(
-                    style: textTheme.titleMedium,
-                    children: [
-                      const TextSpan(text: 'Supplier: '),
-                      TextSpan(
-                        text: record.supplierName,
-                        style: textTheme.titleLarge,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text.rich(
-                  TextSpan(
-                    style: textTheme.titleMedium,
-                    children: [
-                      const TextSpan(text: 'Mahsulot: '),
-                      TextSpan(
-                        text: '${record.itemCode} • ${record.itemName}',
-                        style: textTheme.titleLarge,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text.rich(
-                  TextSpan(
-                    style: textTheme.titleMedium,
-                    children: [
-                      const TextSpan(text: 'Jo‘natilgan: '),
-                      TextSpan(
-                        text:
-                            '${record.sentQty.toStringAsFixed(2)} ${record.uom}',
-                        style: textTheme.titleLarge,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text.rich(
-                  TextSpan(
-                    style: textTheme.titleMedium,
-                    children: [
-                      const TextSpan(text: 'Qabul qilingan: '),
-                      TextSpan(
-                        text:
-                            '${record.acceptedQty.toStringAsFixed(2)} ${record.uom}',
-                        style: textTheme.titleLarge,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text.rich(
-                  TextSpan(
-                    style: textTheme.titleMedium,
-                    children: [
-                      const TextSpan(text: 'Status: '),
-                      TextSpan(
-                        text: _statusLabel(record.status),
-                        style: textTheme.titleLarge,
-                      ),
-                    ],
-                  ),
-                ),
+                _NotificationSummaryCard(record: record),
                 if (record.note.trim().isNotEmpty) ...[
                   const SizedBox(height: 12),
-                  SoftCard(
-                    child: Text(record.note),
-                  ),
+                  _NotificationNoteCard(note: record.note),
                 ],
                 if (isSupplierAckEvent &&
                     record.highlight.trim().isNotEmpty) ...[
                   const SizedBox(height: 12),
-                  Text(
-                    record.highlight,
-                    style: textTheme.headlineMedium,
+                  _NotificationNoteCard(
+                    note: record.highlight,
+                    emphasized: true,
                   ),
                 ],
                 if (canConfirm) ...[
                   const SizedBox(height: 18),
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
+                    child: FilledButton(
                       onPressed: () => Navigator.of(context).pushNamed(
                         AppRoutes.werkaDetail,
                         arguments: record,
@@ -516,6 +452,10 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
+                          ),
                           onPressed: _sending
                               ? null
                               : () => _respondWerkaUnannounced(true),
@@ -612,32 +552,40 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
                   ),
                   const SizedBox(height: 12),
                   if (detail.comments.isEmpty)
-                    const SoftCard(
-                      child: Text('Hozircha izoh yo‘q.'),
+                    const Card.filled(
+                      margin: EdgeInsets.zero,
+                      child: Padding(
+                        padding: EdgeInsets.all(18),
+                        child: Text('Hozircha izoh yo‘q.'),
+                      ),
                     )
                   else
                     ...detail.comments.map(
                       (item) => Padding(
                         padding: const EdgeInsets.only(bottom: 12),
-                        child: SoftCard(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.authorLabel,
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                item.body,
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                item.createdLabel,
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                            ],
+                        child: Card.filled(
+                          margin: EdgeInsets.zero,
+                          child: Padding(
+                            padding: const EdgeInsets.all(18),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.authorLabel,
+                                  style: Theme.of(context).textTheme.titleMedium,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  item.body,
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  item.createdLabel,
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -655,7 +603,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
                     const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
-                      child: ElevatedButton(
+                      child: FilledButton(
                         onPressed: _sending ? null : _sendComment,
                         child: Text(
                           _sending ? 'Yuborilmoqda...' : 'Comment yuborish',
@@ -669,6 +617,150 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _NotificationSummaryCard extends StatelessWidget {
+  const _NotificationSummaryCard({
+    required this.record,
+  });
+
+  final DispatchRecord record;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Card.filled(
+      margin: EdgeInsets.zero,
+      color: scheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    record.supplierName,
+                    style: theme.textTheme.headlineMedium,
+                  ),
+                ),
+                _DetailStatusChip(label: _statusLabel(record.status)),
+              ],
+            ),
+            const SizedBox(height: 18),
+            Text('Supplier', style: theme.textTheme.bodySmall),
+            const SizedBox(height: 6),
+            _NotificationDetailField(value: record.supplierName),
+            const SizedBox(height: 14),
+            Text('Mahsulot', style: theme.textTheme.bodySmall),
+            const SizedBox(height: 6),
+            _NotificationDetailField(
+              value: '${record.itemCode} • ${record.itemName}',
+            ),
+            const SizedBox(height: 14),
+            Text('Jo‘natilgan', style: theme.textTheme.bodySmall),
+            const SizedBox(height: 6),
+            _NotificationDetailField(
+              value: '${record.sentQty.toStringAsFixed(2)} ${record.uom}',
+            ),
+            const SizedBox(height: 14),
+            Text('Qabul qilingan', style: theme.textTheme.bodySmall),
+            const SizedBox(height: 6),
+            _NotificationDetailField(
+              value: '${record.acceptedQty.toStringAsFixed(2)} ${record.uom}',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NotificationNoteCard extends StatelessWidget {
+  const _NotificationNoteCard({
+    required this.note,
+    this.emphasized = false,
+  });
+
+  final String note;
+  final bool emphasized;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Card.filled(
+      margin: EdgeInsets.zero,
+      color: emphasized ? scheme.secondaryContainer : scheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Text(
+          note,
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: emphasized ? scheme.onSecondaryContainer : null,
+              ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NotificationDetailField extends StatelessWidget {
+  const _NotificationDetailField({
+    required this.value,
+  });
+
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Text(
+        value,
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
+    );
+  }
+}
+
+class _DetailStatusChip extends StatelessWidget {
+  const _DetailStatusChip({
+    required this.label,
+  });
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: theme.colorScheme.onSecondaryContainer,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
