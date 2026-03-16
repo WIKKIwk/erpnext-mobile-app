@@ -6,12 +6,10 @@ import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/notifications/notification_unread_store.dart';
 import '../../../core/session/app_session.dart';
 import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/common_widgets.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/werka_dock.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class WerkaNotificationsScreen extends StatefulWidget {
   const WerkaNotificationsScreen({super.key});
@@ -58,13 +56,22 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
         title: const Text('Tozalash'),
         content: const Text('Hamma bildirishnomalarni tozalaysizmi?'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Yo‘q'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Ha'),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Yo‘q'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Ha'),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -178,22 +185,14 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
     return AppShell(
       title: 'Bildirishnomalar',
       subtitle: '',
+      contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
       actions: [
-        AppShellIconAction(
-          iconWidget: SvgPicture.asset(
-            'assets/icons/brush-3-line.svg',
-            width: 22,
-            height: 22,
-            colorFilter: ColorFilter.mode(
-              Theme.of(context).colorScheme.onSurface,
-              BlendMode.srcIn,
-            ),
-          ),
-          onTap: _clearAll,
+        IconButton.filledTonal(
+          onPressed: _clearAll,
+          icon: const Icon(Icons.clear_all_rounded),
         ),
       ],
       bottom: const WerkaDock(activeTab: WerkaDockTab.notifications),
-      contentPadding: const EdgeInsets.fromLTRB(10, 0, 12, 0),
       child: FutureBuilder<List<DispatchRecord>>(
         future: _itemsFuture,
         builder: (context, snapshot) {
@@ -218,8 +217,11 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
                 physics: const AlwaysScrollableScrollPhysics(),
                 children: [
                   const SizedBox(height: 120),
-                  SoftCard(
-                    child: Column(
+                  Card.filled(
+                    margin: EdgeInsets.zero,
+                    child: Padding(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
@@ -241,6 +243,7 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
                         ),
                       ],
                     ),
+                    ),
                   ),
                 ],
               ),
@@ -249,8 +252,12 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
 
           if (items.isEmpty) {
             return const Center(
-              child: SoftCard(
-                child: Text('Hali bildirishnomalar yo‘q.'),
+              child: Card.filled(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: EdgeInsets.all(18),
+                  child: Text('Hali bildirishnomalar yo‘q.'),
+                ),
               ),
             );
           }
@@ -291,30 +298,33 @@ class _WerkaNotificationsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SoftCard(
-      padding: EdgeInsets.zero,
-      borderWidth: 1.45,
-      borderRadius: 20,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
-        child: Container(
-          color: const Color(0xFF000000),
-          child: Column(
-            children: [
-              for (int index = 0; index < items.length; index++) ...[
-                _WerkaNotificationRow(
-                  record: items[index],
-                  highlighted: highlightedUnreadIds.contains(items[index].id),
-                  isFirst: index == 0,
-                  isLast: index == items.length - 1,
-                  onTap: () => onTapRecord(items[index].id),
-                ),
-                if (index != items.length - 1)
-                  const Divider(height: 1, thickness: 1),
-              ],
-            ],
-          ),
-        ),
+    final scheme = Theme.of(context).colorScheme;
+    return Card.filled(
+      margin: EdgeInsets.zero,
+      color: scheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Column(
+        children: [
+          for (int index = 0; index < items.length; index++) ...[
+            _WerkaNotificationRow(
+              record: items[index],
+              highlighted: highlightedUnreadIds.contains(items[index].id),
+              isFirst: index == 0,
+              isLast: index == items.length - 1,
+              onTap: () => onTapRecord(items[index].id),
+            ),
+            if (index != items.length - 1)
+              Divider(
+                height: 1,
+                thickness: 1,
+                indent: 18,
+                endIndent: 18,
+                color: Theme.of(context).dividerColor.withValues(alpha: 0.55),
+              ),
+          ],
+        ],
       ),
     );
   }
@@ -358,13 +368,9 @@ class _WerkaNotificationRow extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: highlighted ? const Color(0xFF212121) : Colors.transparent,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(0),
-            topRight: Radius.circular(0),
-            bottomLeft: Radius.circular(0),
-            bottomRight: Radius.circular(0),
-          ),
+          color: highlighted
+              ? Theme.of(context).colorScheme.surfaceContainer
+              : Colors.transparent,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
         child: Column(
@@ -376,9 +382,7 @@ class _WerkaNotificationRow extends StatelessWidget {
                 Expanded(
                   child: Text(
                     _notificationTitle(record),
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: highlighted ? Colors.white : null,
-                        ),
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -388,9 +392,7 @@ class _WerkaNotificationRow extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               _secondary(record),
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: highlighted ? Colors.white70 : null,
-                  ),
+              style: Theme.of(context).textTheme.bodyMedium,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -400,9 +402,7 @@ class _WerkaNotificationRow extends StatelessWidget {
                 Expanded(
                   child: Text(
                     _metricLine(record),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: highlighted ? Colors.white70 : null,
-                        ),
+                    style: Theme.of(context).textTheme.bodySmall,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -410,9 +410,7 @@ class _WerkaNotificationRow extends StatelessWidget {
                 const SizedBox(width: 12),
                 Text(
                   record.createdLabel,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: highlighted ? Colors.white70 : null,
-                      ),
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
             ),
@@ -469,9 +467,8 @@ class _NotificationStatusBadge extends StatelessWidget {
       height: 36,
       width: 36,
       decoration: BoxDecoration(
-        color: Colors.transparent,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         shape: BoxShape.circle,
-        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Icon(
         icon,
