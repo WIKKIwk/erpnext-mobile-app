@@ -301,10 +301,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
         _reloadForAccountChange();
       });
       return AppShell(
-        leading: AppShellIconAction(
-          icon: Icons.arrow_back_rounded,
-          onTap: () => Navigator.of(context).maybePop(),
-        ),
+        leading: const _NotificationBackButton(),
         title: 'Batafsil',
         subtitle: '',
         bottom: role == UserRole.supplier
@@ -316,10 +313,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
       );
     }
     return AppShell(
-      leading: AppShellIconAction(
-        icon: Icons.arrow_back_rounded,
-        onTap: () => Navigator.of(context).maybePop(),
-      ),
+      leading: const _NotificationBackButton(),
       title: 'Batafsil',
       subtitle: '',
       contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
@@ -617,6 +611,22 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _NotificationBackButton extends StatelessWidget {
+  const _NotificationBackButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 52,
+      width: 52,
+      child: IconButton.filledTonal(
+        onPressed: () => Navigator.of(context).maybePop(),
+        icon: const Icon(Icons.arrow_back_rounded, size: 28),
       ),
     );
   }
