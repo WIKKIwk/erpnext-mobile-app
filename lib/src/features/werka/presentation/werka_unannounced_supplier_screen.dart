@@ -220,47 +220,57 @@ class _WerkaUnannouncedSupplierScreenState
       context: context,
       builder: (context) {
         final theme = Theme.of(context);
-        return AlertDialog(
-          title: const Text('Tasdiqlash'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _selectedSupplier!.name,
-                style: theme.textTheme.titleMedium,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                _selectedItem!.name,
-                style: theme.textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                '${qty.toStringAsFixed(0)} ${_selectedItem!.uom}',
-                style: theme.textTheme.bodySmall,
-              ),
-            ],
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 28),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
           ),
-          actions: [
-            Row(
+          child: Padding(
+            padding: const EdgeInsets.all(22),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: const Text('Yo‘q'),
-                  ),
+                Text(
+                  'Tasdiqlash',
+                  style: theme.textTheme.headlineMedium,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    child: const Text('Ha'),
-                  ),
+                const SizedBox(height: 18),
+                Text(
+                  _selectedSupplier!.name,
+                  style: theme.textTheme.titleMedium,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _selectedItem!.name,
+                  style: theme.textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '${qty.toStringAsFixed(0)} ${_selectedItem!.uom}',
+                  style: theme.textTheme.bodySmall,
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text('Yo‘q'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: const Text('Ha'),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
+          ),
         );
       },
     );
