@@ -15,8 +15,8 @@ class WerkaDock extends StatelessWidget {
   const WerkaDock({
     super.key,
     required this.activeTab,
-    this.compact = false,
-    this.tightToEdges = false,
+    this.compact = true,
+    this.tightToEdges = true,
   });
 
   final WerkaDockTab? activeTab;
