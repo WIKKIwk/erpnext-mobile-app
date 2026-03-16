@@ -119,6 +119,7 @@ class _WerkaRecentScreenState extends State<WerkaRecentScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      extendBody: true,
       backgroundColor: AppTheme.shellStart(context),
       body: SafeArea(
         bottom: false,
