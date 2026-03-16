@@ -108,10 +108,7 @@ class AppShell extends StatelessWidget {
       builder: (context, value, animatedChild) {
         return Opacity(
           opacity: value,
-          child: Transform.translate(
-            offset: Offset(18 * (1 - value), 0),
-            child: animatedChild,
-          ),
+          child: animatedChild,
         );
       },
       child: content,

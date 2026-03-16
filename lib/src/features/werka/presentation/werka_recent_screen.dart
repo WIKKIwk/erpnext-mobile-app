@@ -314,6 +314,7 @@ class _WerkaRecentCard extends StatelessWidget {
                 FilledButton.tonal(
                   onPressed: onRepeat,
                   style: FilledButton.styleFrom(
+                    minimumSize: const Size(0, 40),
                     visualDensity: VisualDensity.compact,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 14,
