@@ -435,7 +435,7 @@ class _CustomerFeedRow extends StatelessWidget {
         child: AnimatedContainer(
           duration: AppMotion.medium,
           curve: AppMotion.smooth,
-          color: highlighted ? scheme.surfaceContainerHigh : Colors.transparent,
+          color: highlighted ? scheme.secondaryContainer : Colors.transparent,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Row(
