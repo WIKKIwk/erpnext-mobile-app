@@ -1,6 +1,9 @@
+import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_shell.dart';
+import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
+import 'widgets/admin_dock.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -25,8 +28,6 @@ class _AdminSupplierDetailScreenState extends State<AdminSupplierDetailScreen> {
   bool _savingPhone = false;
   bool _regeneratingCode = false;
   bool _removing = false;
-  bool _addingItem = false;
-  String? _removingItemCode;
   int _retryAfterSec = 0;
   Timer? _retryTimer;
 
@@ -214,151 +215,60 @@ class _AdminSupplierDetailScreenState extends State<AdminSupplierDetailScreen> {
     );
   }
 
-  Future<bool> _assignItem(SupplierItem item) async {
-    setState(() => _addingItem = true);
-    try {
-      final updated = await MobileApi.instance.adminAssignSupplierItem(
-        ref: widget.supplierRef,
-        itemCode: item.code,
-      );
-      if (!mounted) {
-        return false;
-      }
-      _setRetryAfter(updated.codeRetryAfterSec);
-      setState(() {
-        _detailFuture = Future<AdminSupplierDetail>.value(updated);
-      });
-      return true;
-    } catch (error) {
-      if (!mounted) {
-        return false;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Mahsulot biriktirilmadi: $error')),
-      );
-      return false;
-    } finally {
-      if (mounted) {
-        setState(() => _addingItem = false);
-      }
-    }
-  }
-
-  Future<bool> _removeItem(SupplierItem item) async {
-    final bool? confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Mahsulotni uzish'),
-          content: Text('${item.name} mahsulotini supplierdan uzaymi?'),
-          actions: [
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: const Text('Yo‘q'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    child: const Text('Ha'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        );
-      },
-    );
-    if (confirm != true) {
-      return false;
-    }
-
-    setState(() => _removingItemCode = item.code);
-    try {
-      final updated = await MobileApi.instance.adminRemoveSupplierItem(
-        ref: widget.supplierRef,
-        itemCode: item.code,
-      );
-      if (!mounted) {
-        return false;
-      }
-      _setRetryAfter(updated.codeRetryAfterSec);
-      setState(() {
-        _detailFuture = Future<AdminSupplierDetail>.value(updated);
-      });
-      return true;
-    } catch (error) {
-      if (!mounted) {
-        return false;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Mahsulot uzilmadi: $error')),
-      );
-      return false;
-    } finally {
-      if (mounted) {
-        setState(() => _removingItemCode = null);
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Scaffold(
-      backgroundColor: AppTheme.shellStart(context),
-      body: SafeArea(
-        child: FutureBuilder<AdminSupplierDetail>(
-          future: _detailFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return const Center(child: CircularProgressIndicator.adaptive());
-            }
-            if (snapshot.hasError) {
-              return ListView(
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-                children: [
-                  _SupplierDetailHeader(theme: theme),
-                  const SizedBox(height: 20),
-                  _SupplierDetailNoticeCard(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('Supplier detail yuklanmadi: ${snapshot.error}'),
-                        const SizedBox(height: 12),
-                        FilledButton(
-                          onPressed: _reload,
-                          child: const Text('Qayta urinish'),
-                        ),
-                      ],
-                    ),
+    return AppShell(
+      leading: AppShellIconAction(
+        icon: Icons.arrow_back_rounded,
+        onTap: () => Navigator.of(context).maybePop(),
+      ),
+      title: 'Supplier',
+      subtitle: '',
+      contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
+      bottom: const AdminDock(activeTab: AdminDockTab.suppliers),
+      child: FutureBuilder<AdminSupplierDetail>(
+        future: _detailFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Center(child: CircularProgressIndicator.adaptive());
+          }
+          if (snapshot.hasError) {
+            return Center(
+              child: Card.filled(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('Supplier detail yuklanmadi: ${snapshot.error}'),
+                      const SizedBox(height: 12),
+                      FilledButton(
+                        onPressed: _reload,
+                        child: const Text('Qayta urinish'),
+                      ),
+                    ],
                   ),
-                ],
-              );
-            }
+                ),
+              ),
+            );
+          }
 
-            final detail = snapshot.data!;
-            final hasPhone = detail.phone.trim().isNotEmpty;
-            final scheme = theme.colorScheme;
+          final detail = snapshot.data!;
+          final hasPhone = detail.phone.trim().isNotEmpty;
+          final theme = Theme.of(context);
+          final scheme = theme.colorScheme;
 
-            return ListView(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-              children: [
-                _SupplierDetailHeader(theme: theme),
-                const SizedBox(height: 20),
-                Card.filled(
+          return ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              SmoothAppear(
+                delay: const Duration(milliseconds: 20),
+                child: Card.filled(
                   margin: EdgeInsets.zero,
                   color: scheme.surfaceContainerLow,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(28),
-                    side: BorderSide(
-                      color: scheme.outlineVariant.withValues(alpha: 0.7),
-                    ),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(18),
@@ -373,45 +283,77 @@ class _AdminSupplierDetailScreenState extends State<AdminSupplierDetailScreen> {
                                 style: theme.textTheme.headlineMedium,
                               ),
                             ),
-                            _SupplierStatusChip(
-                              label: detail.blocked ? 'Blocked' : 'Tayyor',
-                              error: detail.blocked,
-                            ),
+                            if (detail.blocked)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: scheme.errorContainer,
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Text(
+                                  'Blocked',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: scheme.onErrorContainer,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
-                        const SizedBox(height: 18),
-                        Text('Ref', style: theme.textTheme.bodySmall),
-                        const SizedBox(height: 6),
-                        _SupplierDetailField(value: detail.ref),
-                        const SizedBox(height: 14),
-                        Text('Telefon', style: theme.textTheme.bodySmall),
-                        const SizedBox(height: 6),
-                        _SupplierDetailField(
-                          value: hasPhone ? detail.phone : 'Kiritilmagan',
-                        ),
                         const SizedBox(height: 8),
-                        SizedBox(
-                          width: double.infinity,
-                          child: FilledButton.tonal(
-                            onPressed:
-                                _savingPhone ? null : () => _addPhone(detail),
-                            child: Text(
-                              _savingPhone
-                                  ? 'Saqlanmoqda...'
-                                  : 'Telefonni yangilash',
-                            ),
+                        Text(
+                          hasPhone ? detail.phone : 'Telefon raqam berilmagan',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: scheme.onSurfaceVariant,
                           ),
                         ),
-                        const SizedBox(height: 14),
+                        if (!hasPhone) ...[
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            height: 32,
+                            width: 32,
+                            child: OutlinedButton(
+                              onPressed:
+                                  _savingPhone ? null : () => _addPhone(detail),
+                              style: OutlinedButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: _savingPhone
+                                  ? const SizedBox(
+                                      height: 14,
+                                      width: 14,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.add_rounded, size: 18),
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 16),
                         Text('Code', style: theme.textTheme.bodySmall),
                         const SizedBox(height: 6),
-                        _SupplierDetailField(
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: scheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(18),
+                          ),
                           child: Row(
                             children: [
                               Expanded(
                                 child: SelectableText(
                                   detail.code,
-                                  style: theme.textTheme.titleMedium,
+                                  style: theme.textTheme.titleLarge,
                                 ),
                               ),
                               IconButton(
@@ -437,15 +379,15 @@ class _AdminSupplierDetailScreenState extends State<AdminSupplierDetailScreen> {
                           ),
                         ),
                         if (_retryAfterSec > 0) ...[
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 8),
                           Text(
-                            'Keyingi code uchun $_retryAfterSec soniya kuting.',
+                            'Keyingi code uchun $_retryAfterSec soniyadan keyin qayta urining.',
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: scheme.onSurfaceVariant,
                             ),
                           ),
                         ],
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 16),
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton(
@@ -461,7 +403,25 @@ class _AdminSupplierDetailScreenState extends State<AdminSupplierDetailScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 18),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SmoothAppear(
+                delay: const Duration(milliseconds: 60),
+                child: Card.filled(
+                  margin: EdgeInsets.zero,
+                  color: scheme.surfaceContainerLow,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(28),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
                           'Biriktirilgan mahsulotlar',
                           style: theme.textTheme.titleLarge,
@@ -480,466 +440,47 @@ class _AdminSupplierDetailScreenState extends State<AdminSupplierDetailScreen> {
                           children: [
                             Expanded(
                               child: OutlinedButton(
-                                onPressed: detail.assignedItems.isEmpty
-                                    ? null
-                                    : () => _showAssignedSupplierItemsSheet(
-                                          context,
-                                          detail,
-                                          onRemoveItem: _removeItem,
-                                          removingItemCode: _removingItemCode,
-                                        ),
+                                onPressed: () =>
+                                    Navigator.of(context).pushNamed(
+                                  AppRoutes.adminSupplierItemsView,
+                                  arguments: widget.supplierRef,
+                                ),
                                 child: const Text('Ko‘rish'),
                               ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: OutlinedButton(
-                                onPressed: _addingItem
-                                    ? null
-                                    : () => _showAvailableSupplierItemsSheet(
-                                          context,
-                                          detail,
-                                          onAddItem: _assignItem,
-                                        ),
-                                child: Text(
-                                  _addingItem ? 'Qo‘shilmoqda...' : 'Qo‘shish',
+                                onPressed: () =>
+                                    Navigator.of(context).pushNamed(
+                                  AppRoutes.adminSupplierItemsAdd,
+                                  arguments: widget.supplierRef,
                                 ),
+                                child: const Text('Qo‘shish'),
                               ),
                             ),
                           ],
-                        ),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton(
-                            onPressed: _removing ? null : _removeSupplier,
-                            child: Text(
-                              _removing
-                                  ? 'Chiqarilmoqda...'
-                                  : 'Tizimdan chiqarish',
-                            ),
-                          ),
                         ),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class _SupplierDetailHeader extends StatelessWidget {
-  const _SupplierDetailHeader({required this.theme});
-
-  final ThemeData theme;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        SizedBox(
-          height: 52,
-          width: 52,
-          child: IconButton.filledTonal(
-            onPressed: () => Navigator.of(context).maybePop(),
-            icon: const Icon(Icons.arrow_back_rounded, size: 28),
-          ),
-        ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Text(
-            'Supplier',
-            style: theme.textTheme.headlineMedium,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SupplierStatusChip extends StatelessWidget {
-  const _SupplierStatusChip({
-    required this.label,
-    this.error = false,
-  });
-
-  final String label;
-  final bool error;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: error ? scheme.errorContainer : scheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: error ? scheme.onErrorContainer : scheme.onSecondaryContainer,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-}
-
-class _SupplierDetailField extends StatelessWidget {
-  const _SupplierDetailField({
-    this.value,
-    this.child,
-  });
-
-  final String? value;
-  final Widget? child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: child ??
-          Text(
-            (value ?? '').trim().isEmpty ? 'Kiritilmagan' : value!,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-    );
-  }
-}
-
-class _SupplierDetailNoticeCard extends StatelessWidget {
-  const _SupplierDetailNoticeCard({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Card.filled(
-      margin: EdgeInsets.zero,
-      color: scheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
-        side: BorderSide(
-          color: scheme.outlineVariant.withValues(alpha: 0.7),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: child,
-      ),
-    );
-  }
-}
-
-Future<void> _showAssignedSupplierItemsSheet(
-  BuildContext context,
-  AdminSupplierDetail detail, {
-  required Future<bool> Function(SupplierItem item) onRemoveItem,
-  required String? removingItemCode,
-}) async {
-  final visibleItems = detail.assignedItems.toList();
-  final collapsingCodes = <String>{};
-  String? activeRemovingCode = removingItemCode;
-
-  await showModalBottomSheet<void>(
-    context: context,
-    useSafeArea: true,
-    isScrollControlled: true,
-    builder: (context) {
-      final theme = Theme.of(context);
-      final scheme = theme.colorScheme;
-      return StatefulBuilder(
-        builder: (context, setModalState) {
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Biriktirilgan mahsulotlar',
-                        style: theme.textTheme.titleLarge,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close_rounded),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  detail.name,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: scheme.onSurfaceVariant,
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: _removing ? null : _removeSupplier,
+                  child: Text(
+                    _removing ? 'Chiqarilmoqda...' : 'Tizimdan chiqarish',
                   ),
                 ),
-                const SizedBox(height: 14),
-                Flexible(
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: visibleItems.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      final item = visibleItems[index];
-                      final collapsing = collapsingCodes.contains(item.code);
-                      return AnimatedSize(
-                        duration: const Duration(milliseconds: 220),
-                        curve: Curves.easeInOutCubic,
-                        child: AnimatedOpacity(
-                          duration: const Duration(milliseconds: 180),
-                          curve: Curves.easeInOutCubic,
-                          opacity: collapsing ? 0 : 1,
-                          child: collapsing
-                              ? const SizedBox.shrink()
-                              : _SupplierDetailField(
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              item.name,
-                                              style:
-                                                  theme.textTheme.titleMedium,
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              item.code,
-                                              style: theme.textTheme.bodySmall
-                                                  ?.copyWith(
-                                                color: scheme.onSurfaceVariant,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      IconButton(
-                                        onPressed: activeRemovingCode ==
-                                                item.code
-                                            ? null
-                                            : () async {
-                                                setModalState(() {
-                                                  activeRemovingCode =
-                                                      item.code;
-                                                });
-                                                final removed =
-                                                    await onRemoveItem(item);
-                                                if (!context.mounted) {
-                                                  return;
-                                                }
-                                                if (removed) {
-                                                  setModalState(() {
-                                                    collapsingCodes
-                                                        .add(item.code);
-                                                  });
-                                                  await Future<void>.delayed(
-                                                    const Duration(
-                                                        milliseconds: 180),
-                                                  );
-                                                  if (!context.mounted) {
-                                                    return;
-                                                  }
-                                                  setModalState(() {
-                                                    visibleItems.removeWhere(
-                                                      (current) =>
-                                                          current.code ==
-                                                          item.code,
-                                                    );
-                                                    collapsingCodes
-                                                        .remove(item.code);
-                                                    activeRemovingCode = null;
-                                                  });
-                                                } else {
-                                                  setModalState(() {
-                                                    activeRemovingCode = null;
-                                                  });
-                                                }
-                                              },
-                                        icon: activeRemovingCode == item.code
-                                            ? const SizedBox(
-                                                height: 18,
-                                                width: 18,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                  strokeWidth: 2,
-                                                ),
-                                              )
-                                            : const Icon(Icons.remove_rounded),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 24),
+            ],
           );
         },
-      );
-    },
-  );
-}
-
-Future<void> _showAvailableSupplierItemsSheet(
-  BuildContext context,
-  AdminSupplierDetail detail, {
-  required Future<bool> Function(SupplierItem item) onAddItem,
-}) async {
-  final allItems = await MobileApi.instance.adminItems();
-  if (!context.mounted) {
-    return;
-  }
-  final assignedCodes = detail.assignedItems.map((item) => item.code).toSet();
-  final visibleItems =
-      allItems.where((item) => !assignedCodes.contains(item.code)).toList();
-  if (visibleItems.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Biriktirilmagan mahsulot topilmadi')),
+      ),
     );
-    return;
   }
-
-  final collapsingCodes = <String>{};
-  String? activeAddingCode;
-
-  await showModalBottomSheet<void>(
-    context: context,
-    useSafeArea: true,
-    isScrollControlled: true,
-    builder: (context) {
-      final theme = Theme.of(context);
-      final scheme = theme.colorScheme;
-      return StatefulBuilder(
-        builder: (context, setModalState) {
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Mahsulot qo‘shish',
-                        style: theme.textTheme.titleLarge,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close_rounded),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  detail.name,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Flexible(
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: visibleItems.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      final item = visibleItems[index];
-                      final collapsing = collapsingCodes.contains(item.code);
-                      return AnimatedSize(
-                        duration: const Duration(milliseconds: 220),
-                        curve: Curves.easeInOutCubic,
-                        child: AnimatedOpacity(
-                          duration: const Duration(milliseconds: 180),
-                          curve: Curves.easeInOutCubic,
-                          opacity: collapsing ? 0 : 1,
-                          child: collapsing
-                              ? const SizedBox.shrink()
-                              : ListTile(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(18),
-                                  ),
-                                  tileColor: scheme.surfaceContainerHighest,
-                                  title: Text(item.name),
-                                  subtitle: Text(item.code),
-                                  trailing: activeAddingCode == item.code
-                                      ? const SizedBox(
-                                          height: 18,
-                                          width: 18,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                          ),
-                                        )
-                                      : const Icon(Icons.add_rounded),
-                                  onTap: activeAddingCode == item.code
-                                      ? null
-                                      : () async {
-                                          setModalState(() {
-                                            activeAddingCode = item.code;
-                                          });
-                                          final added = await onAddItem(item);
-                                          if (!context.mounted) {
-                                            return;
-                                          }
-                                          if (added) {
-                                            setModalState(() {
-                                              collapsingCodes.add(item.code);
-                                            });
-                                            await Future<void>.delayed(
-                                              const Duration(milliseconds: 180),
-                                            );
-                                            if (!context.mounted) {
-                                              return;
-                                            }
-                                            setModalState(() {
-                                              visibleItems.removeWhere(
-                                                (current) =>
-                                                    current.code == item.code,
-                                              );
-                                              collapsingCodes.remove(item.code);
-                                              activeAddingCode = null;
-                                            });
-                                          } else {
-                                            setModalState(() {
-                                              activeAddingCode = null;
-                                            });
-                                          }
-                                        },
-                                ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-    },
-  );
 }
