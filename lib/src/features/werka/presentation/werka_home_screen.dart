@@ -1,14 +1,12 @@
 import '../../../app/app_router.dart';
-import '../../../core/api/mobile_api.dart';
-import '../../../core/cache/json_cache_store.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/notifications/notification_unread_store.dart';
-import '../../../core/notifications/werka_runtime_store.dart';
 import '../../../core/session/app_session.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../shared/models/app_models.dart';
+import '../state/werka_store.dart';
 import 'widgets/werka_dock.dart';
 import 'package:flutter/material.dart';
 
@@ -21,38 +19,14 @@ class WerkaHomeScreen extends StatefulWidget {
 
 class _WerkaHomeScreenState extends State<WerkaHomeScreen>
     with WidgetsBindingObserver {
-  static const String _summaryCacheKey = 'cache_werka_home_summary';
-  static const String _pendingCacheKey = 'cache_werka_home_pending';
-  late Future<_WerkaHomeData> _homeFuture;
-  WerkaHomeSummary? _cachedSummary;
-  List<DispatchRecord>? _cachedPending;
   int _refreshVersion = 0;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _homeFuture = _loadHomeData();
-    _loadCache();
+    WerkaStore.instance.bootstrapHome();
     RefreshHub.instance.addListener(_handlePushRefresh);
-  }
-
-  Future<void> _loadCache() async {
-    final results = await Future.wait([
-      JsonCacheStore.instance.readMap(_summaryCacheKey),
-      JsonCacheStore.instance.readList(_pendingCacheKey),
-    ]);
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      final summaryRaw = results[0] as Map<String, dynamic>?;
-      final pendingRaw = results[1] as List<Map<String, dynamic>>?;
-      _cachedSummary =
-          summaryRaw == null ? null : WerkaHomeSummary.fromJson(summaryRaw);
-      _cachedPending =
-          pendingRaw?.map((item) => DispatchRecord.fromJson(item)).toList();
-    });
   }
 
   @override
@@ -81,30 +55,7 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
   }
 
   Future<void> _reload() async {
-    final future = _loadHomeData();
-    setState(() {
-      _homeFuture = future;
-    });
-    final data = await future;
-    await JsonCacheStore.instance.writeMap(
-      _summaryCacheKey,
-      data.summary.toJson(),
-    );
-    await JsonCacheStore.instance.writeList(
-      _pendingCacheKey,
-      data.pendingItems.map((item) => item.toJson()).toList(),
-    );
-  }
-
-  Future<_WerkaHomeData> _loadHomeData() async {
-    final results = await Future.wait<dynamic>([
-      MobileApi.instance.werkaSummary(),
-      MobileApi.instance.werkaPending(),
-    ]);
-    return _WerkaHomeData(
-      summary: results[0] as WerkaHomeSummary,
-      pendingItems: results[1] as List<DispatchRecord>,
-    );
+    await WerkaStore.instance.refreshHome();
   }
 
   @override
@@ -153,22 +104,13 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
         children: [
           Expanded(
           child: AnimatedBuilder(
-            animation: WerkaRuntimeStore.instance,
-            builder: (context, _) => FutureBuilder<_WerkaHomeData>(
-              future: _homeFuture,
-              builder: (context, snapshot) {
-                final summary = snapshot.data?.summary ?? _cachedSummary;
-                final pendingItems = snapshot.data?.pendingItems ??
-                    _cachedPending ??
-                    <DispatchRecord>[];
-                if (snapshot.connectionState != ConnectionState.done &&
-                    summary == null &&
-                    pendingItems.isEmpty) {
+            animation: WerkaStore.instance,
+            builder: (context, _) {
+                final store = WerkaStore.instance;
+                if (store.loadingHome && !store.loadedHome) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                if (snapshot.hasError &&
-                    summary == null &&
-                    pendingItems.isEmpty) {
+                if (store.homeError != null && !store.loadedHome) {
                   return RefreshIndicator.adaptive(
                     onRefresh: _reload,
                     child: ListView(
@@ -188,7 +130,7 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                '${snapshot.error}',
+                                '${store.homeError}',
                                 style: Theme.of(context).textTheme.bodySmall,
                               ),
                               const SizedBox(height: 14),
@@ -207,16 +149,8 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
                     ),
                   );
                 }
-                final currentSummary = WerkaRuntimeStore.instance.applySummary(
-                  summary ??
-                      const WerkaHomeSummary(
-                        pendingCount: 0,
-                        confirmedCount: 0,
-                        returnedCount: 0,
-                      ),
-                );
-                final effectivePending = WerkaRuntimeStore.instance
-                    .applyPendingItems(pendingItems);
+                final currentSummary = store.summary;
+                final effectivePending = store.pendingItems;
                 final previewItems = effectivePending.length > 3
                     ? effectivePending.take(3).toList()
                     : effectivePending;
@@ -243,21 +177,10 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
               },
             ),
           ),
-        ),
         ],
       ),
     );
   }
-}
-
-class _WerkaHomeData {
-  const _WerkaHomeData({
-    required this.summary,
-    required this.pendingItems,
-  });
-
-  final WerkaHomeSummary summary;
-  final List<DispatchRecord> pendingItems;
 }
 
 class _WerkaSummaryCard extends StatelessWidget {

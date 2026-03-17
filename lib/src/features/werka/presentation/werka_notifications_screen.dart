@@ -1,5 +1,4 @@
 import '../../../app/app_router.dart';
-import '../../../core/api/mobile_api.dart';
 import '../../../core/cache/json_cache_store.dart';
 import '../../../core/notifications/notification_hidden_store.dart';
 import '../../../core/notifications/refresh_hub.dart';
@@ -8,6 +7,7 @@ import '../../../core/session/app_session.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
+import '../state/werka_store.dart';
 import 'widgets/werka_dock.dart';
 import 'package:flutter/material.dart';
 
@@ -31,6 +31,7 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    WerkaStore.instance.bootstrapHistory();
     _itemsFuture = _loadAndTrack();
     NotificationHiddenStore.instance.load().then((_) {
       if (mounted) setState(() {});
@@ -141,7 +142,8 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
   }
 
   Future<List<DispatchRecord>> _loadAndTrack() async {
-    final items = await MobileApi.instance.werkaHistory();
+    await WerkaStore.instance.refreshHistory();
+    final items = WerkaStore.instance.historyItems;
     final hidden = NotificationHiddenStore.instance.hiddenIdsForProfile(
       AppSession.instance.profile,
     );

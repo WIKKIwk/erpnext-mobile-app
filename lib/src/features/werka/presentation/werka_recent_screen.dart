@@ -1,13 +1,11 @@
 import '../../../app/app_router.dart';
-import '../../../core/api/mobile_api.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../shared/models/app_models.dart';
+import '../state/werka_store.dart';
 import 'werka_customer_issue_customer_screen.dart';
 import 'werka_unannounced_supplier_screen.dart';
 import 'widgets/werka_dock.dart';
 import 'package:flutter/material.dart';
-
-typedef WerkaRecentLoader = Future<List<DispatchRecord>> Function();
 
 class WerkaRecentScreen extends StatefulWidget {
   const WerkaRecentScreen({
@@ -15,50 +13,18 @@ class WerkaRecentScreen extends StatefulWidget {
     this.loader,
   });
 
-  final WerkaRecentLoader? loader;
+  final Future<List<DispatchRecord>> Function()? loader;
 
   @override
   State<WerkaRecentScreen> createState() => _WerkaRecentScreenState();
 }
 
 class _WerkaRecentScreenState extends State<WerkaRecentScreen> {
-  List<DispatchRecord> _items = const <DispatchRecord>[];
-  bool _loading = true;
-  String? _loadError;
-
-  WerkaRecentLoader get _loader =>
-      widget.loader ?? MobileApi.instance.werkaHistory;
-
   @override
   void initState() {
     super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    if (mounted) {
-      setState(() {
-        _loading = true;
-        _loadError = null;
-      });
-    }
-    try {
-      final items = await _loader();
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _items = items;
-        _loading = false;
-      });
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _loading = false;
-        _loadError = '$error';
-      });
+    if (widget.loader == null) {
+      WerkaStore.instance.bootstrapHistory();
     }
   }
 
@@ -118,64 +84,69 @@ class _WerkaRecentScreenState extends State<WerkaRecentScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Scaffold(
-      extendBody: true,
-      backgroundColor: AppTheme.shellStart(context),
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Recent', style: theme.textTheme.headlineMedium),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Avvalgi harakatni prefill bilan qayta ishlating',
-                    style: theme.textTheme.bodyMedium,
-                  ),
-                ],
+    return AnimatedBuilder(
+      animation: WerkaStore.instance,
+      builder: (context, _) => Scaffold(
+        extendBody: true,
+        backgroundColor: AppTheme.shellStart(context),
+        body: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Recent', style: theme.textTheme.headlineMedium),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Avvalgi harakatni prefill bilan qayta ishlating',
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(10, 0, 12, 0),
-                child: _buildBody(theme),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 0, 12, 0),
+                  child: _buildBody(theme),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-      bottomNavigationBar: const SafeArea(
-        top: false,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(20, 0, 24, 0),
-          child: WerkaDock(activeTab: WerkaDockTab.recent),
+        bottomNavigationBar: const SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20, 0, 24, 0),
+            child: WerkaDock(activeTab: WerkaDockTab.recent),
+          ),
         ),
       ),
     );
   }
 
   Widget _buildBody(ThemeData theme) {
-    if (_loading) {
+    final store = WerkaStore.instance;
+    final items = widget.loader == null ? store.historyItems : _testItems;
+    if (widget.loader == null && store.loadingHistory && !store.loadedHistory) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (_loadError != null) {
+    if (widget.loader == null && store.historyError != null && !store.loadedHistory) {
       return ListView(
         padding: const EdgeInsets.only(bottom: 110),
         children: [
           _RecentMessageCard(
             title: 'Recent yuklanmadi',
-            body: _loadError!,
+            body: '${store.historyError}',
             actionLabel: 'Qayta urinish',
-            onPressed: _load,
+            onPressed: WerkaStore.instance.refreshHistory,
           ),
         ],
       );
     }
-    if (_items.isEmpty) {
+    if (items.isEmpty) {
       return ListView(
         padding: const EdgeInsets.only(bottom: 110),
         children: const [
@@ -188,10 +159,10 @@ class _WerkaRecentScreenState extends State<WerkaRecentScreen> {
 
     return ListView.separated(
       padding: const EdgeInsets.only(bottom: 110),
-      itemCount: _items.length,
+      itemCount: items.length,
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        final record = _items[index];
+        final record = items[index];
         return _WerkaRecentCard(
           headline: _headline(record),
           subline: _subline(record),
@@ -203,6 +174,23 @@ class _WerkaRecentScreenState extends State<WerkaRecentScreen> {
         );
       },
     );
+  }
+
+  List<DispatchRecord> get _testItems => _cachedTestItems ?? const <DispatchRecord>[];
+
+  List<DispatchRecord>? _cachedTestItems;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (widget.loader != null && _cachedTestItems == null) {
+      widget.loader!().then((items) {
+        if (!mounted) return;
+        setState(() {
+          _cachedTestItems = items;
+        });
+      });
+    }
   }
 }
 
