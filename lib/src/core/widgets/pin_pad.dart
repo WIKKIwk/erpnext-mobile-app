@@ -832,7 +832,6 @@ class _PinActionButtonState extends State<_PinActionButton> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final idleColor = widget.emphasized
         ? scheme.primaryContainer
         : scheme.surfaceContainerHigh.withValues(alpha: 0.78);
@@ -878,17 +877,6 @@ class _PinActionButtonState extends State<_PinActionButton> {
                 ? scheme.outlineVariant.withValues(alpha: 0.28)
                 : Colors.transparent,
           ),
-          boxShadow: widget.emphasized
-              ? [
-                  BoxShadow(
-                    color: scheme.primary.withValues(
-                      alpha: isDark ? 0.16 : 0.10,
-                    ),
-                    blurRadius: isDark ? 22 : 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ]
-              : const [],
         ),
         child: Stack(
           alignment: Alignment.center,
