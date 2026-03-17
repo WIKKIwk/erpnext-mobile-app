@@ -21,6 +21,7 @@ class CustomerStatusDetailScreen extends StatefulWidget {
 class _CustomerStatusDetailScreenState
     extends State<CustomerStatusDetailScreen> {
   late Future<List<DispatchRecord>> _future;
+  bool _didMutate = false;
 
   @override
   void initState() {
@@ -40,6 +41,7 @@ class _CustomerStatusDetailScreenState
       arguments: deliveryNoteID,
     );
     if (changed == true) {
+      _didMutate = true;
       await _reload();
     }
   }
@@ -59,25 +61,33 @@ class _CustomerStatusDetailScreenState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    return Scaffold(
-      extendBody: true,
-      backgroundColor: AppTheme.shellStart(context),
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
-              child: Row(
-                children: [
-                  SizedBox(
-                    height: 52,
-                    width: 52,
-                    child: IconButton.filledTonal(
-                      onPressed: () => Navigator.of(context).maybePop(),
-                      icon: const Icon(Icons.arrow_back_rounded, size: 28),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) {
+          return;
+        }
+        Navigator.of(context).pop(_didMutate);
+      },
+      child: Scaffold(
+        extendBody: true,
+        backgroundColor: AppTheme.shellStart(context),
+        body: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      height: 52,
+                      width: 52,
+                      child: IconButton.filledTonal(
+                        onPressed: () => Navigator.of(context).pop(_didMutate),
+                        icon: const Icon(Icons.arrow_back_rounded, size: 28),
+                      ),
                     ),
-                  ),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Text(
@@ -159,14 +169,15 @@ class _CustomerStatusDetailScreenState
                 ),
               ),
             ),
-          ],
+            ],
+          ),
         ),
-      ),
-      bottomNavigationBar: const SafeArea(
-        top: false,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(20, 0, 24, 0),
-          child: CustomerDock(activeTab: null),
+        bottomNavigationBar: const SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20, 0, 24, 0),
+            child: CustomerDock(activeTab: null),
+          ),
         ),
       ),
     );
