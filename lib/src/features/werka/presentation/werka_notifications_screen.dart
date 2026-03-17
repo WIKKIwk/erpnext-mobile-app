@@ -51,6 +51,23 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
   }
 
   Future<void> _clearAll() async {
+    final current = _cachedItems ?? await _itemsFuture;
+    if (!mounted) {
+      return;
+    }
+    final messenger = ScaffoldMessenger.of(context);
+    final hidden = NotificationHiddenStore.instance.hiddenIdsForProfile(
+      AppSession.instance.profile,
+    );
+    final visibleItems =
+        current.where((item) => !hidden.contains(item.id)).toList();
+    if (visibleItems.isEmpty) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Hali bildirishnomalar yo‘q.')),
+      );
+      return;
+    }
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
@@ -80,14 +97,13 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
     if (confirmed != true) {
       return;
     }
-    final current = _cachedItems ?? await _itemsFuture;
     await NotificationHiddenStore.instance.hideAll(
       profile: AppSession.instance.profile,
-      ids: current.map((item) => item.id),
+      ids: visibleItems.map((item) => item.id),
     );
     await NotificationUnreadStore.instance.markSeen(
       profile: AppSession.instance.profile,
-      ids: current.map((item) => item.id),
+      ids: visibleItems.map((item) => item.id),
     );
     if (!mounted) {
       return;
@@ -225,27 +241,27 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
                     child: Padding(
                       padding: const EdgeInsets.all(18),
                       child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Bildirishnomalar yuklanmadi',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '${snapshot.error}',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        const SizedBox(height: 14),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton(
-                            onPressed: _reload,
-                            child: const Text('Qayta urinish'),
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Bildirishnomalar yuklanmadi',
+                            style: Theme.of(context).textTheme.titleMedium,
                           ),
-                        ),
-                      ],
-                    ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '${snapshot.error}',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton(
+                              onPressed: _reload,
+                              child: const Text('Qayta urinish'),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -254,13 +270,12 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
           }
 
           if (items.isEmpty) {
-            return const Center(
-              child: Card.filled(
-                margin: EdgeInsets.zero,
-                child: Padding(
-                  padding: EdgeInsets.all(18),
-                  child: Text('Hali bildirishnomalar yo‘q.'),
-                ),
+            return Center(
+              child: Text(
+                'Hali bildirishnomalar yo‘q.',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
               ),
             );
           }
