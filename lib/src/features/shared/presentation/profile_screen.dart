@@ -359,54 +359,95 @@ class _ProfileScreenState extends State<ProfileScreen>
           children: [
             SmoothAppear(
               delay: const Duration(milliseconds: 20),
-              child: _ProfileHeroCard(
-                displayName: current.displayName,
-                subtitle: subtitle,
-                roleLabel: _roleLabel(role),
-                legalName: current.legalName.isEmpty
-                    ? current.displayName
-                    : current.legalName,
-                phone: current.phone,
-                cachedAvatar: cachedAvatar,
-                pendingAvatarBytes: pendingAvatarBytes,
-                savingAvatar: savingAvatar,
-                onPickAvatar: _pickAvatar,
-                themeToggle: _ThemeIconToggle(
-                  isDark: ThemeController.instance.isDark,
-                ),
-              ),
-            ),
-            const SizedBox(height: 14),
-            SmoothAppear(
-              delay: const Duration(milliseconds: 70),
               child: _ProfilePanel(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _SectionHeader(
-                      title: 'Account',
-                      body: 'Profil ma’lumotlari va ko‘rinadigan nom',
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Stack(
+                          children: [
+                            _AvatarPreview(
+                              displayName: current.displayName,
+                              cachedAvatar: cachedAvatar,
+                              pendingAvatarBytes: pendingAvatarBytes,
+                            ),
+                            Positioned(
+                              right: 0,
+                              bottom: 0,
+                              child: GestureDetector(
+                                onTap: savingAvatar ? null : _pickAvatar,
+                                child: Container(
+                                  height: 32,
+                                  width: 32,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .surfaceContainerLow,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    Icons.camera_alt_rounded,
+                                    size: 16,
+                                    color:
+                                        Theme.of(context).colorScheme.onPrimary,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                current.displayName,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall
+                                    ?.copyWith(fontWeight: FontWeight.w700),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                subtitle,
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        _ThemeIconToggle(
+                          isDark: ThemeController.instance.isDark,
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 18),
                     _InfoTile(
                       label: 'Telefon',
                       value: current.phone,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     _InfoTile(
                       label: 'Asl ism',
                       value: current.legalName.isEmpty
                           ? current.displayName
                           : current.legalName,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     TextField(
                       controller: nicknameController,
                       onChanged: (_) => setState(() {}),
                       decoration: const InputDecoration(
                         labelText: 'Nickname',
                         hintText: 'O‘zingizga ko‘rinadigan ism',
-                        prefixIcon: Icon(Icons.badge_outlined),
                       ),
                     ),
                     if (_hasProfileChanges) ...[
@@ -425,36 +466,39 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   ),
                                 )
                               : const Icon(Icons.check_rounded),
-                          label: const Text('O‘zgarishlarni saqlash'),
+                          label: const Text('Saqlash'),
                         ),
                       ),
                     ],
                     if (pendingAvatarBytes != null) ...[
-                      const SizedBox(height: 12),
-                      const _InlineStateNote(
-                        icon: Icons.photo_camera_back_rounded,
-                        text:
-                            'Yangi rasm tanlandi. Saqlashni bossangiz profil yangilanadi.',
+                      const SizedBox(height: 10),
+                      Text(
+                        'Yangi rasm tanlandi, saqlashni bosing.',
+                        style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 14),
-            SmoothAppear(
-              delay: const Duration(milliseconds: 120),
-              child: _ProfilePanel(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _SectionHeader(
-                      title: 'Security',
-                      body: hasPin
-                          ? 'PIN va biometrik tezkor ochish sozlamalari'
-                          : 'App uchun 4 xonali PIN va biometrik ochish',
+                    const SizedBox(height: 24),
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .outlineVariant
+                          .withValues(alpha: 0.55),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Security',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      hasPin
+                          ? '4 xonali PIN yoqilgan'
+                          : 'App uchun 4 xonali PIN o‘rnating',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 14),
                     _ProfileActionButton(
                       primary: true,
                       onPressed: savingPin ? null : _showPinFlow,
@@ -473,10 +517,35 @@ class _ProfileScreenState extends State<ProfileScreen>
                       ),
                     ],
                     const SizedBox(height: 16),
-                    _BiometricTile(
-                      enabled: biometricEnabled,
-                      canToggle: hasPin && !savingBiometric,
-                      onChanged: (value) => _toggleBiometric(value),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              biometricEnabled
+                                  ? 'Face ID / Fingerprint yoqilgan'
+                                  : 'Face ID / Fingerprint o‘chirilgan',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ),
+                          Switch.adaptive(
+                            value: biometricEnabled,
+                            onChanged: hasPin && !savingBiometric
+                                ? (value) => _toggleBiometric(value)
+                                : null,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -484,26 +553,15 @@ class _ProfileScreenState extends State<ProfileScreen>
             ),
             if (errorMessage != null) ...[
               const SizedBox(height: 14),
-              _InlineErrorPanel(message: errorMessage!),
+              _ProfilePanel(
+                child: Text(errorMessage!),
+              ),
             ],
             const SizedBox(height: 12),
           ],
         ),
       ),
     );
-  }
-}
-
-String _roleLabel(UserRole role) {
-  switch (role) {
-    case UserRole.supplier:
-      return 'Supplier';
-    case UserRole.werka:
-      return 'Werka';
-    case UserRole.customer:
-      return 'Customer';
-    case UserRole.admin:
-      return 'Admin';
   }
 }
 
@@ -547,228 +605,6 @@ class _ThemeIconToggle extends StatelessWidget {
       onTap: () => ThemeController.instance.setThemeMode(
         isDark ? ThemeMode.light : ThemeMode.dark,
       ),
-    );
-  }
-}
-
-class _ProfileHeroCard extends StatelessWidget {
-  const _ProfileHeroCard({
-    required this.displayName,
-    required this.subtitle,
-    required this.roleLabel,
-    required this.legalName,
-    required this.phone,
-    required this.cachedAvatar,
-    required this.pendingAvatarBytes,
-    required this.savingAvatar,
-    required this.onPickAvatar,
-    required this.themeToggle,
-  });
-
-  final String displayName;
-  final String subtitle;
-  final String roleLabel;
-  final String legalName;
-  final String phone;
-  final File? cachedAvatar;
-  final Uint8List? pendingAvatarBytes;
-  final bool savingAvatar;
-  final VoidCallback onPickAvatar;
-  final Widget themeToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    return Card.filled(
-      margin: EdgeInsets.zero,
-      color: scheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
-        side: BorderSide(
-          color: scheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: _RoleChip(label: roleLabel),
-                ),
-                const SizedBox(width: 12),
-                themeToggle,
-              ],
-            ),
-            const SizedBox(height: 18),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Stack(
-                  children: [
-                    _AvatarPreview(
-                      displayName: displayName,
-                      cachedAvatar: cachedAvatar,
-                      pendingAvatarBytes: pendingAvatarBytes,
-                    ),
-                    Positioned(
-                      right: 2,
-                      bottom: 2,
-                      child: GestureDetector(
-                        onTap: savingAvatar ? null : onPickAvatar,
-                        child: Container(
-                          height: 36,
-                          width: 36,
-                          decoration: BoxDecoration(
-                            color: scheme.primary,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: scheme.surfaceContainerLow,
-                              width: 2.5,
-                            ),
-                          ),
-                          child: Icon(
-                            Icons.camera_alt_rounded,
-                            size: 18,
-                            color: scheme.onPrimary,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 18),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        displayName,
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        subtitle,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      _HeroMetaLine(
-                        icon: Icons.phone_outlined,
-                        text: phone,
-                      ),
-                      const SizedBox(height: 8),
-                      _HeroMetaLine(
-                        icon: Icons.badge_outlined,
-                        text: legalName,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _RoleChip extends StatelessWidget {
-  const _RoleChip({
-    required this.label,
-  });
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: scheme.secondaryContainer,
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Text(
-          label,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: scheme.onSecondaryContainer,
-              ),
-        ),
-      ),
-    );
-  }
-}
-
-class _HeroMetaLine extends StatelessWidget {
-  const _HeroMetaLine({
-    required this.icon,
-    required this.text,
-  });
-
-  final IconData icon;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Row(
-      children: [
-        Icon(
-          icon,
-          size: 18,
-          color: scheme.onSurfaceVariant,
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            text,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({
-    required this.title,
-    required this.body,
-  });
-
-  final String title;
-  final String body;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 6),
-        Text(
-          body,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: scheme.onSurfaceVariant,
-              ),
-        ),
-      ],
     );
   }
 }
@@ -892,159 +728,26 @@ class _InfoTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         color: scheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: scheme.outlineVariant.withValues(alpha: 0.45),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BiometricTile extends StatelessWidget {
-  const _BiometricTile({
-    required this.enabled,
-    required this.canToggle,
-    required this.onChanged,
-  });
-
-  final bool enabled;
-  final bool canToggle;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: scheme.outlineVariant.withValues(alpha: 0.45),
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Biometrik ochish',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  enabled
-                      ? 'Face ID / Fingerprint bilan tez ochish yoqilgan'
-                      : 'Face ID / Fingerprint bilan tez ochish o‘chirilgan',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                      ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 16),
-          Switch.adaptive(
-            value: enabled,
-            onChanged: canToggle ? onChanged : null,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _InlineStateNote extends StatelessWidget {
-  const _InlineStateNote({
-    required this.icon,
-    required this.text,
-  });
-
-  final IconData icon;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: scheme.secondaryContainer.withValues(alpha: 0.65),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icon,
-            size: 18,
-            color: scheme.onSecondaryContainer,
-          ),
-          const SizedBox(width: 10),
           Expanded(
             child: Text(
-              text,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: scheme.onSecondaryContainer,
-                  ),
+              label,
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _InlineErrorPanel extends StatelessWidget {
-  const _InlineErrorPanel({
-    required this.message,
-  });
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: scheme.errorContainer,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            Icons.error_outline_rounded,
-            color: scheme.onErrorContainer,
-          ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
+            flex: 2,
             child: Text(
-              message,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: scheme.onErrorContainer,
-                  ),
+              value,
+              textAlign: TextAlign.right,
+              style: Theme.of(context).textTheme.titleMedium,
             ),
           ),
         ],
