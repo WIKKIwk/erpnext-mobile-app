@@ -222,7 +222,10 @@ class _M3PickerSheetState<T> extends State<M3PickerSheet<T>> {
                                       children: [
                                         Text(
                                           widget.itemTitle(item),
-                                          style: theme.textTheme.titleMedium,
+                                          style: theme.textTheme.titleLarge
+                                              ?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                          ),
                                         ),
                                         if (subtitle.isNotEmpty) ...[
                                           const SizedBox(height: 6),

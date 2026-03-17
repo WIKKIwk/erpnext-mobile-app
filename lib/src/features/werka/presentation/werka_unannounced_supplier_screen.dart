@@ -121,8 +121,7 @@ class _WerkaUnannouncedSupplierScreenState
           hintText: 'Supplier qidiring',
           items: suppliers,
           itemTitle: (item) => item.name,
-          itemSubtitle: (item) =>
-              item.phone.trim().isEmpty ? item.ref : item.phone,
+          itemSubtitle: (_) => '',
           matchesQuery: (item, query) {
             final needle = query.trim().toLowerCase();
             return item.name.toLowerCase().contains(needle) ||
@@ -184,7 +183,7 @@ class _WerkaUnannouncedSupplierScreenState
           hintText: 'Mol qidiring',
           items: _supplierItems,
           itemTitle: (item) => item.name,
-          itemSubtitle: (item) => item.code,
+          itemSubtitle: (_) => '',
           matchesQuery: (item, query) {
             final needle = query.trim().toLowerCase();
             return item.name.toLowerCase().contains(needle) ||

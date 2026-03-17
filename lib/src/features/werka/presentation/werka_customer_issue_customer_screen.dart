@@ -121,8 +121,7 @@ class _WerkaCustomerIssueCustomerScreenState
           hintText: 'Customer qidiring',
           items: customers,
           itemTitle: (item) => item.name,
-          itemSubtitle: (item) =>
-              item.phone.trim().isEmpty ? item.ref : item.phone,
+          itemSubtitle: (_) => '',
           matchesQuery: (item, query) {
             final needle = query.trim().toLowerCase();
             return item.name.toLowerCase().contains(needle) ||
@@ -184,7 +183,7 @@ class _WerkaCustomerIssueCustomerScreenState
           hintText: 'Mol qidiring',
           items: _customerItems,
           itemTitle: (item) => item.name,
-          itemSubtitle: (item) => item.code,
+          itemSubtitle: (_) => '',
           matchesQuery: (item, query) {
             final needle = query.trim().toLowerCase();
             return item.name.toLowerCase().contains(needle) ||
