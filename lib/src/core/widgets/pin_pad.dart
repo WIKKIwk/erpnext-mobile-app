@@ -251,8 +251,8 @@ class _PinGlyph extends StatelessWidget {
       case 0:
         return const _OrganicBlobBorder(
           lobes: 2,
-          amplitude: 0.14,
-          secondaryAmplitude: 0.03,
+          amplitude: 0.11,
+          secondaryAmplitude: 0.0,
           rotation: 0.0,
           scaleX: 0.94,
           scaleY: 0.86,
@@ -260,8 +260,8 @@ class _PinGlyph extends StatelessWidget {
       case 1:
         return const _OrganicBlobBorder(
           lobes: 3,
-          amplitude: 0.14,
-          secondaryAmplitude: 0.02,
+          amplitude: 0.10,
+          secondaryAmplitude: 0.0,
           rotation: 0.0,
           scaleX: 0.9,
           scaleY: 0.88,
@@ -269,8 +269,8 @@ class _PinGlyph extends StatelessWidget {
       case 2:
         return const _OrganicBlobBorder(
           lobes: 4,
-          amplitude: 0.12,
-          secondaryAmplitude: 0.03,
+          amplitude: 0.08,
+          secondaryAmplitude: 0.0,
           rotation: 0.0,
           scaleX: 0.92,
           scaleY: 0.92,
@@ -278,8 +278,8 @@ class _PinGlyph extends StatelessWidget {
       default:
         return const _OrganicBlobBorder(
           lobes: 6,
-          amplitude: 0.08,
-          secondaryAmplitude: 0.02,
+          amplitude: 0.05,
+          secondaryAmplitude: 0.0,
           rotation: 0.0,
           scaleX: 0.94,
           scaleY: 0.94,
@@ -292,8 +292,8 @@ class _PinGlyph extends StatelessWidget {
       case 0:
         return const _OrganicBlobBorder(
           lobes: 2,
-          amplitude: 0.08,
-          secondaryAmplitude: 0.02,
+          amplitude: 0.06,
+          secondaryAmplitude: 0.0,
           rotation: 0.0,
           scaleX: 0.97,
           scaleY: 0.93,
@@ -301,8 +301,8 @@ class _PinGlyph extends StatelessWidget {
       case 1:
         return const _OrganicBlobBorder(
           lobes: 3,
-          amplitude: 0.08,
-          secondaryAmplitude: 0.02,
+          amplitude: 0.05,
+          secondaryAmplitude: 0.0,
           rotation: 0.0,
           scaleX: 0.95,
           scaleY: 0.93,
@@ -310,8 +310,8 @@ class _PinGlyph extends StatelessWidget {
       case 2:
         return const _OrganicBlobBorder(
           lobes: 4,
-          amplitude: 0.07,
-          secondaryAmplitude: 0.02,
+          amplitude: 0.045,
+          secondaryAmplitude: 0.0,
           rotation: 0.0,
           scaleX: 0.97,
           scaleY: 0.97,
@@ -319,8 +319,8 @@ class _PinGlyph extends StatelessWidget {
       default:
         return const _OrganicBlobBorder(
           lobes: 6,
-          amplitude: 0.05,
-          secondaryAmplitude: 0.02,
+          amplitude: 0.03,
+          secondaryAmplitude: 0.0,
           rotation: 0.0,
           scaleX: 0.98,
           scaleY: 0.98,
@@ -552,23 +552,40 @@ class _OrganicBlobBorder extends OutlinedBorder {
     final rx = rect.width / 2 * scaleX;
     final ry = rect.height / 2 * scaleY;
     const steps = 72;
-    final path = Path();
+    final points = <Offset>[];
 
-    for (int i = 0; i <= steps; i++) {
+    for (int i = 0; i < steps; i++) {
       final theta = (i / steps) * math.pi * 2;
       final primary = math.cos((lobes * theta) + rotation);
-      final secondary = math.sin(((lobes + 1.35) * theta) - (rotation * 0.65));
+      final secondary = secondaryAmplitude == 0
+          ? 0
+          : math.sin(((lobes + 1.35) * theta) - (rotation * 0.65));
       final radiusFactor =
           1 + (amplitude * primary) + (secondaryAmplitude * secondary);
       final x = center.dx + (math.cos(theta) * rx * radiusFactor);
       final y = center.dy + (math.sin(theta) * ry * radiusFactor);
-      if (i == 0) {
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
-      }
+      points.add(Offset(x, y));
     }
 
+    final path = Path();
+    if (points.isEmpty) {
+      return path;
+    }
+
+    final firstMid = Offset(
+      (points[0].dx + points[1].dx) / 2,
+      (points[0].dy + points[1].dy) / 2,
+    );
+    path.moveTo(firstMid.dx, firstMid.dy);
+    for (int i = 0; i < points.length; i++) {
+      final current = points[i];
+      final next = points[(i + 1) % points.length];
+      final mid = Offset(
+        (current.dx + next.dx) / 2,
+        (current.dy + next.dy) / 2,
+      );
+      path.quadraticBezierTo(current.dx, current.dy, mid.dx, mid.dy);
+    }
     path.close();
     return path;
   }
