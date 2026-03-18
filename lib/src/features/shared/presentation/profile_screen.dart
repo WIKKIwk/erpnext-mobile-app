@@ -517,35 +517,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                       ),
                     ],
                     const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              biometricEnabled
-                                  ? 'Face ID / Fingerprint yoqilgan'
-                                  : 'Face ID / Fingerprint o‘chirilgan',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ),
-                          Switch.adaptive(
-                            value: biometricEnabled,
-                            onChanged: hasPin && !savingBiometric
-                                ? (value) => _toggleBiometric(value)
-                                : null,
-                          ),
-                        ],
-                      ),
+                    _BiometricPreferenceRow(
+                      enabled: biometricEnabled,
+                      interactive: hasPin && !savingBiometric,
+                      onChanged: (value) => _toggleBiometric(value),
                     ),
                   ],
                 ),
@@ -752,6 +727,102 @@ class _InfoTile extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _BiometricPreferenceRow extends StatelessWidget {
+  const _BiometricPreferenceRow({
+    required this.enabled,
+    required this.interactive,
+    required this.onChanged,
+  });
+
+  final bool enabled;
+  final bool interactive;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Biometrik autentifikatsiyani yoqish',
+                style: theme.textTheme.titleMedium,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                enabled
+                    ? 'Yoqilgan. App Face ID yoki fingerprint bilan tez ochiladi.'
+                    : 'O‘chirilgan. Face ID yoki fingerprint bilan tez ochish ishlamaydi.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 16),
+        Theme(
+          data: theme.copyWith(
+            switchTheme: SwitchThemeData(
+              thumbColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.disabled)) {
+                  return scheme.surfaceContainerHighest;
+                }
+                if (states.contains(WidgetState.selected)) {
+                  return scheme.onPrimary;
+                }
+                return scheme.outline;
+              }),
+              trackColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.disabled)) {
+                  return scheme.surfaceContainerHighest.withValues(alpha: 0.55);
+                }
+                if (states.contains(WidgetState.selected)) {
+                  return scheme.primary;
+                }
+                return scheme.surfaceContainerHighest;
+              }),
+              trackOutlineColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return Colors.transparent;
+                }
+                return scheme.outlineVariant;
+              }),
+              trackOutlineWidth: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return 0;
+                }
+                return 1;
+              }),
+              overlayColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.pressed)) {
+                  return scheme.primary.withValues(alpha: 0.12);
+                }
+                return Colors.transparent;
+              }),
+              thumbIcon: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return const Icon(Icons.check_rounded, size: 14);
+                }
+                return const Icon(Icons.close_rounded, size: 12);
+              }),
+            ),
+          ),
+          child: Switch(
+            value: enabled,
+            onChanged: interactive ? onChanged : null,
+          ),
+        ),
+      ],
     );
   }
 }
