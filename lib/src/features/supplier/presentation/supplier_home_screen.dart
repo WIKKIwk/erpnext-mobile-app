@@ -62,7 +62,7 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
   Widget build(BuildContext context) {
     return AppShell(
       title: 'Supplier',
-      subtitle: 'Jo‘natmalar holati va oqimlari',
+      subtitle: '',
       actions: [
         AnimatedBuilder(
           animation: NotificationUnreadStore.instance,
@@ -99,6 +99,7 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
         ),
       ],
       bottom: const SupplierDock(activeTab: SupplierDockTab.home),
+      contentPadding: const EdgeInsets.fromLTRB(10, 0, 12, 0),
       child: AnimatedBuilder(
         animation: SupplierStore.instance,
         builder: (context, _) {
@@ -157,7 +158,10 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
               physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.zero,
               children: [
-                _SupplierSummaryCard(summary: current),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: _SupplierSummaryCard(summary: current),
+                ),
               ],
             ),
           );
@@ -176,10 +180,11 @@ class _SupplierSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return SmoothAppear(
       child: Card.filled(
         margin: EdgeInsets.zero,
-        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        color: scheme.surfaceContainerLow,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(28),
           side: BorderSide(
@@ -235,6 +240,7 @@ class _SupplierSummaryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     return PressableScale(
       borderRadius: 28,
       onTap: onTap,
@@ -255,7 +261,7 @@ class _SupplierSummaryRow extends StatelessWidget {
               constraints: const BoxConstraints(minWidth: 58),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHigh,
+                color: scheme.surfaceContainerHigh,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
