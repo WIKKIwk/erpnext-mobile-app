@@ -1,4 +1,5 @@
 import '../../../app/app_router.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/notifications/notification_hidden_store.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/notifications/notification_unread_store.dart';
@@ -40,16 +41,16 @@ class _SupplierNotificationsScreenState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Tozalash'),
-        content: const Text('Hamma bildirishnomalarni tozalaysizmi?'),
+        title: Text(context.l10n.clearTitle),
+        content: Text(context.l10n.clearAllNotificationsPrompt),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Yo‘q'),
+            child: Text(context.l10n.no),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Ha'),
+            child: Text(context.l10n.yes),
           ),
         ],
       ),
@@ -157,7 +158,7 @@ class _SupplierNotificationsScreenState
   @override
   Widget build(BuildContext context) {
     return AppShell(
-      title: 'Notifications',
+      title: context.l10n.notificationsTitle,
       subtitle: '',
       contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
       actions: [
@@ -200,7 +201,7 @@ class _SupplierNotificationsScreenState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Notifications yuklanmadi',
+                            context.l10n.notificationsLoadFailed,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                           const SizedBox(height: 8),
@@ -213,7 +214,7 @@ class _SupplierNotificationsScreenState
                             width: double.infinity,
                             child: OutlinedButton(
                               onPressed: _reload,
-                              child: const Text('Qayta urinish'),
+                              child: Text(context.l10n.retry),
                             ),
                           ),
                         ],
@@ -228,7 +229,7 @@ class _SupplierNotificationsScreenState
           if (items.isEmpty) {
             return Center(
               child: Text(
-                'Hali bildirishnomalar yo‘q.',
+                context.l10n.noNotifications,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),

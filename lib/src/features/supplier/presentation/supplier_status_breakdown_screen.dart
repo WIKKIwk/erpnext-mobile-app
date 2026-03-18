@@ -1,4 +1,5 @@
 import '../../../app/app_router.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../shared/models/app_models.dart';
 import '../state/supplier_store.dart';
@@ -32,24 +33,38 @@ class _SupplierStatusBreakdownScreenState
   }
 
   String get _title {
+    final l10n = AppLocalizations.of(context);
     switch (widget.kind) {
       case SupplierStatusKind.pending:
-        return 'Jarayonda';
+        return l10n.pendingStatus;
       case SupplierStatusKind.submitted:
-        return 'Submit';
+        return l10n.submittedStatus;
       case SupplierStatusKind.returned:
-        return 'Qaytarilgan';
+        return l10n.returnedStatus;
     }
   }
 
   String _metricLabel(SupplierStatusBreakdownEntry entry) {
+    final l10n = AppLocalizations.of(context);
     switch (widget.kind) {
       case SupplierStatusKind.pending:
-        return '${entry.totalSentQty.toStringAsFixed(0)} ${entry.uom} jarayonda';
+        return l10n.sentQtyStatus(
+          entry.totalSentQty,
+          entry.uom,
+          l10n.pendingStatus.toLowerCase(),
+        );
       case SupplierStatusKind.submitted:
-        return '${entry.totalAcceptedQty.toStringAsFixed(0)} ${entry.uom} submit';
+        return l10n.sentQtyStatus(
+          entry.totalAcceptedQty,
+          entry.uom,
+          l10n.submittedStatus.toLowerCase(),
+        );
       case SupplierStatusKind.returned:
-        return '${entry.totalReturnedQty.toStringAsFixed(0)} ${entry.uom} qaytarilgan';
+        return l10n.sentQtyStatus(
+          entry.totalReturnedQty,
+          entry.uom,
+          l10n.returnedStatus.toLowerCase(),
+        );
     }
   }
 
@@ -85,7 +100,7 @@ class _SupplierStatusBreakdownScreenState
           }
           final items = store.breakdownItems(widget.kind);
           if (items.isEmpty) {
-            return const Center(child: Text('Hozircha yozuv yo‘q.'));
+            return Center(child: Text(context.l10n.noStatusRecords));
           }
           return RefreshIndicator(
             onRefresh: _reload,
@@ -132,7 +147,8 @@ class _SupplierStatusBreakdownScreenState
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    '${item.receiptCount} ta receipt',
+                                    AppLocalizations.of(context)
+                                        .receiptCountLabel(item.receiptCount),
                                     style:
                                         Theme.of(context).textTheme.bodySmall,
                                   ),

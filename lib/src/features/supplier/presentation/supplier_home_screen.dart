@@ -1,4 +1,5 @@
 import '../../../app/app_router.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/notifications/notification_unread_store.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/session/app_session.dart';
@@ -61,7 +62,7 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
   @override
   Widget build(BuildContext context) {
     return AppShell(
-      title: 'Supplier',
+      title: context.l10n.supplierRoleName,
       subtitle: '',
       actions: [
         AnimatedBuilder(
@@ -127,7 +128,7 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Home yuklanmadi',
+                          Text(context.l10n.supplierHomeLoadFailed,
                               style: Theme.of(context).textTheme.titleMedium),
                           const SizedBox(height: 8),
                           Text(
@@ -139,7 +140,7 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
                             width: double.infinity,
                             child: OutlinedButton(
                               onPressed: _reload,
-                              child: const Text('Qayta urinish'),
+                              child: Text(context.l10n.retry),
                             ),
                           ),
                         ],
@@ -194,7 +195,7 @@ class _SupplierSummaryCard extends StatelessWidget {
         child: Column(
           children: [
             _SupplierSummaryRow(
-              label: 'Jarayonda',
+              label: context.l10n.pendingStatus,
               value: summary.pendingCount.toString(),
               onTap: () => Navigator.of(context).pushNamed(
                 AppRoutes.supplierStatusBreakdown,
@@ -203,7 +204,7 @@ class _SupplierSummaryCard extends StatelessWidget {
             ),
             const Divider(height: 1, thickness: 1),
             _SupplierSummaryRow(
-              label: 'Submit',
+              label: context.l10n.submittedStatus,
               value: summary.submittedCount.toString(),
               onTap: () => Navigator.of(context).pushNamed(
                 AppRoutes.supplierStatusBreakdown,
@@ -212,7 +213,7 @@ class _SupplierSummaryCard extends StatelessWidget {
             ),
             const Divider(height: 1, thickness: 1),
             _SupplierSummaryRow(
-              label: 'Qaytarilgan',
+              label: context.l10n.returnedStatus,
               value: summary.returnedCount.toString(),
               onTap: () => Navigator.of(context).pushNamed(
                 AppRoutes.supplierStatusBreakdown,

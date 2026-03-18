@@ -1,4 +1,5 @@
 import '../../../app/app_router.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../shared/models/app_models.dart';
 import '../state/supplier_store.dart';
@@ -83,7 +84,7 @@ class _SupplierStatusDetailScreenState
           final items =
               store.detailItems(widget.args.kind, widget.args.itemCode);
           if (items.isEmpty) {
-            return const Center(child: Text('Hozircha receipt yo‘q.'));
+            return Center(child: Text(context.l10n.noSupplierReceiptsYet));
           }
           return RefreshIndicator(
             onRefresh: _reload,
@@ -121,7 +122,10 @@ class _SupplierStatusDetailScreenState
                                   if (record.acceptedQty > 0) ...[
                                     const SizedBox(height: 6),
                                     Text(
-                                      'Qabul: ${record.acceptedQty.toStringAsFixed(0)} ${record.uom}',
+                                      context.l10n.acceptedQtyLabel(
+                                        record.acceptedQty,
+                                        record.uom,
+                                      ),
                                       style:
                                           Theme.of(context).textTheme.bodySmall,
                                     ),

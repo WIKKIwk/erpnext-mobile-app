@@ -286,6 +286,14 @@ class AppLocalizations {
 
   String get werkaRoleName => _t('Omborchi', 'Werka', 'Кладовщик');
   String get customerRoleName => _t('Haridor', 'Customer', 'Покупатель');
+  String get supplierRoleName => _t('Ta\'minotchi', 'Supplier', 'Поставщик');
+  String get submittedStatus => _t('Yuborilgan', 'Submitted', 'Отправлено');
+  String get supplierHomeLoadFailed => _t(
+      'Home yuklanmadi', 'Home failed to load', 'Не удалось загрузить главную');
+  String get noSupplierReceiptsYet =>
+      _t('Hozircha receipt yo‘q.', 'No receipts yet.', 'Пока нет приходов.');
+  String get noSupplierShipmentsYet =>
+      _t('Hali jo‘natishlar yo‘q.', 'No shipments yet.', 'Пока нет отправок.');
   String get supplierAckTitle => _t('Ta\'minotchi tasdiqladi',
       'Supplier acknowledged', 'Поставщик подтвердил');
 

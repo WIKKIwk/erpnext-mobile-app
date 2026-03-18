@@ -1,4 +1,5 @@
 import '../../../app/app_router.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../shared/models/app_models.dart';
@@ -58,8 +59,8 @@ class _SupplierRecentScreenState extends State<SupplierRecentScreen>
   @override
   Widget build(BuildContext context) {
     return AppShell(
-      title: 'Recent',
-      subtitle: 'Avvalgi jo‘natmalarni qayta ishlating',
+      title: context.l10n.recentTitle,
+      subtitle: context.l10n.recentSubtitle,
       bottom: const SupplierDock(activeTab: SupplierDockTab.recent),
       child: AnimatedBuilder(
         animation: SupplierStore.instance,
@@ -87,7 +88,7 @@ class _SupplierRecentScreenState extends State<SupplierRecentScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Recent yuklanmadi',
+                          context.l10n.recentLoadFailed,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 8),
@@ -100,7 +101,7 @@ class _SupplierRecentScreenState extends State<SupplierRecentScreen>
                           width: double.infinity,
                           child: OutlinedButton(
                             onPressed: _reload,
-                            child: const Text('Qayta urinish'),
+                            child: Text(context.l10n.retry),
                           ),
                         ),
                       ],
@@ -112,10 +113,10 @@ class _SupplierRecentScreenState extends State<SupplierRecentScreen>
           }
 
           if (items.isEmpty) {
-            return const Center(
+            return Center(
               child: Card.filled(
                 margin: EdgeInsets.zero,
-                child: Text('Hali jo‘natishlar yo‘q.'),
+                child: Text(context.l10n.noSupplierShipmentsYet),
               ),
             );
           }
