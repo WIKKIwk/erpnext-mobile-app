@@ -177,7 +177,6 @@ class _WerkaStatusBreakdownScreenState
                                   _WerkaBreakdownRow(
                                     entry: items[index],
                                     metricLabel: _metricLabel(items[index]),
-                                    isFirst: index == 0,
                                     isLast: index == items.length - 1,
                                     onTap: () =>
                                         Navigator.of(context).pushNamed(
@@ -240,45 +239,58 @@ class _WerkaBreakdownRow extends StatelessWidget {
   const _WerkaBreakdownRow({
     required this.entry,
     required this.metricLabel,
-    required this.isFirst,
     required this.isLast,
     required this.onTap,
   });
 
   final WerkaStatusBreakdownEntry entry;
   final String metricLabel;
-  final bool isFirst;
   final bool isLast;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final double cornerRadius = (isFirst || isLast) ? 28 : 0;
     return PressableScale(
-      borderRadius: cornerRadius,
       onTap: onTap,
       child: SizedBox(
         width: double.infinity,
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Column(
+        child: Container(
+          decoration: BoxDecoration(
+            border: isLast
+                ? null
+                : Border(
+                    bottom: BorderSide(
+                      color: AppTheme.cardBorder(context),
+                      width: 1,
+                    ),
+                  ),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                entry.supplierName,
-                style: theme.textTheme.titleLarge,
-              ),
-              const SizedBox(height: 10),
-              Text(
-                metricLabel,
-                style: theme.textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                AppLocalizations.of(context)
-                    .receiptCountLabel(entry.receiptCount),
-                style: theme.textTheme.bodySmall,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      entry.supplierName,
+                      style: theme.textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      metricLabel,
+                      style: theme.textTheme.headlineMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      AppLocalizations.of(context)
+                          .receiptCountLabel(entry.receiptCount),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
