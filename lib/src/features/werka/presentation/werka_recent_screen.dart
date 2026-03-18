@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import '../../../app/app_router.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_shell.dart';
@@ -21,6 +23,9 @@ class WerkaRecentScreen extends StatefulWidget {
 }
 
 class _WerkaRecentScreenState extends State<WerkaRecentScreen> {
+  double _cardStretch = 0.0;
+  double _cardPull = 0.0;
+
   @override
   void initState() {
     super.initState();
@@ -84,6 +89,34 @@ class _WerkaRecentScreenState extends State<WerkaRecentScreen> {
         : l10n.repeatCreateAgain;
   }
 
+  bool _handleScrollNotification(ScrollNotification notification) {
+    if (notification is OverscrollNotification) {
+      final isAtBottom = notification.metrics.extentAfter <= 0.0;
+      if (isAtBottom &&
+          notification.dragDetails != null &&
+          notification.overscroll > 0) {
+        _cardPull = (_cardPull + notification.overscroll).clamp(0.0, 280.0);
+        final easedPull = 1.0 - math.exp(-_cardPull / 110.0);
+        final nextStretch = (easedPull * 0.075).clamp(0.0, 0.075).toDouble();
+        if (nextStretch != _cardStretch) {
+          setState(() => _cardStretch = nextStretch);
+        }
+        return false;
+      }
+    }
+
+    if (notification is ScrollEndNotification) {
+      if (_cardStretch != 0.0 || _cardPull != 0.0) {
+        setState(() {
+          _cardStretch = 0.0;
+          _cardPull = 0.0;
+        });
+      }
+    }
+
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -130,18 +163,39 @@ class _WerkaRecentScreenState extends State<WerkaRecentScreen> {
       );
     }
 
-    return ListView(
-      padding: const EdgeInsets.only(bottom: 110),
-      children: [
-        _WerkaRecentSection(
-          items: items,
-          headlineFor: _headline,
-          sublineFor: _subline,
-          metricFor: (record) => _metric(context, record),
-          actionLabelFor: (record) => _actionLabel(context, record),
-          onRepeat: _repeat,
+    return NotificationListener<ScrollNotification>(
+      onNotification: _handleScrollNotification,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: ClampingScrollPhysics(),
         ),
-      ],
+        padding: const EdgeInsets.fromLTRB(4, 0, 4, 110),
+        children: [
+          TweenAnimationBuilder<double>(
+            tween: Tween<double>(
+              begin: 1.0,
+              end: 1.0 + _cardStretch,
+            ),
+            duration: const Duration(milliseconds: 110),
+            curve: Curves.easeOutCubic,
+            builder: (context, scaleY, child) {
+              return Transform.scale(
+                scaleY: scaleY,
+                alignment: Alignment.bottomCenter,
+                child: child,
+              );
+            },
+            child: _WerkaRecentSection(
+              items: items,
+              headlineFor: _headline,
+              sublineFor: _subline,
+              metricFor: (record) => _metric(context, record),
+              actionLabelFor: (record) => _actionLabel(context, record),
+              onRepeat: _repeat,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
