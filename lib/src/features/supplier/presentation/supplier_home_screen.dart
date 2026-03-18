@@ -8,6 +8,7 @@ import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
 import '../state/supplier_store.dart';
+import 'supplier_qty_screen.dart';
 import 'widgets/supplier_dock.dart';
 import 'package:flutter/material.dart';
 
@@ -27,6 +28,7 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     SupplierStore.instance.bootstrapSummary();
+    SupplierStore.instance.bootstrapHistory();
     RefreshHub.instance.addListener(_handlePushRefresh);
   }
 
@@ -56,7 +58,7 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
   }
 
   Future<void> _reload() async {
-    await SupplierStore.instance.refreshSummary();
+    await SupplierStore.instance.refreshAll();
   }
 
   @override
@@ -152,6 +154,14 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
             );
           }
           final current = store.summary;
+          final previewItems = store.historyItems
+              .where(
+                (item) =>
+                    item.status == DispatchStatus.pending ||
+                    item.status == DispatchStatus.draft,
+              )
+              .take(3)
+              .toList();
 
           return RefreshIndicator.adaptive(
             onRefresh: _reload,
@@ -163,6 +173,12 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: _SupplierSummaryCard(summary: current),
                 ),
+                if (previewItems.isNotEmpty) const SizedBox(height: 16),
+                if (previewItems.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: _SupplierPendingSection(items: previewItems),
+                  ),
               ],
             ),
           );
@@ -275,6 +291,140 @@ class _SupplierSummaryRow extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SupplierPendingSection extends StatelessWidget {
+  const _SupplierPendingSection({
+    required this.items,
+  });
+
+  final List<DispatchRecord> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return SmoothAppear(
+      delay: const Duration(milliseconds: 90),
+      offset: const Offset(0, 18),
+      child: Card.filled(
+        margin: EdgeInsets.zero,
+        color: scheme.surfaceContainerLow,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+          side: BorderSide(
+            color: AppTheme.cardBorder(context).withValues(alpha: 0.75),
+          ),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainer,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(28),
+                  topRight: Radius.circular(28),
+                ),
+              ),
+              padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
+              child: Text(
+                context.l10n.inProgressItemsTitle,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            const Divider(height: 1, thickness: 1),
+            for (int index = 0; index < items.length; index++)
+              _SupplierPendingRow(
+                record: items[index],
+                hasBottomBorder: index != items.length - 1,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SupplierPendingRow extends StatelessWidget {
+  const _SupplierPendingRow({
+    required this.record,
+    required this.hasBottomBorder,
+  });
+
+  final DispatchRecord record;
+  final bool hasBottomBorder;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final item = SupplierItem(
+      code: record.itemCode,
+      name: record.itemName,
+      uom: record.uom,
+      warehouse: '',
+    );
+    return PressableScale(
+      onTap: () => Navigator.of(context).pushNamed(
+        AppRoutes.supplierQty,
+        arguments: SupplierQtyArgs(
+          item: item,
+          initialQty: record.sentQty,
+        ),
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        child: Container(
+          decoration: BoxDecoration(
+            border: hasBottomBorder
+                ? Border(
+                    bottom: BorderSide(
+                      color: AppTheme.cardBorder(context),
+                      width: 1,
+                    ),
+                  )
+                : null,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      record.itemName,
+                      style: theme.textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      record.itemCode,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
+                    style: theme.textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    record.createdLabel,
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
