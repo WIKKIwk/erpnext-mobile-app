@@ -20,7 +20,7 @@ class SupplierItemPickerScreen extends StatefulWidget {
 class _SupplierItemPickerScreenState extends State<SupplierItemPickerScreen>
     with WidgetsBindingObserver {
   final TextEditingController controller = TextEditingController();
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+  GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
   late Future<List<SupplierItem>> itemsFuture;
   List<SupplierItem> _visibleItems = const <SupplierItem>[];
   List<SupplierItem> _pendingTargetItems = const <SupplierItem>[];
@@ -93,7 +93,12 @@ class _SupplierItemPickerScreenState extends State<SupplierItemPickerScreen>
     final listState = _listKey.currentState;
     if (listState == null) {
       if (!_sameItemOrder(_visibleItems, targetItems)) {
-        setState(() => _visibleItems = List<SupplierItem>.from(targetItems));
+        setState(() {
+          _visibleItems = List<SupplierItem>.from(targetItems);
+          if (targetItems.isNotEmpty) {
+            _listKey = GlobalKey<AnimatedListState>();
+          }
+        });
       }
       return;
     }
