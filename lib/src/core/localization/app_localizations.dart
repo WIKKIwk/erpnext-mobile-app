@@ -296,6 +296,16 @@ class AppLocalizations {
         'Approved unannounced items',
         'Подтвержденные незаявленные товары',
       );
+  String get supplierPendingDispatchesTitle => _t(
+        'Jo‘natilgan, javob kutilayotganlar',
+        'Sent and awaiting response',
+        'Отправлено, ожидается ответ',
+      );
+  String get supplierPendingUnannouncedTitle => _t(
+        'Aytilmagan mol bo‘yicha javob kutilayotganlar',
+        'Awaiting reply on unannounced items',
+        'Ожидается ответ по незаявленным товарам',
+      );
   String get supplierHomeLoadFailed => _t(
       'Home yuklanmadi', 'Home failed to load', 'Не удалось загрузить главную');
   String get noSupplierReceiptsYet =>

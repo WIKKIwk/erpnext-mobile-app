@@ -34,13 +34,15 @@ class _SupplierStatusBreakdownScreenState
   void initState() {
     super.initState();
     SupplierStore.instance.bootstrapBreakdown(widget.kind);
-    if (widget.kind == SupplierStatusKind.submitted) {
+    if (widget.kind == SupplierStatusKind.submitted ||
+        widget.kind == SupplierStatusKind.pending) {
       SupplierStore.instance.bootstrapHistory();
     }
   }
 
   Future<void> _reload() async {
-    if (widget.kind == SupplierStatusKind.submitted) {
+    if (widget.kind == SupplierStatusKind.submitted ||
+        widget.kind == SupplierStatusKind.pending) {
       await SupplierStore.instance.refreshHistory();
       return;
     }
@@ -97,7 +99,8 @@ class _SupplierStatusBreakdownScreenState
         animation: SupplierStore.instance,
         builder: (context, _) {
           final store = SupplierStore.instance;
-          if (widget.kind == SupplierStatusKind.submitted) {
+          if (widget.kind == SupplierStatusKind.pending ||
+              widget.kind == SupplierStatusKind.submitted) {
             if (store.loadingHistory && !store.loadedHistory) {
               return const Center(child: CircularProgressIndicator());
             }
@@ -112,6 +115,17 @@ class _SupplierStatusBreakdownScreenState
                 ),
               );
             }
+            final pending = store.historyItems.where(
+              (item) =>
+                  item.status == DispatchStatus.pending ||
+                  item.status == DispatchStatus.draft,
+            );
+            final pendingDispatches = pending
+                .where((item) => item.eventType != 'werka_unannounced_pending')
+                .length;
+            final pendingUnannounced = pending
+                .where((item) => item.eventType == 'werka_unannounced_pending')
+                .length;
             final accepted = store.historyItems.where(
               (item) => item.status == DispatchStatus.accepted,
             );
@@ -132,29 +146,56 @@ class _SupplierStatusBreakdownScreenState
                     ),
                     child: Column(
                       children: [
-                        _SupplierAcceptedCategoryRow(
-                          title: context.l10n.supplierAcceptedByWerkaTitle,
-                          count: acceptedByWerka,
-                          onTap: () => Navigator.of(context).pushNamed(
-                            AppRoutes.supplierSubmittedCategoryDetail,
-                            arguments: const SupplierSubmittedCategoryArgs(
-                              category:
-                                  SupplierSubmittedCategory.acceptedByWerka,
+                        if (widget.kind == SupplierStatusKind.pending) ...[
+                          _SupplierAcceptedCategoryRow(
+                            title: context.l10n.supplierPendingDispatchesTitle,
+                            count: pendingDispatches,
+                            onTap: () => Navigator.of(context).pushNamed(
+                              AppRoutes.supplierSubmittedCategoryDetail,
+                              arguments: const SupplierSubmittedCategoryArgs(
+                                category:
+                                    SupplierSubmittedCategory.pendingDispatches,
+                              ),
                             ),
                           ),
-                        ),
-                        const Divider(height: 1, thickness: 1),
-                        _SupplierAcceptedCategoryRow(
-                          title: context.l10n.supplierAcceptedUnannouncedTitle,
-                          count: approvedUnannounced,
-                          onTap: () => Navigator.of(context).pushNamed(
-                            AppRoutes.supplierSubmittedCategoryDetail,
-                            arguments: const SupplierSubmittedCategoryArgs(
-                              category:
-                                  SupplierSubmittedCategory.approvedUnannounced,
+                          const Divider(height: 1, thickness: 1),
+                          _SupplierAcceptedCategoryRow(
+                            title: context.l10n.supplierPendingUnannouncedTitle,
+                            count: pendingUnannounced,
+                            onTap: () => Navigator.of(context).pushNamed(
+                              AppRoutes.supplierSubmittedCategoryDetail,
+                              arguments: const SupplierSubmittedCategoryArgs(
+                                category: SupplierSubmittedCategory
+                                    .pendingUnannounced,
+                              ),
                             ),
                           ),
-                        ),
+                        ] else ...[
+                          _SupplierAcceptedCategoryRow(
+                            title: context.l10n.supplierAcceptedByWerkaTitle,
+                            count: acceptedByWerka,
+                            onTap: () => Navigator.of(context).pushNamed(
+                              AppRoutes.supplierSubmittedCategoryDetail,
+                              arguments: const SupplierSubmittedCategoryArgs(
+                                category:
+                                    SupplierSubmittedCategory.acceptedByWerka,
+                              ),
+                            ),
+                          ),
+                          const Divider(height: 1, thickness: 1),
+                          _SupplierAcceptedCategoryRow(
+                            title:
+                                context.l10n.supplierAcceptedUnannouncedTitle,
+                            count: approvedUnannounced,
+                            onTap: () => Navigator.of(context).pushNamed(
+                              AppRoutes.supplierSubmittedCategoryDetail,
+                              arguments: const SupplierSubmittedCategoryArgs(
+                                category: SupplierSubmittedCategory
+                                    .approvedUnannounced,
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),

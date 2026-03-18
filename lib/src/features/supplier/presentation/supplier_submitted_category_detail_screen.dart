@@ -7,6 +7,8 @@ import 'widgets/supplier_dock.dart';
 import 'package:flutter/material.dart';
 
 enum SupplierSubmittedCategory {
+  pendingDispatches,
+  pendingUnannounced,
   acceptedByWerka,
   approvedUnannounced,
 }
@@ -53,6 +55,10 @@ class _SupplierSubmittedCategoryDetailScreenState
 
   String get _title {
     switch (widget.args.category) {
+      case SupplierSubmittedCategory.pendingDispatches:
+        return context.l10n.supplierPendingDispatchesTitle;
+      case SupplierSubmittedCategory.pendingUnannounced:
+        return context.l10n.supplierPendingUnannouncedTitle;
       case SupplierSubmittedCategory.acceptedByWerka:
         return context.l10n.supplierAcceptedByWerkaTitle;
       case SupplierSubmittedCategory.approvedUnannounced:
@@ -61,13 +67,34 @@ class _SupplierSubmittedCategoryDetailScreenState
   }
 
   List<DispatchRecord> _items() {
-    final all = SupplierStore.instance.historyItems.where(
-      (item) => item.status == DispatchStatus.accepted,
-    );
     switch (widget.args.category) {
+      case SupplierSubmittedCategory.pendingDispatches:
+        return SupplierStore.instance.historyItems
+            .where(
+              (item) =>
+                  (item.status == DispatchStatus.pending ||
+                      item.status == DispatchStatus.draft) &&
+                  item.eventType != 'werka_unannounced_pending',
+            )
+            .toList();
+      case SupplierSubmittedCategory.pendingUnannounced:
+        return SupplierStore.instance.historyItems
+            .where(
+              (item) =>
+                  (item.status == DispatchStatus.pending ||
+                      item.status == DispatchStatus.draft) &&
+                  item.eventType == 'werka_unannounced_pending',
+            )
+            .toList();
       case SupplierSubmittedCategory.acceptedByWerka:
+        final all = SupplierStore.instance.historyItems.where(
+          (item) => item.status == DispatchStatus.accepted,
+        );
         return all.where((item) => !_isApprovedUnannounced(item)).toList();
       case SupplierSubmittedCategory.approvedUnannounced:
+        final all = SupplierStore.instance.historyItems.where(
+          (item) => item.status == DispatchStatus.accepted,
+        );
         return all.where(_isApprovedUnannounced).toList();
     }
   }
