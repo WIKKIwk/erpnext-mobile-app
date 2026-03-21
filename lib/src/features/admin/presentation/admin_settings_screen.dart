@@ -2,7 +2,6 @@ import '../../../core/api/mobile_api.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/motion_widgets.dart';
-import '../../../core/widgets/top_refresh_scroll_physics.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/admin_dock.dart';
 import 'package:flutter/material.dart';
@@ -114,7 +113,8 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                          '${context.l10n.adminSettingsLoadFailed}: ${snapshot.error}'),
+                        '${context.l10n.adminSettingsLoadFailed}: ${snapshot.error}',
+                      ),
                       const SizedBox(height: 12),
                       FilledButton(
                         onPressed: () {
@@ -134,96 +134,88 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
           final settings = snapshot.data!;
           _fill(settings);
 
-          return AppRefreshIndicator(
-            onRefresh: () async {
-              final future = MobileApi.instance.adminSettings();
-              setState(() => _future = future);
-              await future;
-            },
-            allowRefreshOnShortContent: true,
-            child: ListView(
-              physics: const TopRefreshScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
-              children: [
-                SmoothAppear(
-                  delay: const Duration(milliseconds: 20),
-                  child: _SettingsSectionCard(
-                    title: context.l10n.erpConnectionTitle,
-                    subtitle: context.l10n.erpConnectionSubtitle,
-                    child: Column(
-                      children: [
-                        _SettingsField(
-                          label: 'ERP URL',
-                          controller: erpUrl,
-                        ),
-                        const SizedBox(height: 14),
-                        _SettingsField(
-                          label: 'API Key',
-                          controller: apiKey,
-                        ),
-                        const SizedBox(height: 14),
-                        _SettingsField(
-                          label: 'API Secret',
-                          controller: apiSecret,
-                        ),
-                        const SizedBox(height: 14),
-                        _SettingsField(
-                          label: 'Default Warehouse',
-                          controller: warehouse,
-                        ),
-                        const SizedBox(height: 14),
-                        _SettingsField(
-                          label: 'Default UOM',
-                          controller: uom,
-                        ),
-                      ],
-                    ),
+          return ListView(
+            physics: const ClampingScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
+            children: [
+              SmoothAppear(
+                delay: const Duration(milliseconds: 20),
+                child: _SettingsSectionCard(
+                  title: context.l10n.erpConnectionTitle,
+                  subtitle: context.l10n.erpConnectionSubtitle,
+                  child: Column(
+                    children: [
+                      _SettingsField(
+                        label: 'ERP URL',
+                        controller: erpUrl,
+                      ),
+                      const SizedBox(height: 14),
+                      _SettingsField(
+                        label: 'API Key',
+                        controller: apiKey,
+                      ),
+                      const SizedBox(height: 14),
+                      _SettingsField(
+                        label: 'API Secret',
+                        controller: apiSecret,
+                      ),
+                      const SizedBox(height: 14),
+                      _SettingsField(
+                        label: 'Default Warehouse',
+                        controller: warehouse,
+                      ),
+                      const SizedBox(height: 14),
+                      _SettingsField(
+                        label: 'Default UOM',
+                        controller: uom,
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 16),
-                SmoothAppear(
-                  delay: const Duration(milliseconds: 60),
-                  child: _SettingsSectionCard(
-                    title: context.l10n.adminSettingsSectionTitle,
-                    subtitle: context.l10n.adminSettingsSectionSubtitle,
-                    child: Column(
-                      children: [
-                        _SettingsField(
-                          label: 'Werka Phone',
-                          controller: werkaPhone,
-                        ),
-                        const SizedBox(height: 14),
-                        _SettingsField(
-                          label: 'Werka Name',
-                          controller: werkaName,
-                        ),
-                        const SizedBox(height: 18),
-                        SizedBox(
-                          width: double.infinity,
-                          child: FilledButton.icon(
-                            onPressed: saving ? null : _save,
-                            icon: saving
-                                ? const SizedBox(
-                                    height: 18,
-                                    width: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Icon(Icons.check_rounded),
-                            label: Text(
-                              saving
-                                  ? context.l10n.pinSaving
-                                  : context.l10n.save,
-                            ),
+              ),
+              const SizedBox(height: 16),
+              SmoothAppear(
+                delay: const Duration(milliseconds: 60),
+                child: _SettingsSectionCard(
+                  title: context.l10n.adminSettingsSectionTitle,
+                  subtitle: context.l10n.adminSettingsSectionSubtitle,
+                  child: Column(
+                    children: [
+                      _SettingsField(
+                        label: 'Werka Phone',
+                        controller: werkaPhone,
+                      ),
+                      const SizedBox(height: 12),
+                      _SettingsField(
+                        label: 'Werka Name',
+                        controller: werkaName,
+                      ),
+                      const SizedBox(height: 18),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: saving ? null : _save,
+                          icon: saving
+                              ? const SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.check_rounded),
+                          label: Text(
+                            saving
+                                ? context.l10n.pinSaving
+                                : context.l10n.save,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           );
         },
       ),
