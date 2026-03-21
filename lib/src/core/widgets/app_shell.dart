@@ -194,6 +194,7 @@ class AppRefreshIndicator extends StatefulWidget {
     this.semanticsLabel,
     this.semanticsValue,
     this.triggerMode = RefreshIndicatorTriggerMode.onEdge,
+    this.allowRefreshOnShortContent = false,
   });
 
   final RefreshCallback onRefresh;
@@ -204,6 +205,7 @@ class AppRefreshIndicator extends StatefulWidget {
   final String? semanticsLabel;
   final String? semanticsValue;
   final RefreshIndicatorTriggerMode triggerMode;
+  final bool allowRefreshOnShortContent;
 
   @override
   State<AppRefreshIndicator> createState() => _AppRefreshIndicatorState();
@@ -225,6 +227,10 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
   bool _contentCanActuallyScroll(ScrollMetrics metrics) {
     return (metrics.maxScrollExtent - metrics.minScrollExtent) >
         _edgeTolerance;
+  }
+
+  bool _canRefreshFromMetrics(ScrollMetrics metrics) {
+    return widget.allowRefreshOnShortContent || _contentCanActuallyScroll(metrics);
   }
 
   void _handleStatusChange(RefreshIndicatorStatus? status) {
@@ -263,7 +269,7 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
     }
 
     if (notification is ScrollStartNotification) {
-      if (!_contentCanActuallyScroll(notification.metrics)) {
+      if (!_canRefreshFromMetrics(notification.metrics)) {
         _gestureActive = false;
         _gestureAllowsRefresh = false;
         _gestureDirectionResolved = false;
@@ -333,7 +339,7 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
     if (!widget.notificationPredicate(notification)) {
       return false;
     }
-    if (!_contentCanActuallyScroll(notification.metrics)) {
+    if (!_canRefreshFromMetrics(notification.metrics)) {
       return false;
     }
     if (notification.metrics.axisDirection != AxisDirection.down) {

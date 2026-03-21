@@ -8,6 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_controller.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/motion_widgets.dart';
+import '../../../core/widgets/top_refresh_scroll_physics.dart';
 import '../data/profile_avatar_cache.dart';
 import '../models/app_models.dart';
 import '../../admin/presentation/widgets/admin_dock.dart';
@@ -357,14 +358,17 @@ class _ProfileScreenState extends State<ProfileScreen>
                       ? const CustomerDock(activeTab: CustomerDockTab.profile)
                       : const AdminDock(activeTab: AdminDockTab.profile),
           contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
-          child: ListView(
-            physics: const ClampingScrollPhysics(),
-            padding: EdgeInsets.zero,
-            children: [
-              SmoothAppear(
-                delay: const Duration(milliseconds: 20),
-                child: _ProfilePanel(
-                  child: Column(
+          child: AppRefreshIndicator(
+            onRefresh: _refreshProfile,
+            allowRefreshOnShortContent: true,
+            child: ListView(
+              physics: const TopRefreshScrollPhysics(),
+              padding: EdgeInsets.zero,
+              children: [
+                SmoothAppear(
+                  delay: const Duration(milliseconds: 20),
+                  child: _ProfilePanel(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
@@ -535,15 +539,16 @@ class _ProfileScreenState extends State<ProfileScreen>
                       ],
                     ),
                   ),
-              ),
-              if (errorMessage != null) ...[
-                const SizedBox(height: 14),
-                _ProfilePanel(
-                  child: Text(errorMessage!),
                 ),
+                if (errorMessage != null) ...[
+                  const SizedBox(height: 14),
+                  _ProfilePanel(
+                    child: Text(errorMessage!),
+                  ),
+                ],
+                const SizedBox(height: 12),
               ],
-              const SizedBox(height: 12),
-            ],
+            ),
           ),
         );
       },
