@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import '../../../app/app_router.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../shared/models/app_models.dart';
 import '../state/werka_store.dart';
@@ -22,16 +23,57 @@ class WerkaRecentScreen extends StatefulWidget {
   State<WerkaRecentScreen> createState() => _WerkaRecentScreenState();
 }
 
-class _WerkaRecentScreenState extends State<WerkaRecentScreen> {
+class _WerkaRecentScreenState extends State<WerkaRecentScreen>
+    with WidgetsBindingObserver {
   double _cardStretch = 0.0;
   double _cardPull = 0.0;
+  int _refreshVersion = 0;
 
   @override
   void initState() {
     super.initState();
     if (widget.loader == null) {
+      WidgetsBinding.instance.addObserver(this);
       WerkaStore.instance.bootstrapHistory();
+      RefreshHub.instance.addListener(_handlePushRefresh);
     }
+  }
+
+  @override
+  void dispose() {
+    if (widget.loader == null) {
+      WidgetsBinding.instance.removeObserver(this);
+      RefreshHub.instance.removeListener(_handlePushRefresh);
+    }
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (widget.loader != null) {
+      return;
+    }
+    if (state == AppLifecycleState.resumed && mounted) {
+      _reload();
+    }
+  }
+
+  void _handlePushRefresh() {
+    if (widget.loader != null || !mounted || RefreshHub.instance.topic != 'werka') {
+      return;
+    }
+    if (_refreshVersion == RefreshHub.instance.version) {
+      return;
+    }
+    _refreshVersion = RefreshHub.instance.version;
+    _reload();
+  }
+
+  Future<void> _reload() async {
+    if (widget.loader != null) {
+      return;
+    }
+    await WerkaStore.instance.refreshHistory();
   }
 
   bool _usesCustomerFlow(DispatchRecord record) {
@@ -147,7 +189,7 @@ class _WerkaRecentScreenState extends State<WerkaRecentScreen> {
             title: context.l10n.recentLoadFailed,
             body: context.l10n.recentLoadFailedWith(store.historyError!),
             actionLabel: context.l10n.retry,
-            onPressed: WerkaStore.instance.refreshHistory,
+            onPressed: _reload,
           ),
         ],
       );
