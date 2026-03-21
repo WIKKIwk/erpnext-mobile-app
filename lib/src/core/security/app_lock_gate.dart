@@ -18,8 +18,6 @@ class AppLockGate extends StatefulWidget {
 }
 
 class _AppLockGateState extends State<AppLockGate> {
-  bool _biometricAttempted = false;
-
   @override
   void initState() {
     super.initState();
@@ -37,17 +35,6 @@ class _AppLockGateState extends State<AppLockGate> {
       ]),
       builder: (context, _) {
         final locked = SecurityController.instance.locked;
-        if (!locked) {
-          _biometricAttempted = false;
-        }
-
-        if (!_biometricAttempted &&
-            SecurityController.instance.biometricEnabledForCurrentUser) {
-          _biometricAttempted = true;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            SecurityController.instance.unlockWithBiometric();
-          });
-        }
 
         return Stack(
           children: [
