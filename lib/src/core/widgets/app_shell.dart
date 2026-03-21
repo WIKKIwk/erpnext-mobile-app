@@ -222,17 +222,6 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
         metrics.pixels <= metrics.minScrollExtent + _edgeTolerance;
   }
 
-  double? _extractDragDelta(ScrollNotification notification) {
-    if (notification is ScrollUpdateNotification) {
-      return notification.dragDetails?.delta.dy ??
-          (notification.scrollDelta == null ? null : -notification.scrollDelta!);
-    }
-    if (notification is OverscrollNotification) {
-      return notification.dragDetails?.delta.dy ?? -notification.overscroll;
-    }
-    return null;
-  }
-
   void _handleStatusChange(RefreshIndicatorStatus? status) {
     _statusToken++;
     final token = _statusToken;
@@ -340,13 +329,9 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
       return false;
     }
     if (notification is ScrollStartNotification) {
-      return false;
+      return notification.dragDetails != null;
     }
-    final dragDelta = _extractDragDelta(notification);
-    if (dragDelta == null) {
-      return false;
-    }
-    return dragDelta > 0.0;
+    return true;
   }
 
   @override
