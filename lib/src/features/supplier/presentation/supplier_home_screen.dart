@@ -114,6 +114,7 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
             final scheme = Theme.of(context).colorScheme;
             return AppRefreshIndicator(
               onRefresh: _reload,
+              allowRefreshOnShortContent: true,
               child: ListView(
                 physics: const TopRefreshScrollPhysics(),
                 padding: EdgeInsets.zero,
@@ -165,6 +166,7 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
 
           return AppRefreshIndicator(
             onRefresh: _reload,
+            allowRefreshOnShortContent: true,
             child: ListView(
               physics: const TopRefreshScrollPhysics(),
               padding: EdgeInsets.zero,

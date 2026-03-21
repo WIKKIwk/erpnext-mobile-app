@@ -276,6 +276,7 @@ class _SupplierNotificationsScreenState
 
           return AppRefreshIndicator(
             onRefresh: _reload,
+            allowRefreshOnShortContent: true,
             child: NotificationListener<ScrollNotification>(
               onNotification: _handleScrollNotification,
               child: ListView(

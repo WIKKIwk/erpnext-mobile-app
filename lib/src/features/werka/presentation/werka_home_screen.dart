@@ -116,6 +116,7 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
                   final l10n = context.l10n;
                   return AppRefreshIndicator(
                     onRefresh: _reload,
+                    allowRefreshOnShortContent: true,
                     child: ListView(
                       physics: const TopRefreshScrollPhysics(),
                       children: [
@@ -161,6 +162,7 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
 
                 return AppRefreshIndicator(
                   onRefresh: _reload,
+                  allowRefreshOnShortContent: true,
                   child: ListView(
                     physics: const TopRefreshScrollPhysics(),
                     padding: EdgeInsets.zero,

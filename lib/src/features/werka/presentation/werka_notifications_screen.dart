@@ -314,6 +314,7 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
 
           return AppRefreshIndicator(
             onRefresh: _reload,
+            allowRefreshOnShortContent: true,
             child: NotificationListener<ScrollNotification>(
               onNotification: _handleScrollNotification,
               child: ListView(
