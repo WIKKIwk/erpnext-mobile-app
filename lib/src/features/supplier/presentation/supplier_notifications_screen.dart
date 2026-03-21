@@ -24,7 +24,6 @@ class SupplierNotificationsScreen extends StatefulWidget {
 
 class _SupplierNotificationsScreenState
     extends State<SupplierNotificationsScreen> with WidgetsBindingObserver {
-  late Future<List<DispatchRecord>> _itemsFuture;
   Set<String> _highlightedUnreadIds = <String>{};
   int _refreshVersion = 0;
   double _cardStretch = 0.0;
@@ -35,10 +34,10 @@ class _SupplierNotificationsScreenState
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     SupplierStore.instance.bootstrapHistory();
-    _itemsFuture = _loadAndTrack();
     NotificationHiddenStore.instance.load().then((_) {
       if (mounted) setState(() {});
     });
+    SupplierStore.instance.addListener(_handleStoreChanged);
     RefreshHub.instance.addListener(_handlePushRefresh);
   }
 
@@ -67,13 +66,13 @@ class _SupplierNotificationsScreenState
     }
     setState(() {
       _highlightedUnreadIds.clear();
-      _itemsFuture = Future.value(const <DispatchRecord>[]);
     });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    SupplierStore.instance.removeListener(_handleStoreChanged);
     RefreshHub.instance.removeListener(_handlePushRefresh);
     super.dispose();
   }
@@ -113,8 +112,7 @@ class _SupplierNotificationsScreenState
     }
   }
 
-  Future<List<DispatchRecord>> _loadAndTrack() async {
-    await SupplierStore.instance.refreshHistory();
+  Future<void> _syncFromStore() async {
     final items = SupplierStore.instance.historyItems;
     final hidden = NotificationHiddenStore.instance.hiddenIdsForProfile(
       AppSession.instance.profile,
@@ -139,15 +137,18 @@ class _SupplierNotificationsScreenState
         _highlightedUnreadIds = highlighted;
       });
     }
-    return items;
+  }
+
+  void _handleStoreChanged() {
+    if (!mounted) {
+      return;
+    }
+    _syncFromStore();
   }
 
   Future<void> _reload() async {
-    final future = _loadAndTrack();
-    setState(() {
-      _itemsFuture = future;
-    });
-    await future;
+    await SupplierStore.instance.refreshHistory();
+    await _syncFromStore();
   }
 
   bool _handleScrollNotification(ScrollNotification notification) {
@@ -191,24 +192,24 @@ class _SupplierNotificationsScreenState
         ),
       ],
       bottom: const SupplierDock(activeTab: SupplierDockTab.notifications),
-      child: FutureBuilder<List<DispatchRecord>>(
-        future: _itemsFuture,
-        builder: (context, snapshot) {
+      child: AnimatedBuilder(
+        animation: SupplierStore.instance,
+        builder: (context, _) {
+          final store = SupplierStore.instance;
           final hidden = NotificationHiddenStore.instance.hiddenIdsForProfile(
             AppSession.instance.profile,
           );
-          final items = (snapshot.data ?? SupplierStore.instance.historyItems)
+          final items = store.historyItems
               .where((item) => !hidden.contains(item.id))
               .toList();
           final orderedItems = [
             ...items.where((item) => _highlightedUnreadIds.contains(item.id)),
             ...items.where((item) => !_highlightedUnreadIds.contains(item.id)),
           ];
-          if (snapshot.connectionState != ConnectionState.done &&
-              items.isEmpty) {
+          if (store.loadingHistory && !store.loadedHistory && items.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snapshot.hasError && items.isEmpty) {
+          if (store.historyError != null && !store.loadedHistory && items.isEmpty) {
             return AppRefreshIndicator(
               onRefresh: _reload,
               child: ListView(
@@ -229,7 +230,7 @@ class _SupplierNotificationsScreenState
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '${snapshot.error}',
+                            '${store.historyError}',
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                           const SizedBox(height: 14),
