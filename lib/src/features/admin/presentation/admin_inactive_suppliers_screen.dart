@@ -16,6 +16,7 @@ class AdminInactiveSuppliersScreen extends StatefulWidget {
 
 class _AdminInactiveSuppliersScreenState
     extends State<AdminInactiveSuppliersScreen> {
+  final ScrollController _scrollController = ScrollController();
   late Future<List<AdminSupplier>> _future;
   String? _busyRef;
 
@@ -25,12 +26,34 @@ class _AdminInactiveSuppliersScreenState
     _future = MobileApi.instance.adminInactiveSuppliers();
   }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   Future<void> _reload() async {
+    _settleTopEdge();
     final future = MobileApi.instance.adminInactiveSuppliers();
     setState(() {
       _future = future;
     });
     await future;
+    _settleTopEdge();
+  }
+
+  void _settleTopEdge() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) {
+        return;
+      }
+      final position = _scrollController.position;
+      final target = position.minScrollExtent;
+      if ((position.pixels - target).abs() <= 0.5) {
+        return;
+      }
+      _scrollController.jumpTo(target);
+    });
   }
 
   Future<void> _restore(AdminSupplier item) async {
@@ -109,6 +132,7 @@ class _AdminInactiveSuppliersScreenState
           return AppRefreshIndicator(
             onRefresh: _reload,
             child: ListView.separated(
+              controller: _scrollController,
               padding: EdgeInsets.zero,
               itemCount: items.length,
               separatorBuilder: (_, __) => const SizedBox(height: 12),

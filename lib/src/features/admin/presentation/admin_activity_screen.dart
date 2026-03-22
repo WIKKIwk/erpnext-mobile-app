@@ -17,6 +17,7 @@ class AdminActivityScreen extends StatefulWidget {
 }
 
 class _AdminActivityScreenState extends State<AdminActivityScreen> {
+  final ScrollController _scrollController = ScrollController();
   int _refreshVersion = 0;
 
   @override
@@ -54,6 +55,7 @@ class _AdminActivityScreenState extends State<AdminActivityScreen> {
   @override
   void dispose() {
     RefreshHub.instance.removeListener(_handlePushRefresh);
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -69,7 +71,23 @@ class _AdminActivityScreenState extends State<AdminActivityScreen> {
   }
 
   Future<void> _reload() async {
+    _settleTopEdge();
     await AdminStore.instance.refreshActivity();
+    _settleTopEdge();
+  }
+
+  void _settleTopEdge() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) {
+        return;
+      }
+      final position = _scrollController.position;
+      final target = position.minScrollExtent;
+      if ((position.pixels - target).abs() <= 0.5) {
+        return;
+      }
+      _scrollController.jumpTo(target);
+    });
   }
 
   @override
@@ -135,6 +153,7 @@ class _AdminActivityScreenState extends State<AdminActivityScreen> {
           return AppRefreshIndicator(
             onRefresh: _reload,
             child: ListView(
+              controller: _scrollController,
               padding: EdgeInsets.zero,
               children: [
                 _AdminActivitySection(items: items),

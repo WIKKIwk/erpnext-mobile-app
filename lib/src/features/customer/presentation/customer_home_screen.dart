@@ -23,6 +23,7 @@ class CustomerHomeScreen extends StatefulWidget {
 }
 
 class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
+  final ScrollController _scrollController = ScrollController();
   int _refreshVersion = 0;
 
   @override
@@ -35,11 +36,28 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   @override
   void dispose() {
     RefreshHub.instance.removeListener(_handlePushRefresh);
+    _scrollController.dispose();
     super.dispose();
   }
 
   Future<void> _reload() async {
+    _settleTopEdge();
     await CustomerStore.instance.refresh();
+    _settleTopEdge();
+  }
+
+  void _settleTopEdge() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) {
+        return;
+      }
+      final position = _scrollController.position;
+      final target = position.minScrollExtent;
+      if ((position.pixels - target).abs() <= 0.5) {
+        return;
+      }
+      _scrollController.jumpTo(target);
+    });
   }
 
   void _handlePushRefresh() {
@@ -97,6 +115,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
           onRefresh: _reload,
           allowRefreshOnShortContent: true,
           child: ListView(
+            controller: _scrollController,
             physics: const TopRefreshScrollPhysics(),
             padding: EdgeInsets.fromLTRB(0, 8, 0, bottomPadding),
             children: [

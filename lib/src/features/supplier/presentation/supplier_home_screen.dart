@@ -22,6 +22,7 @@ class SupplierHomeScreen extends StatefulWidget {
 
 class _SupplierHomeScreenState extends State<SupplierHomeScreen>
     with WidgetsBindingObserver {
+  final ScrollController _scrollController = ScrollController();
   int _refreshVersion = 0;
 
   @override
@@ -36,6 +37,7 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     RefreshHub.instance.removeListener(_handlePushRefresh);
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -58,7 +60,23 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
   }
 
   Future<void> _reload() async {
+    _settleTopEdge();
     await SupplierStore.instance.refreshHistory();
+    _settleTopEdge();
+  }
+
+  void _settleTopEdge() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) {
+        return;
+      }
+      final position = _scrollController.position;
+      final target = position.minScrollExtent;
+      if ((position.pixels - target).abs() <= 0.5) {
+        return;
+      }
+      _scrollController.jumpTo(target);
+    });
   }
 
   @override
@@ -117,6 +135,7 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
               onRefresh: _reload,
               allowRefreshOnShortContent: true,
               child: ListView(
+                controller: _scrollController,
                 physics: const TopRefreshScrollPhysics(),
                 padding: EdgeInsets.zero,
                 children: [
@@ -169,6 +188,7 @@ class _SupplierHomeScreenState extends State<SupplierHomeScreen>
             onRefresh: _reload,
             allowRefreshOnShortContent: true,
             child: ListView(
+              controller: _scrollController,
               physics: const TopRefreshScrollPhysics(),
               padding: EdgeInsets.only(bottom: bottomPadding),
               children: [

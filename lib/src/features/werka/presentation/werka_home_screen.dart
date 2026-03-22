@@ -21,6 +21,7 @@ class WerkaHomeScreen extends StatefulWidget {
 
 class _WerkaHomeScreenState extends State<WerkaHomeScreen>
     with WidgetsBindingObserver {
+  final ScrollController _scrollController = ScrollController();
   int _refreshVersion = 0;
 
   @override
@@ -35,6 +36,7 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     RefreshHub.instance.removeListener(_handlePushRefresh);
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -57,7 +59,23 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
   }
 
   Future<void> _reload() async {
+    _settleTopEdge();
     await WerkaStore.instance.refreshHome();
+    _settleTopEdge();
+  }
+
+  void _settleTopEdge() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) {
+        return;
+      }
+      final position = _scrollController.position;
+      final target = position.minScrollExtent;
+      if ((position.pixels - target).abs() <= 0.5) {
+        return;
+      }
+      _scrollController.jumpTo(target);
+    });
   }
 
   @override
@@ -119,6 +137,7 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
                     onRefresh: _reload,
                     allowRefreshOnShortContent: true,
                     child: ListView(
+                      controller: _scrollController,
                       physics: const TopRefreshScrollPhysics(),
                       children: [
                         const SizedBox(height: 120),
@@ -165,6 +184,7 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
                   onRefresh: _reload,
                   allowRefreshOnShortContent: true,
                   child: ListView(
+                    controller: _scrollController,
                     physics: const TopRefreshScrollPhysics(),
                     padding: EdgeInsets.only(bottom: bottomPadding),
                     children: [

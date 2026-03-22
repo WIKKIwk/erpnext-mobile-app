@@ -15,6 +15,7 @@ class AdminHomeScreen extends StatefulWidget {
 }
 
 class _AdminHomeScreenState extends State<AdminHomeScreen> {
+  final ScrollController _scrollController = ScrollController();
   int _refreshVersion = 0;
 
   @override
@@ -27,6 +28,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   @override
   void dispose() {
     RefreshHub.instance.removeListener(_handlePushRefresh);
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -42,7 +44,23 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
 
   Future<void> _reload() async {
+    _settleTopEdge();
     await AdminStore.instance.refreshSummary();
+    _settleTopEdge();
+  }
+
+  void _settleTopEdge() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) {
+        return;
+      }
+      final position = _scrollController.position;
+      final target = position.minScrollExtent;
+      if ((position.pixels - target).abs() <= 0.5) {
+        return;
+      }
+      _scrollController.jumpTo(target);
+    });
   }
 
   Future<void> _openAndReload(String routeName) async {
@@ -95,6 +113,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           return AppRefreshIndicator(
             onRefresh: _reload,
             child: ListView(
+              controller: _scrollController,
               padding: EdgeInsets.only(bottom: bottomPadding),
               children: [
                 SmoothAppear(

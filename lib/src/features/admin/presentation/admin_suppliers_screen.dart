@@ -15,6 +15,7 @@ class AdminSuppliersScreen extends StatefulWidget {
 }
 
 class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
+  final ScrollController _scrollController = ScrollController();
   late Future<_AdminSuppliersData> _future;
 
   @override
@@ -23,12 +24,34 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
     _future = _loadUsers();
   }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   Future<void> _reload() async {
+    _settleTopEdge();
     final future = _loadUsers();
     setState(() {
       _future = future;
     });
     await future;
+    _settleTopEdge();
+  }
+
+  void _settleTopEdge() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) {
+        return;
+      }
+      final position = _scrollController.position;
+      final target = position.minScrollExtent;
+      if ((position.pixels - target).abs() <= 0.5) {
+        return;
+      }
+      _scrollController.jumpTo(target);
+    });
   }
 
   Future<_AdminSuppliersData> _loadUsers() async {
@@ -112,6 +135,7 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
           return AppRefreshIndicator(
             onRefresh: _reload,
             child: ListView(
+              controller: _scrollController,
               padding: const EdgeInsets.fromLTRB(0, 0, 0, 116),
               children: [
                 _AdminSuppliersSummarySection(
