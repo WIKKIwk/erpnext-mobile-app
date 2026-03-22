@@ -29,15 +29,6 @@ class CustomerDock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final routeName = ModalRoute.of(context)?.settings.name;
-    final useNativeDock = !kIsWeb &&
-        defaultTargetPlatform == TargetPlatform.iOS &&
-        AppRouter.staticDockRoutes.contains(routeName);
-    if (!kIsWeb &&
-        defaultTargetPlatform == TargetPlatform.iOS &&
-        !useNativeDock) {
-      return const SizedBox.shrink();
-    }
     return AnimatedBuilder(
       animation: NotificationUnreadStore.instance,
       builder: (context, _) {
@@ -45,7 +36,7 @@ class CustomerDock extends StatelessWidget {
               AppSession.instance.profile,
             ) &&
             activeTab != CustomerDockTab.notifications;
-        if (useNativeDock) {
+        if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
           return IOSLiquidDock(
             compact: compact,
             tightToEdges: tightToEdges,
