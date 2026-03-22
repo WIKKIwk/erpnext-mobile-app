@@ -212,7 +212,11 @@ class AppRefreshIndicator extends StatefulWidget {
 }
 
 class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
+  static const double _triggerDistance = 72.0;
+  static const double _maxPullDistance = 108.0;
   ScrollPosition? _lastPosition;
+  double _pullExtent = 0.0;
+  bool _refreshing = false;
 
   static const double _edgeTolerance = 0.5;
 
@@ -230,7 +234,7 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
     return widget.allowRefreshOnShortContent || _contentCanActuallyScroll(metrics);
   }
 
-  bool _refreshNotificationPredicate(ScrollNotification notification) {
+  bool _matchesRefreshContext(ScrollNotification notification) {
     final notificationContext = notification.context;
     if (notificationContext != null) {
       _lastPosition = Scrollable.maybeOf(notificationContext)?.position;
@@ -247,16 +251,29 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
     if (!_isNearTop(notification.metrics)) {
       return false;
     }
-    if (notification is ScrollStartNotification) {
-      return notification.dragDetails != null;
-    }
     return true;
   }
 
-  Future<void> _handleRefresh() async {
+  Future<void> _startRefresh() async {
+    if (_refreshing) {
+      return;
+    }
+    setState(() {
+      _refreshing = true;
+      _pullExtent = widget.displacement;
+    });
     _settleTopEdge();
-    await widget.onRefresh();
-    _settleTopEdge();
+    try {
+      await widget.onRefresh();
+    } finally {
+      if (mounted) {
+        setState(() {
+          _refreshing = false;
+          _pullExtent = 0.0;
+        });
+        _settleTopEdge();
+      }
+    }
   }
 
   void _settleTopEdge() {
@@ -273,17 +290,111 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
     });
   }
 
+  void _setPullExtent(double nextExtent) {
+    final clamped = nextExtent.clamp(0.0, _maxPullDistance);
+    if ((clamped - _pullExtent).abs() <= _edgeTolerance) {
+      return;
+    }
+    setState(() {
+      _pullExtent = clamped;
+    });
+  }
+
+  bool _handleScrollNotification(ScrollNotification notification) {
+    if (!_matchesRefreshContext(notification)) {
+      return false;
+    }
+
+    if (_refreshing) {
+      return false;
+    }
+
+    if (notification is OverscrollNotification &&
+        notification.dragDetails != null &&
+        _isNearTop(notification.metrics) &&
+        notification.overscroll < 0) {
+      _setPullExtent(_pullExtent + (-notification.overscroll));
+      return false;
+    }
+
+    if (notification is ScrollUpdateNotification &&
+        notification.dragDetails != null &&
+        _pullExtent > 0) {
+      final delta = notification.scrollDelta ?? 0.0;
+      if (delta > 0) {
+        _setPullExtent(_pullExtent - delta);
+      } else if (_isNearTop(notification.metrics) && delta < 0) {
+        _setPullExtent(_pullExtent + (-delta));
+      }
+      return false;
+    }
+
+    if (notification is ScrollEndNotification && _pullExtent > 0) {
+      if (_pullExtent >= _triggerDistance) {
+        _startRefresh();
+      } else {
+        _setPullExtent(0.0);
+      }
+    }
+
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: _handleRefresh,
-      displacement: widget.displacement,
-      edgeOffset: widget.edgeOffset,
-      notificationPredicate: _refreshNotificationPredicate,
-      semanticsLabel: widget.semanticsLabel,
-      semanticsValue: widget.semanticsValue,
-      triggerMode: widget.triggerMode,
-      child: widget.child,
+    final scheme = Theme.of(context).colorScheme;
+    final progress = (_pullExtent / _triggerDistance).clamp(0.0, 1.0);
+    final visible = _refreshing || _pullExtent > 0.0;
+    final translateY = _refreshing
+        ? widget.edgeOffset + widget.displacement
+        : widget.edgeOffset + (widget.displacement * progress) - 28.0;
+
+    return NotificationListener<ScrollNotification>(
+      onNotification: _handleScrollNotification,
+      child: Stack(
+        children: [
+          widget.child,
+          if (visible)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: IgnorePointer(
+                ignoring: true,
+                child: Transform.translate(
+                  offset: Offset(0, translateY),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: AnimatedOpacity(
+                      duration: AppMotion.fast,
+                      opacity: visible ? 1 : 0,
+                      child: Container(
+                        height: 36,
+                        width: 36,
+                        decoration: BoxDecoration(
+                          color: scheme.surfaceContainerHigh,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.10),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          value: _refreshing ? null : progress,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
