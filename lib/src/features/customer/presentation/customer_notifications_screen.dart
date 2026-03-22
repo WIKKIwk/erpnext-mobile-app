@@ -12,6 +12,8 @@ import '../../../core/widgets/top_refresh_scroll_physics.dart';
 import '../../shared/models/app_models.dart';
 import '../state/customer_store.dart';
 import 'widgets/customer_dock.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class CustomerNotificationsScreen extends StatefulWidget {
@@ -32,7 +34,6 @@ class CustomerNotificationsScreen extends StatefulWidget {
 class _CustomerNotificationsScreenState
     extends State<CustomerNotificationsScreen> {
   static const String _cacheKey = 'cache_customer_notifications';
-  final ScrollController _scrollController = ScrollController();
   List<DispatchRecord>? _cachedItems;
   Set<String> _highlightedUnreadIds = <String>{};
   int _refreshVersion = 0;
@@ -58,7 +59,6 @@ class _CustomerNotificationsScreenState
   void dispose() {
     CustomerStore.instance.removeListener(_handleStoreChanged);
     RefreshHub.instance.removeListener(_handlePushRefresh);
-    _scrollController.dispose();
     super.dispose();
   }
 
@@ -83,21 +83,6 @@ class _CustomerNotificationsScreenState
   Future<void> _reload() async {
     await CustomerStore.instance.refresh();
     await _syncFromStore();
-    _restoreTopEdgeAfterRefresh();
-  }
-
-  void _restoreTopEdgeAfterRefresh() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_scrollController.hasClients) {
-        return;
-      }
-      final position = _scrollController.position;
-      final target = position.minScrollExtent;
-      if ((position.pixels - target).abs() <= 0.5) {
-        return;
-      }
-      _scrollController.jumpTo(target);
-    });
   }
 
   Future<void> _openDetail(String deliveryNoteID) async {
@@ -198,6 +183,7 @@ class _CustomerNotificationsScreenState
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.viewPaddingOf(context).bottom + 136.0;
+    final isIos = !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
     final content = AnimatedBuilder(
       animation: CustomerStore.instance,
       builder: (context, _) {
@@ -216,12 +202,19 @@ class _CustomerNotificationsScreenState
         if (store.loading && !store.loaded && items.isEmpty) {
           return const Center(child: CircularProgressIndicator.adaptive());
         }
+        if (isIos) {
+          return _buildIosRefreshBody(
+            bottomPadding: bottomPadding,
+            store: store,
+            items: items,
+            orderedItems: orderedItems,
+          );
+        }
         if (store.error != null && !store.loaded && items.isEmpty) {
           return AppRefreshIndicator(
             onRefresh: _reload,
             allowRefreshOnShortContent: true,
             child: ListView(
-              controller: _scrollController,
               physics: const TopRefreshScrollPhysics(),
               padding: EdgeInsets.fromLTRB(0, 8, 0, bottomPadding),
               children: [
@@ -237,7 +230,6 @@ class _CustomerNotificationsScreenState
             onRefresh: _reload,
             allowRefreshOnShortContent: true,
             child: ListView(
-              controller: _scrollController,
               physics: const TopRefreshScrollPhysics(),
               padding: EdgeInsets.fromLTRB(0, 8, 0, bottomPadding),
               children: [
@@ -253,7 +245,6 @@ class _CustomerNotificationsScreenState
           onRefresh: _reload,
           allowRefreshOnShortContent: true,
           child: ListView(
-            controller: _scrollController,
             physics: const TopRefreshScrollPhysics(),
             padding: EdgeInsets.fromLTRB(0, 8, 0, bottomPadding),
             children: [
@@ -294,6 +285,45 @@ class _CustomerNotificationsScreenState
       ],
       bottom: const CustomerDock(activeTab: CustomerDockTab.notifications),
       child: content,
+    );
+  }
+
+  Widget _buildIosRefreshBody({
+    required double bottomPadding,
+    required CustomerStore store,
+    required List<DispatchRecord> items,
+    required List<DispatchRecord> orderedItems,
+  }) {
+    return CustomScrollView(
+      physics: const BouncingScrollPhysics(
+        parent: AlwaysScrollableScrollPhysics(),
+      ),
+      slivers: [
+        CupertinoSliverRefreshControl(
+          onRefresh: _reload,
+        ),
+        SliverPadding(
+          padding: EdgeInsets.fromLTRB(0, 8, 0, bottomPadding),
+          sliver: SliverToBoxAdapter(
+            child: store.error != null && !store.loaded && items.isEmpty
+                ? _NotificationPanel(
+                    child: Text('${store.error}'),
+                  )
+                : items.isEmpty
+                    ? _NotificationPanel(
+                        child: Text(context.l10n.noRecordsYet),
+                      )
+                    : SmoothAppear(
+                        delay: const Duration(milliseconds: 20),
+                        child: _NotificationSection(
+                          items: orderedItems,
+                          highlightedUnreadIds: _highlightedUnreadIds,
+                          onTapRecord: _openDetail,
+                        ),
+                      ),
+          ),
+        ),
+      ],
     );
   }
 }
