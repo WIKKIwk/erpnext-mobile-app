@@ -255,10 +255,16 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
       await widget.onRefresh();
     } finally {
       _settleTopEdge();
+      Future<void>.delayed(AppMotion.medium, () {
+        if (!mounted) {
+          return;
+        }
+        _settleTopEdge(forceJump: true);
+      });
     }
   }
 
-  void _settleTopEdge() {
+  void _settleTopEdge({bool forceJump = false}) {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final position = _lastPosition;
       if (!mounted || position == null || !position.hasPixels) {
@@ -267,6 +273,10 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
       final target = position.minScrollExtent;
       final distance = position.pixels - target;
       if (distance.abs() <= _edgeTolerance) {
+        return;
+      }
+      if (forceJump) {
+        position.jumpTo(target);
         return;
       }
       try {
