@@ -259,20 +259,29 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
   }
 
   void _settleTopEdge() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final position = _lastPosition;
       if (!mounted || position == null || !position.hasPixels) {
         return;
       }
       final target = position.minScrollExtent;
-      if ((position.pixels - target).abs() <= _edgeTolerance) {
+      final distance = position.pixels - target;
+      if (distance.abs() <= _edgeTolerance) {
         return;
       }
-      position.animateTo(
-        target,
-        duration: AppMotion.medium,
-        curve: AppMotion.emphasizedDecelerate,
-      );
+      try {
+        await position.animateTo(
+          target,
+          duration: AppMotion.medium,
+          curve: AppMotion.emphasizedDecelerate,
+        );
+      } catch (_) {}
+      if (!mounted || !position.hasPixels) {
+        return;
+      }
+      if ((position.pixels - target).abs() > _edgeTolerance) {
+        position.jumpTo(target);
+      }
     });
   }
 
