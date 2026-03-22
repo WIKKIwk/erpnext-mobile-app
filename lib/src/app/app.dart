@@ -1,11 +1,13 @@
 import '../core/theme/app_theme.dart';
 import '../core/app_preview.dart';
+import 'app_navigation.dart';
 import '../core/localization/app_localizations.dart';
 import '../core/localization/locale_controller.dart';
 import '../core/network/network_requirement_runtime.dart';
 import '../core/notifications/notification_runtime.dart';
 import '../core/security/app_lock_gate.dart';
 import '../core/theme/theme_controller.dart';
+import '../core/widgets/ios_dock_runtime.dart';
 import 'app_router.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +25,8 @@ class ErpnextStockMobileApp extends StatelessWidget {
       ]),
       builder: (context, _) {
         return MaterialApp(
+          navigatorKey: appNavigatorKey,
+          navigatorObservers: [AppRouteTracker.instance],
           title: AppLocalizations(LocaleController.instance.locale).appTitle,
           debugShowCheckedModeBanner: false,
           locale: AppPreview.enabled
@@ -42,7 +46,9 @@ class ErpnextStockMobileApp extends StatelessWidget {
             }
             final wrapped = NetworkRequirementRuntime(
               child: NotificationRuntime(
-                child: AppLockGate(child: current),
+                child: AppLockGate(
+                  child: IOSDockRuntime(child: current),
+                ),
               ),
             );
             return Localizations.override(

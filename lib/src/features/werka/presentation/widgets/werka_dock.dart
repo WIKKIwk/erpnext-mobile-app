@@ -1,8 +1,8 @@
 import '../../../../app/app_router.dart';
 import '../../../../core/notifications/notification_unread_store.dart';
 import '../../../../core/session/app_session.dart';
+import '../../../../core/widgets/app_shell.dart';
 import '../../../../core/widgets/common_widgets.dart';
-import '../../../../core/widgets/ios_liquid_dock.dart';
 import '../../../../core/widgets/logout_prompt.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +28,9 @@ class WerkaDock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+      return const AppShellBottomPlaceholder();
+    }
     return AnimatedBuilder(
       animation: NotificationUnreadStore.instance,
       builder: (context, _) {
@@ -35,85 +38,6 @@ class WerkaDock extends StatelessWidget {
               AppSession.instance.profile,
             ) &&
             activeTab != WerkaDockTab.notifications;
-        if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
-          return IOSLiquidDock(
-            compact: compact,
-            tightToEdges: tightToEdges,
-            items: <IOSLiquidDockItem>[
-              IOSLiquidDockItem(
-                id: 'home',
-                active: activeTab == WerkaDockTab.home,
-              ),
-              IOSLiquidDockItem(
-                id: 'notifications',
-                active: activeTab == WerkaDockTab.notifications,
-                showBadge: showBadge,
-              ),
-              const IOSLiquidDockItem(
-                id: 'create',
-                active: false,
-                primary: true,
-              ),
-              IOSLiquidDockItem(
-                id: 'recent',
-                active: activeTab == WerkaDockTab.recent,
-              ),
-              IOSLiquidDockItem(
-                id: 'profile',
-                active: activeTab == WerkaDockTab.profile,
-                allowLongPress: activeTab == WerkaDockTab.profile,
-              ),
-            ],
-            onTap: (id) {
-              switch (id) {
-                case 'home':
-                  if (activeTab == WerkaDockTab.home) {
-                    return;
-                  }
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    AppRoutes.werkaHome,
-                    (route) => false,
-                  );
-                  return;
-                case 'notifications':
-                  if (activeTab == WerkaDockTab.notifications) {
-                    return;
-                  }
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    AppRoutes.werkaNotifications,
-                    (route) => false,
-                  );
-                  return;
-                case 'create':
-                  Navigator.of(context).pushNamed(AppRoutes.werkaCreateHub);
-                  return;
-                case 'recent':
-                  if (activeTab == WerkaDockTab.recent) {
-                    return;
-                  }
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    AppRoutes.werkaRecent,
-                    (route) => false,
-                  );
-                  return;
-                case 'profile':
-                  if (activeTab == WerkaDockTab.profile) {
-                    return;
-                  }
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    AppRoutes.profile,
-                    (route) => false,
-                  );
-                  return;
-              }
-            },
-            onLongPress: (id) {
-              if (id == 'profile' && activeTab == WerkaDockTab.profile) {
-                showLogoutPrompt(context);
-              }
-            },
-          );
-        }
         return ActionDock(
           compact: compact,
           tightToEdges: tightToEdges,

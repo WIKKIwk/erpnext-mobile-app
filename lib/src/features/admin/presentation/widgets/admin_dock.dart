@@ -1,6 +1,6 @@
 import '../../../../app/app_router.dart';
+import '../../../../core/widgets/app_shell.dart';
 import '../../../../core/widgets/common_widgets.dart';
-import '../../../../core/widgets/ios_liquid_dock.dart';
 import '../../../../core/widgets/logout_prompt.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -28,80 +28,7 @@ class AdminDock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
-      return IOSLiquidDock(
-        compact: compact,
-        tightToEdges: tightToEdges,
-        items: <IOSLiquidDockItem>[
-          IOSLiquidDockItem(
-            id: 'home',
-            active: activeTab == AdminDockTab.home,
-          ),
-          IOSLiquidDockItem(
-            id: 'suppliers',
-            active: activeTab == AdminDockTab.suppliers,
-          ),
-          IOSLiquidDockItem(
-            id: 'create',
-            active: activeTab == AdminDockTab.settings,
-            primary: true,
-          ),
-          IOSLiquidDockItem(
-            id: 'activity',
-            active: activeTab == AdminDockTab.activity,
-          ),
-          IOSLiquidDockItem(
-            id: 'profile',
-            active: activeTab == AdminDockTab.profile,
-            allowLongPress: activeTab == AdminDockTab.profile,
-          ),
-        ],
-        onTap: (id) {
-          switch (id) {
-            case 'home':
-              if (activeTab == AdminDockTab.home) return;
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                AppRoutes.adminHome,
-                (route) => false,
-              );
-              return;
-            case 'suppliers':
-              if (activeTab == AdminDockTab.suppliers) return;
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                AppRoutes.adminSuppliers,
-                (route) => false,
-              );
-              return;
-            case 'create':
-              if (activeTab == AdminDockTab.settings) return;
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                AppRoutes.adminCreateHub,
-                (route) => false,
-              );
-              return;
-            case 'activity':
-              if (activeTab == AdminDockTab.activity) return;
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                AppRoutes.adminActivity,
-                (route) => false,
-              );
-              return;
-            case 'profile':
-              if (activeTab == AdminDockTab.profile) {
-                return;
-              }
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                AppRoutes.profile,
-                (route) => false,
-              );
-              return;
-          }
-        },
-        onLongPress: (id) {
-          if (id == 'profile' && activeTab == AdminDockTab.profile) {
-            showLogoutPrompt(context);
-          }
-        },
-      );
+      return const AppShellBottomPlaceholder();
     }
     return ActionDock(
       compact: compact,

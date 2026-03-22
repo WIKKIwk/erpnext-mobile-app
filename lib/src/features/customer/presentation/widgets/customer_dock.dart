@@ -1,8 +1,8 @@
 import '../../../../app/app_router.dart';
 import '../../../../core/notifications/notification_unread_store.dart';
 import '../../../../core/session/app_session.dart';
+import '../../../../core/widgets/app_shell.dart';
 import '../../../../core/widgets/common_widgets.dart';
-import '../../../../core/widgets/ios_liquid_dock.dart';
 import '../../../../core/widgets/logout_prompt.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +29,9 @@ class CustomerDock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+      return const AppShellBottomPlaceholder();
+    }
     return AnimatedBuilder(
       animation: NotificationUnreadStore.instance,
       builder: (context, _) {
@@ -36,72 +39,6 @@ class CustomerDock extends StatelessWidget {
               AppSession.instance.profile,
             ) &&
             activeTab != CustomerDockTab.notifications;
-        if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
-          return IOSLiquidDock(
-            compact: compact,
-            tightToEdges: tightToEdges,
-            items: <IOSLiquidDockItem>[
-              IOSLiquidDockItem(
-                id: 'home',
-                active: activeTab == CustomerDockTab.home,
-              ),
-              IOSLiquidDockItem(
-                id: 'notifications',
-                active: activeTab == CustomerDockTab.notifications,
-                showBadge: showBadge,
-              ),
-              IOSLiquidDockItem(
-                id: 'profile',
-                active: activeTab == CustomerDockTab.profile,
-                allowLongPress: activeTab == CustomerDockTab.profile,
-              ),
-            ],
-            onTap: (id) {
-              switch (id) {
-                case 'home':
-                  if (activeTab == CustomerDockTab.home) {
-                    return;
-                  }
-                  if (onTabSelected != null) {
-                    onTabSelected!(CustomerDockTab.home);
-                  } else {
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                      AppRoutes.customerHome,
-                      (route) => false,
-                    );
-                  }
-                  return;
-                case 'notifications':
-                  if (activeTab == CustomerDockTab.notifications) {
-                    return;
-                  }
-                  if (onTabSelected != null) {
-                    onTabSelected!(CustomerDockTab.notifications);
-                  } else {
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                      AppRoutes.customerNotifications,
-                      (route) => false,
-                    );
-                  }
-                  return;
-                case 'profile':
-                  if (activeTab == CustomerDockTab.profile) {
-                    return;
-                  }
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    AppRoutes.profile,
-                    (route) => false,
-                  );
-                  return;
-              }
-            },
-            onLongPress: (id) {
-              if (id == 'profile' && activeTab == CustomerDockTab.profile) {
-                showLogoutPrompt(context);
-              }
-            },
-          );
-        }
         return ActionDock(
           compact: compact,
           tightToEdges: tightToEdges,

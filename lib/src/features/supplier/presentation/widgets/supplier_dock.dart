@@ -1,8 +1,8 @@
 import '../../../../app/app_router.dart';
 import '../../../../core/notifications/notification_unread_store.dart';
 import '../../../../core/session/app_session.dart';
+import '../../../../core/widgets/app_shell.dart';
 import '../../../../core/widgets/common_widgets.dart';
-import '../../../../core/widgets/ios_liquid_dock.dart';
 import '../../../../core/widgets/logout_prompt.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +30,9 @@ class SupplierDock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+      return const AppShellBottomPlaceholder();
+    }
     return AnimatedBuilder(
       animation: NotificationUnreadStore.instance,
       builder: (context, _) {
@@ -37,88 +40,6 @@ class SupplierDock extends StatelessWidget {
               AppSession.instance.profile,
             ) &&
             activeTab != SupplierDockTab.notifications;
-        if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
-          return IOSLiquidDock(
-            compact: compact,
-            tightToEdges: tightToEdges,
-            items: <IOSLiquidDockItem>[
-              IOSLiquidDockItem(
-                id: 'home',
-                active: activeTab == SupplierDockTab.home,
-              ),
-              IOSLiquidDockItem(
-                id: 'notifications',
-                active: activeTab == SupplierDockTab.notifications,
-                showBadge: showBadge,
-              ),
-              IOSLiquidDockItem(
-                id: 'create',
-                active: centerActive,
-                primary: true,
-              ),
-              IOSLiquidDockItem(
-                id: 'recent',
-                active: activeTab == SupplierDockTab.recent,
-              ),
-              IOSLiquidDockItem(
-                id: 'profile',
-                active: activeTab == SupplierDockTab.profile,
-                allowLongPress: activeTab == SupplierDockTab.profile,
-              ),
-            ],
-            onTap: (id) {
-              switch (id) {
-                case 'home':
-                  if (activeTab == SupplierDockTab.home && !centerActive) {
-                    return;
-                  }
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    AppRoutes.supplierHome,
-                    (route) => false,
-                  );
-                  return;
-                case 'notifications':
-                  if (activeTab == SupplierDockTab.notifications) {
-                    return;
-                  }
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    AppRoutes.supplierNotifications,
-                    (route) => false,
-                  );
-                  return;
-                case 'create':
-                  if (centerActive) {
-                    return;
-                  }
-                  Navigator.of(context).pushNamed(AppRoutes.supplierItemPicker);
-                  return;
-                case 'recent':
-                  if (activeTab == SupplierDockTab.recent) {
-                    return;
-                  }
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    AppRoutes.supplierRecent,
-                    (route) => false,
-                  );
-                  return;
-                case 'profile':
-                  if (activeTab == SupplierDockTab.profile) {
-                    return;
-                  }
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    AppRoutes.profile,
-                    (route) => false,
-                  );
-                  return;
-              }
-            },
-            onLongPress: (id) {
-              if (id == 'profile' && activeTab == SupplierDockTab.profile) {
-                showLogoutPrompt(context);
-              }
-            },
-          );
-        }
         return ActionDock(
           compact: compact,
           tightToEdges: tightToEdges,
