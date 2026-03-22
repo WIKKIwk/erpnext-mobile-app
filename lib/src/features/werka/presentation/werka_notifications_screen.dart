@@ -27,6 +27,7 @@ class WerkaNotificationsScreen extends StatefulWidget {
 class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
     with WidgetsBindingObserver {
   static const String _cacheKey = 'cache_werka_notifications';
+  final ScrollController _scrollController = ScrollController();
   List<DispatchRecord>? _cachedItems;
   Set<String> _highlightedUnreadIds = <String>{};
   int _refreshVersion = 0;
@@ -105,6 +106,7 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
     WidgetsBinding.instance.removeObserver(this);
     WerkaStore.instance.removeListener(_handleStoreChanged);
     RefreshHub.instance.removeListener(_handlePushRefresh);
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -183,8 +185,24 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
   }
 
   Future<void> _reload() async {
+    _settleTopEdge();
     await WerkaStore.instance.refreshHistory();
     await _syncFromStore();
+    _settleTopEdge();
+  }
+
+  void _settleTopEdge() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) {
+        return;
+      }
+      final position = _scrollController.position;
+      final target = position.minScrollExtent;
+      if ((position.pixels - target).abs() <= 0.5) {
+        return;
+      }
+      _scrollController.jumpTo(target);
+    });
   }
 
   bool _handleScrollNotification(ScrollNotification notification) {
@@ -252,6 +270,7 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
               onRefresh: _reload,
               allowRefreshOnShortContent: true,
               child: ListView(
+                controller: _scrollController,
                 physics: const TopRefreshScrollPhysics(),
                 padding: EdgeInsets.fromLTRB(0, 0, 0, bottomPadding),
                 children: [
@@ -295,6 +314,7 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
               onRefresh: _reload,
               allowRefreshOnShortContent: true,
               child: ListView(
+                controller: _scrollController,
                 physics: const TopRefreshScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(0, 0, 0, 116),
                 children: [
@@ -319,6 +339,7 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
             child: NotificationListener<ScrollNotification>(
               onNotification: _handleScrollNotification,
               child: ListView(
+                controller: _scrollController,
                 physics: const TopRefreshScrollPhysics(),
                 padding: EdgeInsets.fromLTRB(0, 0, 0, bottomPadding),
                 children: [
