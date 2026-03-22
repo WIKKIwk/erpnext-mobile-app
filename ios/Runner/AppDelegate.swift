@@ -114,10 +114,12 @@ private final class AccordLiquidDockView: UIView {
   }
 
   private func setupViewHierarchy() {
+#if compiler(>=6.2)
     if #available(iOS 26.0, *) {
       setupOriginalLiquidGlassView()
       return
     }
+#endif
 
     let hostHeight: CGFloat = compact ? 76 : 84
     let horizontalInset: CGFloat = tightToEdges ? 4 : 14
@@ -237,6 +239,7 @@ private final class AccordLiquidDockView: UIView {
     }
   }
 
+#if compiler(>=6.2)
   @available(iOS 26.0, *)
   private func setupOriginalLiquidGlassView() {
     let root = AccordLiquidGlassDockRoot(
@@ -264,6 +267,7 @@ private final class AccordLiquidDockView: UIView {
       hostingView.bottomAnchor.constraint(equalTo: bottomAnchor),
     ])
   }
+#endif
 }
 
 private final class AccordLiquidDockButton: UIControl {
@@ -378,6 +382,7 @@ private final class AccordLiquidDockButton: UIControl {
   }
 }
 
+#if compiler(>=6.2)
 @available(iOS 26.0, *)
 private struct AccordLiquidGlassDockRoot: View {
   let items: [AccordLiquidDockItem]
@@ -473,3 +478,4 @@ private struct AccordLiquidGlassDockButton: View {
     }
   }
 }
+#endif
