@@ -3,12 +3,12 @@ import '../../app/app_router.dart';
 import '../../features/shared/models/app_models.dart';
 import '../notifications/notification_unread_store.dart';
 import '../session/app_session.dart';
-import 'ios_liquid_dock.dart';
 import 'logout_prompt.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-class IOSDockRuntime extends StatelessWidget {
+class IOSDockRuntime extends StatefulWidget {
   const IOSDockRuntime({
     super.key,
     required this.child,
@@ -17,9 +17,85 @@ class IOSDockRuntime extends StatelessWidget {
   final Widget child;
 
   @override
+  State<IOSDockRuntime> createState() => _IOSDockRuntimeState();
+}
+
+class _IOSDockRuntimeState extends State<IOSDockRuntime> {
+  static const MethodChannel _channel =
+      MethodChannel('accord_liquid_dock_runtime');
+
+  _IOSDockConfig? _lastConfig;
+
+  @override
+  void initState() {
+    super.initState();
+    _channel.setMethodCallHandler(_handleMethodCall);
+  }
+
+  @override
+  void dispose() {
+    _channel.setMethodCallHandler(null);
+    super.dispose();
+  }
+
+  Future<void> _handleMethodCall(MethodCall call) async {
+    final config = _lastConfig;
+    if (config == null) {
+      return;
+    }
+    final args =
+        (call.arguments as Map<dynamic, dynamic>? ?? const <dynamic, dynamic>{});
+    final id = '${args['id'] ?? ''}'.trim();
+    if (id.isEmpty) {
+      return;
+    }
+    switch (call.method) {
+      case 'tap':
+        config.handleTap(id);
+        return;
+      case 'longPress':
+        config.handleLongPress(context, id);
+        return;
+    }
+  }
+
+  void _syncDock(_IOSDockConfig? config) {
+    _lastConfig = config;
+    final payload = config == null
+        ? <String, Object?>{'visible': false}
+        : <String, Object?>{
+            'visible': true,
+            'items': config.items
+                .map(
+                  (item) => <String, Object>{
+                    'id': item.id,
+                    'active': item.active,
+                    'primary': item.primary,
+                    'showBadge': item.showBadge,
+                    'allowLongPress': item.allowLongPress,
+                  },
+                )
+                .toList(),
+          };
+    _channel.invokeMethod<void>('updateDock', payload);
+    for (final delay in const <Duration>[
+      Duration(milliseconds: 80),
+      Duration(milliseconds: 220),
+      Duration(milliseconds: 480),
+    ]) {
+      Future<void>.delayed(delay, () {
+        if (!mounted || _lastConfig != config) {
+          return;
+        }
+        _channel.invokeMethod<void>('updateDock', payload);
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) {
-      return child;
+      return widget.child;
     }
 
     return AnimatedBuilder(
@@ -32,34 +108,31 @@ class IOSDockRuntime extends StatelessWidget {
           profile: AppSession.instance.profile,
           routeName: AppRouteTracker.instance.currentRouteName,
         );
-        if (config == null) {
-          return child;
-        }
-
-        return Stack(
-          children: [
-            child,
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: IOSLiquidDock(
-                    items: config.items,
-                    onTap: config.handleTap,
-                    onLongPress: (id) => config.handleLongPress(context, id),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _syncDock(config);
+          }
+        });
+        return widget.child;
       },
     );
   }
+}
+
+class _IOSDockItem {
+  const _IOSDockItem({
+    required this.id,
+    required this.active,
+    this.primary = false,
+    this.showBadge = false,
+    this.allowLongPress = false,
+  });
+
+  final String id;
+  final bool active;
+  final bool primary;
+  final bool showBadge;
+  final bool allowLongPress;
 }
 
 class _IOSDockConfig {
@@ -69,7 +142,7 @@ class _IOSDockConfig {
     required this.handleLongPress,
   });
 
-  final List<IOSLiquidDockItem> items;
+  final List<_IOSDockItem> items;
   final ValueChanged<String> handleTap;
   final void Function(BuildContext context, String id) handleLongPress;
 
@@ -77,17 +150,15 @@ class _IOSDockConfig {
     required SessionProfile? profile,
     required String? routeName,
   }) {
-    if (profile == null || routeName == null || routeName == AppRoutes.login) {
+    if (profile == null || routeName == AppRoutes.login) {
       return null;
     }
 
-    final hasUnread = NotificationUnreadStore.instance.hasUnreadForProfile(profile);
+    final hasUnread =
+        NotificationUnreadStore.instance.hasUnreadForProfile(profile);
 
     switch (profile.role) {
       case UserRole.customer:
-        if (!_customerRoutes.contains(routeName)) {
-          return null;
-        }
         final active = switch (routeName) {
           AppRoutes.customerHome => 'home',
           AppRoutes.customerNotifications => 'notifications',
@@ -96,13 +167,13 @@ class _IOSDockConfig {
         };
         return _IOSDockConfig(
           items: [
-            IOSLiquidDockItem(id: 'home', active: active == 'home'),
-            IOSLiquidDockItem(
+            _IOSDockItem(id: 'home', active: active == 'home'),
+            _IOSDockItem(
               id: 'notifications',
               active: active == 'notifications',
               showBadge: hasUnread && active != 'notifications',
             ),
-            IOSLiquidDockItem(
+            _IOSDockItem(
               id: 'profile',
               active: active == 'profile',
               allowLongPress: active == 'profile',
@@ -140,9 +211,6 @@ class _IOSDockConfig {
           },
         );
       case UserRole.supplier:
-        if (!_supplierRoutes.contains(routeName)) {
-          return null;
-        }
         final active = switch (routeName) {
           AppRoutes.supplierHome => 'home',
           AppRoutes.supplierNotifications => 'notifications',
@@ -156,19 +224,19 @@ class _IOSDockConfig {
         };
         return _IOSDockConfig(
           items: [
-            IOSLiquidDockItem(id: 'home', active: active == 'home'),
-            IOSLiquidDockItem(
+            _IOSDockItem(id: 'home', active: active == 'home'),
+            _IOSDockItem(
               id: 'notifications',
               active: active == 'notifications',
               showBadge: hasUnread && active != 'notifications',
             ),
-            IOSLiquidDockItem(
+            _IOSDockItem(
               id: 'create',
               active: active == 'create',
               primary: true,
             ),
-            IOSLiquidDockItem(id: 'recent', active: active == 'recent'),
-            IOSLiquidDockItem(
+            _IOSDockItem(id: 'recent', active: active == 'recent'),
+            _IOSDockItem(
               id: 'profile',
               active: active == 'profile',
               allowLongPress: active == 'profile',
@@ -192,7 +260,9 @@ class _IOSDockConfig {
                 return;
               case 'create':
                 if (active == 'create') return;
-                appNavigatorKey.currentState?.pushNamed(AppRoutes.supplierItemPicker);
+                appNavigatorKey.currentState?.pushNamed(
+                  AppRoutes.supplierItemPicker,
+                );
                 return;
               case 'recent':
                 if (active == 'recent') return;
@@ -217,9 +287,6 @@ class _IOSDockConfig {
           },
         );
       case UserRole.werka:
-        if (!_werkaRoutes.contains(routeName)) {
-          return null;
-        }
         final active = switch (routeName) {
           AppRoutes.werkaHome => 'home',
           AppRoutes.werkaNotifications => 'notifications',
@@ -233,19 +300,19 @@ class _IOSDockConfig {
         };
         return _IOSDockConfig(
           items: [
-            IOSLiquidDockItem(id: 'home', active: active == 'home'),
-            IOSLiquidDockItem(
+            _IOSDockItem(id: 'home', active: active == 'home'),
+            _IOSDockItem(
               id: 'notifications',
               active: active == 'notifications',
               showBadge: hasUnread && active != 'notifications',
             ),
-            IOSLiquidDockItem(
+            _IOSDockItem(
               id: 'create',
               active: active == 'create',
               primary: true,
             ),
-            IOSLiquidDockItem(id: 'recent', active: active == 'recent'),
-            IOSLiquidDockItem(
+            _IOSDockItem(id: 'recent', active: active == 'recent'),
+            _IOSDockItem(
               id: 'profile',
               active: active == 'profile',
               allowLongPress: active == 'profile',
@@ -269,7 +336,9 @@ class _IOSDockConfig {
                 return;
               case 'create':
                 if (active == 'create') return;
-                appNavigatorKey.currentState?.pushNamed(AppRoutes.werkaCreateHub);
+                appNavigatorKey.currentState?.pushNamed(
+                  AppRoutes.werkaCreateHub,
+                );
                 return;
               case 'recent':
                 if (active == 'recent') return;
@@ -294,9 +363,6 @@ class _IOSDockConfig {
           },
         );
       case UserRole.admin:
-        if (!_adminRoutes.contains(routeName)) {
-          return null;
-        }
         final active = switch (routeName) {
           AppRoutes.adminHome => 'home',
           AppRoutes.adminActivity => 'activity',
@@ -316,15 +382,15 @@ class _IOSDockConfig {
         };
         return _IOSDockConfig(
           items: [
-            IOSLiquidDockItem(id: 'home', active: active == 'home'),
-            IOSLiquidDockItem(id: 'suppliers', active: active == 'suppliers'),
-            IOSLiquidDockItem(
+            _IOSDockItem(id: 'home', active: active == 'home'),
+            _IOSDockItem(id: 'suppliers', active: active == 'suppliers'),
+            _IOSDockItem(
               id: 'create',
               active: active == 'create',
               primary: true,
             ),
-            IOSLiquidDockItem(id: 'activity', active: active == 'activity'),
-            IOSLiquidDockItem(
+            _IOSDockItem(id: 'activity', active: active == 'activity'),
+            _IOSDockItem(
               id: 'profile',
               active: active == 'profile',
               allowLongPress: active == 'profile',
@@ -378,60 +444,4 @@ class _IOSDockConfig {
     }
   }
 
-  static const Set<String> _customerRoutes = {
-    AppRoutes.customerHome,
-    AppRoutes.customerNotifications,
-    AppRoutes.customerStatusDetail,
-    AppRoutes.customerDetail,
-    AppRoutes.profile,
-  };
-
-  static const Set<String> _supplierRoutes = {
-    AppRoutes.supplierHome,
-    AppRoutes.supplierNotifications,
-    AppRoutes.supplierRecent,
-    AppRoutes.notificationDetail,
-    AppRoutes.supplierStatusBreakdown,
-    AppRoutes.supplierSubmittedCategoryDetail,
-    AppRoutes.supplierStatusDetail,
-    AppRoutes.supplierItemPicker,
-    AppRoutes.supplierQty,
-    AppRoutes.supplierConfirm,
-    AppRoutes.supplierSuccess,
-    AppRoutes.profile,
-  };
-
-  static const Set<String> _werkaRoutes = {
-    AppRoutes.werkaHome,
-    AppRoutes.werkaNotifications,
-    AppRoutes.werkaRecent,
-    AppRoutes.notificationDetail,
-    AppRoutes.werkaStatusBreakdown,
-    AppRoutes.werkaStatusDetail,
-    AppRoutes.werkaDetail,
-    AppRoutes.werkaCustomerDeliveryDetail,
-    AppRoutes.werkaCreateHub,
-    AppRoutes.werkaCustomerIssueCustomer,
-    AppRoutes.werkaUnannouncedSupplier,
-    AppRoutes.werkaSuccess,
-    AppRoutes.profile,
-  };
-
-  static const Set<String> _adminRoutes = {
-    AppRoutes.adminHome,
-    AppRoutes.adminActivity,
-    AppRoutes.adminCreateHub,
-    AppRoutes.adminSettings,
-    AppRoutes.adminSuppliers,
-    AppRoutes.adminSupplierCreate,
-    AppRoutes.adminCustomerCreate,
-    AppRoutes.adminCustomerDetail,
-    AppRoutes.adminInactiveSuppliers,
-    AppRoutes.adminItemCreate,
-    AppRoutes.adminSupplierDetail,
-    AppRoutes.adminSupplierItemsView,
-    AppRoutes.adminSupplierItemsAdd,
-    AppRoutes.adminWerka,
-    AppRoutes.profile,
-  };
 }
