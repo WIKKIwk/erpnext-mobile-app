@@ -4,6 +4,7 @@ import '../../features/shared/models/app_models.dart';
 import '../notifications/notification_unread_store.dart';
 import '../session/app_session.dart';
 import 'logout_prompt.dart';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,22 +21,36 @@ class IOSDockRuntime extends StatefulWidget {
   State<IOSDockRuntime> createState() => _IOSDockRuntimeState();
 }
 
-class _IOSDockRuntimeState extends State<IOSDockRuntime> {
+class _IOSDockRuntimeState extends State<IOSDockRuntime>
+    with WidgetsBindingObserver {
   static const MethodChannel _channel =
       MethodChannel('accord_liquid_dock_runtime');
 
   _IOSDockConfig? _lastConfig;
+  Timer? _retryTimer;
+  int _retryCount = 0;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _channel.setMethodCallHandler(_handleMethodCall);
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _retryTimer?.cancel();
     _channel.setMethodCallHandler(null);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _sendDockPayload(_lastConfig);
+      _scheduleRetryBurst();
+    }
   }
 
   Future<void> _handleMethodCall(MethodCall call) async {
@@ -43,8 +58,8 @@ class _IOSDockRuntimeState extends State<IOSDockRuntime> {
     if (config == null) {
       return;
     }
-    final args =
-        (call.arguments as Map<dynamic, dynamic>? ?? const <dynamic, dynamic>{});
+    final args = (call.arguments as Map<dynamic, dynamic>? ??
+        const <dynamic, dynamic>{});
     final id = '${args['id'] ?? ''}'.trim();
     if (id.isEmpty) {
       return;
@@ -61,6 +76,11 @@ class _IOSDockRuntimeState extends State<IOSDockRuntime> {
 
   void _syncDock(_IOSDockConfig? config) {
     _lastConfig = config;
+    _sendDockPayload(config);
+    _scheduleRetryBurst();
+  }
+
+  void _sendDockPayload(_IOSDockConfig? config) {
     final payload = config == null
         ? <String, Object?>{'visible': false}
         : <String, Object?>{
@@ -80,6 +100,22 @@ class _IOSDockRuntimeState extends State<IOSDockRuntime> {
     _channel.invokeMethod<void>('updateDock', payload);
   }
 
+  void _scheduleRetryBurst() {
+    _retryTimer?.cancel();
+    _retryCount = 0;
+    _retryTimer = Timer.periodic(const Duration(milliseconds: 250), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      _retryCount += 1;
+      _sendDockPayload(_lastConfig);
+      if (_retryCount >= 8) {
+        timer.cancel();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) {
@@ -90,11 +126,15 @@ class _IOSDockRuntimeState extends State<IOSDockRuntime> {
       animation: Listenable.merge([
         AppRouteTracker.instance,
         NotificationUnreadStore.instance,
+        AppSession.instance,
       ]),
       builder: (context, _) {
         final config = _IOSDockConfig.resolve(
           profile: AppSession.instance.profile,
-          routeName: AppRouteTracker.instance.currentRouteName,
+          routeName: AppRouteTracker.instance.currentRouteName ??
+              (AppSession.instance.isLoggedIn
+                  ? AppSession.instance.homeRoute
+                  : null),
         );
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
@@ -207,7 +247,8 @@ class _IOSDockConfig {
           AppRoutes.supplierItemPicker ||
           AppRoutes.supplierQty ||
           AppRoutes.supplierConfirm ||
-          AppRoutes.supplierSuccess => 'create',
+          AppRoutes.supplierSuccess =>
+            'create',
           _ => '',
         };
         return _IOSDockConfig(
@@ -283,7 +324,8 @@ class _IOSDockConfig {
           AppRoutes.werkaCreateHub ||
           AppRoutes.werkaCustomerIssueCustomer ||
           AppRoutes.werkaUnannouncedSupplier ||
-          AppRoutes.werkaSuccess => 'create',
+          AppRoutes.werkaSuccess =>
+            'create',
           _ => '',
         };
         return _IOSDockConfig(
@@ -359,13 +401,15 @@ class _IOSDockConfig {
           AppRoutes.adminSettings ||
           AppRoutes.adminCustomerCreate ||
           AppRoutes.adminItemCreate ||
-          AppRoutes.adminWerka => 'create',
+          AppRoutes.adminWerka =>
+            'create',
           AppRoutes.adminSuppliers ||
           AppRoutes.adminSupplierCreate ||
           AppRoutes.adminSupplierDetail ||
           AppRoutes.adminSupplierItemsView ||
           AppRoutes.adminSupplierItemsAdd ||
-          AppRoutes.adminInactiveSuppliers => 'suppliers',
+          AppRoutes.adminInactiveSuppliers =>
+            'suppliers',
           _ => '',
         };
         return _IOSDockConfig(

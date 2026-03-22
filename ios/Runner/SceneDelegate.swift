@@ -35,6 +35,7 @@ private final class AccordLiquidDockWindowController {
   init(window: UIWindow, messenger: FlutterBinaryMessenger) {
     overlayView = AccordLiquidDockOverlayView(messenger: messenger)
     window.addSubview(overlayView)
+    window.bringSubviewToFront(overlayView)
     NSLayoutConstraint.activate([
       overlayView.leadingAnchor.constraint(equalTo: window.leadingAnchor),
       overlayView.trailingAnchor.constraint(equalTo: window.trailingAnchor),
@@ -54,6 +55,7 @@ private final class AccordLiquidDockOverlayView: UIView, UITabBarDelegate {
     super.init(frame: .zero)
     translatesAutoresizingMaskIntoConstraints = false
     backgroundColor = .clear
+    isUserInteractionEnabled = false
     isHidden = true
     setup()
     channel.setMethodCallHandler { [weak self] call, result in
@@ -69,6 +71,7 @@ private final class AccordLiquidDockOverlayView: UIView, UITabBarDelegate {
   private func setup() {
     addSubview(tabBar)
     tabBar.translatesAutoresizingMaskIntoConstraints = false
+    tabBar.isUserInteractionEnabled = true
     tabBar.delegate = self
     tabBar.tintColor = UIColor.white.withAlphaComponent(0.98)
     tabBar.unselectedItemTintColor = UIColor.white.withAlphaComponent(0.72)
@@ -107,6 +110,9 @@ private final class AccordLiquidDockOverlayView: UIView, UITabBarDelegate {
       tabBar.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
     ])
 
+    layer.zPosition = 999
+    tabBar.layer.zPosition = 1000
+
     let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleTabBarLongPress(_:)))
     longPress.minimumPressDuration = 0.65
     tabBar.addGestureRecognizer(longPress)
@@ -121,6 +127,7 @@ private final class AccordLiquidDockOverlayView: UIView, UITabBarDelegate {
     let args = call.arguments as? [String: Any] ?? [:]
     let visible = args["visible"] as? Bool ?? false
     isHidden = !visible
+    isUserInteractionEnabled = visible
     if !visible {
       items = []
       tabBar.items = []

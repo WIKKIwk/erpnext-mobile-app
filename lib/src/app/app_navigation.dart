@@ -13,6 +13,9 @@ class AppRouteTracker extends NavigatorObserver with ChangeNotifier {
 
   void _setCurrent(Route<dynamic>? route) {
     final next = route?.settings.name;
+    if (next == null || next.isEmpty) {
+      return;
+    }
     if (_currentRouteName == next) {
       return;
     }
