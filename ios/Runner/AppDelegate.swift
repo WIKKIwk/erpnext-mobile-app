@@ -122,7 +122,7 @@ private final class AccordLiquidDockView: UIView {
 #endif
 
     let hostHeight: CGFloat = compact ? 76 : 84
-    let horizontalInset: CGFloat = tightToEdges ? 4 : 14
+    let horizontalInset: CGFloat = tightToEdges ? 12 : 18
     let buttonInset: CGFloat = tightToEdges ? 10 : 16
 
     addSubview(hostView)
@@ -130,7 +130,7 @@ private final class AccordLiquidDockView: UIView {
     NSLayoutConstraint.activate([
       hostView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: horizontalInset),
       hostView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -horizontalInset),
-      hostView.topAnchor.constraint(equalTo: topAnchor),
+      hostView.centerXAnchor.constraint(equalTo: centerXAnchor),
       hostView.bottomAnchor.constraint(equalTo: bottomAnchor),
       hostView.heightAnchor.constraint(equalToConstant: hostHeight),
     ])
@@ -148,13 +148,15 @@ private final class AccordLiquidDockView: UIView {
     blurView.clipsToBounds = true
     blurView.layer.cornerRadius = blurRadius
     blurView.layer.cornerCurve = .continuous
+    blurView.layer.borderWidth = 0.8
+    blurView.layer.borderColor = UIColor.white.withAlphaComponent(0.24).cgColor
     blurView.layer.shadowColor = UIColor.black.cgColor
-    blurView.layer.shadowOpacity = 0.22
-    blurView.layer.shadowRadius = 22
-    blurView.layer.shadowOffset = CGSize(width: 0, height: 10)
+    blurView.layer.shadowOpacity = 0.18
+    blurView.layer.shadowRadius = 18
+    blurView.layer.shadowOffset = CGSize(width: 0, height: 8)
 
     tintView.translatesAutoresizingMaskIntoConstraints = false
-    tintView.backgroundColor = UIColor(red: 0.12, green: 0.13, blue: 0.18, alpha: 0.24)
+    tintView.backgroundColor = UIColor.white.withAlphaComponent(0.05)
     blurView.contentView.addSubview(tintView)
     NSLayoutConstraint.activate([
       tintView.leadingAnchor.constraint(equalTo: blurView.contentView.leadingAnchor),
@@ -175,14 +177,14 @@ private final class AccordLiquidDockView: UIView {
 
     let sheenLayer = CAGradientLayer()
     sheenLayer.colors = [
-      UIColor.white.withAlphaComponent(0.26).cgColor,
-      UIColor.white.withAlphaComponent(0.08).cgColor,
+      UIColor.white.withAlphaComponent(0.34).cgColor,
+      UIColor.white.withAlphaComponent(0.14).cgColor,
       UIColor.clear.cgColor,
-      UIColor.black.withAlphaComponent(0.12).cgColor,
+      UIColor.black.withAlphaComponent(0.06).cgColor,
     ]
-    sheenLayer.locations = [0.0, 0.18, 0.52, 1.0]
-    sheenLayer.startPoint = CGPoint(x: 0.18, y: 0.0)
-    sheenLayer.endPoint = CGPoint(x: 0.82, y: 1.0)
+    sheenLayer.locations = [0.0, 0.22, 0.58, 1.0]
+    sheenLayer.startPoint = CGPoint(x: 0.12, y: 0.0)
+    sheenLayer.endPoint = CGPoint(x: 0.88, y: 1.0)
     sheenView.layer.addSublayer(sheenLayer)
 
     borderView.translatesAutoresizingMaskIntoConstraints = false
@@ -392,26 +394,33 @@ private struct AccordLiquidGlassDockRoot: View {
   let onLongPress: (String) -> Void
 
   var body: some View {
-    HStack(spacing: compact ? 8 : 10) {
-      ForEach(items, id: \.self) { item in
-        AccordLiquidGlassDockButton(
-          item: item,
-          onTap: { onTap(item.id) },
-          onLongPress: { onLongPress(item.id) }
-        )
+    VStack(spacing: 0) {
+      Spacer(minLength: 0)
+      HStack(spacing: compact ? 8 : 10) {
+        ForEach(items, id: \.self) { item in
+          AccordLiquidGlassDockButton(
+            item: item,
+            onTap: { onTap(item.id) },
+            onLongPress: { onLongPress(item.id) }
+          )
+        }
       }
+      .padding(.horizontal, tightToEdges ? 14 : 20)
+      .padding(.vertical, compact ? 8 : 10)
+      .background {
+        Capsule(style: .continuous)
+          .fill(.clear)
+          .glassEffect()
+          .overlay {
+            Capsule(style: .continuous)
+              .strokeBorder(.white.opacity(0.18), lineWidth: 0.8)
+          }
+          .shadow(color: .black.opacity(0.12), radius: 14, x: 0, y: 8)
+      }
+      .padding(.horizontal, tightToEdges ? 12 : 18)
+      .padding(.bottom, compact ? 4 : 2)
     }
-    .padding(.horizontal, tightToEdges ? 14 : 20)
-    .padding(.top, compact ? 10 : 8)
-    .padding(.bottom, compact ? 6 : 4)
-    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-    .background {
-      Capsule(style: .continuous)
-        .fill(.clear)
-        .glassEffect()
-        .shadow(color: .black.opacity(0.18), radius: 18, x: 0, y: 10)
-    }
-    .padding(.horizontal, tightToEdges ? 4 : 14)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
   }
 }
 
@@ -438,6 +447,10 @@ private struct AccordLiquidGlassDockButton: View {
             .fill(.clear)
             .frame(width: pillWidth, height: item.primary ? 50 : 44)
             .glassEffect()
+            .overlay {
+              Capsule(style: .continuous)
+                .strokeBorder(.white.opacity(0.12), lineWidth: 0.6)
+            }
         }
       }
       .overlay(alignment: .topTrailing) {
