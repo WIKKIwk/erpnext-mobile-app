@@ -262,7 +262,7 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
     }
     setState(() {
       _refreshing = true;
-      _pullExtent = widget.displacement;
+      _pullExtent = 0.0;
     });
     _settleTopEdge(forceJump: true);
     try {
@@ -371,7 +371,7 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
     final progress = (_pullExtent / _triggerDistance).clamp(0.0, 1.0);
     final visible = _refreshing || _pullExtent > 0.0;
     final translateY = _refreshing
-        ? widget.edgeOffset + widget.displacement
+        ? widget.edgeOffset + 12.0
         : widget.edgeOffset + (widget.displacement * progress) - 28.0;
 
     return PrimaryScrollController(
