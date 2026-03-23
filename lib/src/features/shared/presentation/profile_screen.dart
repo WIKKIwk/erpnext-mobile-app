@@ -772,9 +772,11 @@ class _ThemePreferenceRow extends StatelessWidget {
       onTap: () async {
         final picked = await showModalBottomSheet<AppThemeVariant>(
           context: context,
+          isScrollControlled: true,
           useSafeArea: true,
           backgroundColor: Colors.transparent,
           builder: (context) {
+            final mediaQuery = MediaQuery.of(context);
             return SafeArea(
               top: false,
               child: Align(
@@ -789,81 +791,86 @@ class _ThemePreferenceRow extends StatelessWidget {
                       color: scheme.outlineVariant.withValues(alpha: 0.7),
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.themeTitle,
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: 14),
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(l10n.themeClassicLabel),
-                          trailing: variant == AppThemeVariant.classic
-                              ? Icon(Icons.check_rounded, color: scheme.primary)
-                              : null,
-                          onTap: () =>
-                              Navigator.of(context).pop(AppThemeVariant.classic),
-                        ),
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(l10n.themeEarthLabel),
-                          trailing: variant == AppThemeVariant.earthy
-                              ? Icon(Icons.check_rounded, color: scheme.primary)
-                              : null,
-                          onTap: () =>
-                              Navigator.of(context).pop(AppThemeVariant.earthy),
-                        ),
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(l10n.themeBlushLabel),
-                          trailing: variant == AppThemeVariant.blush
-                              ? Icon(Icons.check_rounded, color: scheme.primary)
-                              : null,
-                          onTap: () =>
-                              Navigator.of(context).pop(AppThemeVariant.blush),
-                        ),
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(l10n.themeMossLabel),
-                          trailing: variant == AppThemeVariant.moss
-                              ? Icon(Icons.check_rounded, color: scheme.primary)
-                              : null,
-                          onTap: () =>
-                              Navigator.of(context).pop(AppThemeVariant.moss),
-                        ),
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(l10n.themeVioletLabel),
-                          trailing: variant == AppThemeVariant.violet
-                              ? Icon(Icons.check_rounded, color: scheme.primary)
-                              : null,
-                          onTap: () =>
-                              Navigator.of(context).pop(AppThemeVariant.violet),
-                        ),
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(l10n.themeSlateLabel),
-                          trailing: variant == AppThemeVariant.slate
-                              ? Icon(Icons.check_rounded, color: scheme.primary)
-                              : null,
-                          onTap: () =>
-                              Navigator.of(context).pop(AppThemeVariant.slate),
-                        ),
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(l10n.themeOceanLabel),
-                          trailing: variant == AppThemeVariant.ocean
-                              ? Icon(Icons.check_rounded, color: scheme.primary)
-                              : null,
-                          onTap: () =>
-                              Navigator.of(context).pop(AppThemeVariant.ocean),
-                        ),
-                      ],
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: mediaQuery.size.height * 0.72,
+                    ),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.themeTitle,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 14),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(l10n.themeClassicLabel),
+                            trailing: variant == AppThemeVariant.classic
+                                ? Icon(Icons.check_rounded, color: scheme.primary)
+                                : null,
+                            onTap: () => Navigator.of(context)
+                                .pop(AppThemeVariant.classic),
+                          ),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(l10n.themeEarthLabel),
+                            trailing: variant == AppThemeVariant.earthy
+                                ? Icon(Icons.check_rounded, color: scheme.primary)
+                                : null,
+                            onTap: () =>
+                                Navigator.of(context).pop(AppThemeVariant.earthy),
+                          ),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(l10n.themeBlushLabel),
+                            trailing: variant == AppThemeVariant.blush
+                                ? Icon(Icons.check_rounded, color: scheme.primary)
+                                : null,
+                            onTap: () =>
+                                Navigator.of(context).pop(AppThemeVariant.blush),
+                          ),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(l10n.themeMossLabel),
+                            trailing: variant == AppThemeVariant.moss
+                                ? Icon(Icons.check_rounded, color: scheme.primary)
+                                : null,
+                            onTap: () =>
+                                Navigator.of(context).pop(AppThemeVariant.moss),
+                          ),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(l10n.themeVioletLabel),
+                            trailing: variant == AppThemeVariant.violet
+                                ? Icon(Icons.check_rounded, color: scheme.primary)
+                                : null,
+                            onTap: () =>
+                                Navigator.of(context).pop(AppThemeVariant.violet),
+                          ),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(l10n.themeSlateLabel),
+                            trailing: variant == AppThemeVariant.slate
+                                ? Icon(Icons.check_rounded, color: scheme.primary)
+                                : null,
+                            onTap: () =>
+                                Navigator.of(context).pop(AppThemeVariant.slate),
+                          ),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(l10n.themeOceanLabel),
+                            trailing: variant == AppThemeVariant.ocean
+                                ? Icon(Icons.check_rounded, color: scheme.primary)
+                                : null,
+                            onTap: () =>
+                                Navigator.of(context).pop(AppThemeVariant.ocean),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
