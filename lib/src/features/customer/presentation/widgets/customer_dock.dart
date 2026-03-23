@@ -5,8 +5,6 @@ import '../../../../core/widgets/common_widgets.dart';
 import '../../../../core/widgets/logout_prompt.dart';
 import 'package:flutter/material.dart';
 
-const String _customerDockIndicatorHeroTag = 'customer-dock-active-indicator';
-
 enum CustomerDockTab {
   home,
   notifications,
@@ -46,7 +44,6 @@ class CustomerDock extends StatelessWidget {
               icon: Icons.home_outlined,
               selectedIcon: Icons.home_filled,
               active: activeTab == CustomerDockTab.home,
-              activeHeroTag: _customerDockIndicatorHeroTag,
               compact: compact,
               onTap: () {
                 if (activeTab == CustomerDockTab.home) {
@@ -67,7 +64,6 @@ class CustomerDock extends StatelessWidget {
             icon: Icons.notifications_outlined,
             selectedIcon: Icons.notifications,
             active: activeTab == CustomerDockTab.notifications,
-            activeHeroTag: _customerDockIndicatorHeroTag,
             primary: false,
             showBadge: showBadge,
             compact: compact,
@@ -90,7 +86,6 @@ class CustomerDock extends StatelessWidget {
               icon: Icons.account_circle_outlined,
               selectedIcon: Icons.account_circle,
               active: activeTab == CustomerDockTab.profile,
-              activeHeroTag: _customerDockIndicatorHeroTag,
               compact: compact,
               onHoldComplete: activeTab == CustomerDockTab.profile
                   ? () => showLogoutPrompt(context)

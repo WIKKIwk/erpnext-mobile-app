@@ -282,7 +282,6 @@ class DockButton extends StatefulWidget {
     this.holdDuration = const Duration(seconds: 1),
     this.compact = false,
     this.showBadge = false,
-    this.activeHeroTag,
   });
 
   final IconData? icon;
@@ -296,7 +295,6 @@ class DockButton extends StatefulWidget {
   final Duration holdDuration;
   final bool compact;
   final bool showBadge;
-  final Object? activeHeroTag;
 
   @override
   State<DockButton> createState() => _DockButtonState();
@@ -306,6 +304,43 @@ class _DockButtonState extends State<DockButton> {
   Timer? _holdTimer;
   bool _holdTriggered = false;
   bool _pressed = false;
+  bool _showActiveIndicator = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _showActiveIndicator = false;
+    if (widget.active && !widget.primary) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        setState(() => _showActiveIndicator = true);
+      });
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant DockButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.primary) {
+      return;
+    }
+    if (oldWidget.active == widget.active) {
+      return;
+    }
+    if (widget.active) {
+      setState(() => _showActiveIndicator = false);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        setState(() => _showActiveIndicator = true);
+      });
+      return;
+    }
+    setState(() => _showActiveIndicator = false);
+  }
 
   void _startHold() {
     if (widget.onHoldComplete == null) {
@@ -373,37 +408,6 @@ class _DockButtonState extends State<DockButton> {
                 widget.iconWidget ??
                 Icon(widget.selectedIcon ?? widget.icon))
             : (widget.iconWidget ?? Icon(widget.icon));
-    final Widget activeIndicator = AnimatedContainer(
-      duration: AppMotion.medium,
-      curve: AppMotion.smooth,
-      height: 42,
-      width: widget.active ? 68 : 42,
-      decoration: BoxDecoration(
-        color: widget.active ? scheme.secondaryContainer : Colors.transparent,
-        borderRadius: BorderRadius.circular(999),
-      ),
-    );
-    final Widget animatedIndicator = widget.active &&
-            !widget.primary &&
-            widget.activeHeroTag != null
-        ? Hero(
-            tag: widget.activeHeroTag!,
-            flightShuttleBuilder: (
-              flightContext,
-              animation,
-              flightDirection,
-              fromHeroContext,
-              toHeroContext,
-            ) {
-              return Material(
-                type: MaterialType.transparency,
-                child: toHeroContext.widget,
-              );
-            },
-            child: activeIndicator,
-          )
-        : activeIndicator;
-
     return AnimatedScale(
       duration: AppMotion.fast,
       curve: AppMotion.smooth,
@@ -480,7 +484,28 @@ class _DockButtonState extends State<DockButton> {
                     alignment: Alignment.center,
                     children: [
                       if (!widget.primary)
-                        animatedIndicator,
+                        AnimatedOpacity(
+                          duration: AppMotion.medium,
+                          curve: AppMotion.smooth,
+                          opacity: _showActiveIndicator ? 1 : 0,
+                          child: AnimatedScale(
+                            duration: AppMotion.medium,
+                            curve: Curves.easeOutBack,
+                            scale: _showActiveIndicator ? 1 : 0.72,
+                            child: AnimatedContainer(
+                              duration: AppMotion.medium,
+                              curve: AppMotion.smooth,
+                              height: 42,
+                              width: widget.active ? 68 : 42,
+                              decoration: BoxDecoration(
+                                color: widget.active
+                                    ? scheme.secondaryContainer
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                            ),
+                          ),
+                        ),
                       IconTheme(
                         data: IconThemeData(color: foreground, size: iconSize),
                         child: iconChild,
