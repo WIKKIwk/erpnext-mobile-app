@@ -2,6 +2,7 @@ import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/notifications/werka_runtime_store.dart';
+import '../../../core/widgets/m3_confirm_dialog.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/werka_dock.dart';
@@ -113,53 +114,12 @@ class _WerkaDetailScreenState extends State<WerkaDetailScreen> {
       }
     }
 
-    final bool? confirmed = await showDialog<bool>(
+    final bool? confirmed = await showM3ConfirmDialog(
       context: context,
-      builder: (context) {
-        final theme = Theme.of(context);
-        return Dialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 28),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(22),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Tasdiqlash',
-                  style: theme.textTheme.headlineMedium,
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  'Haqiqatan ham shu qabulni yakunlaysizmi?',
-                  style: theme.textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: const Text('Yo‘q'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        child: const Text('Ha'),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+      title: 'Tasdiqlash',
+      message: 'Haqiqatan ham shu qabulni yakunlaysizmi?',
+      cancelLabel: 'Yo‘q',
+      confirmLabel: 'Ha',
     );
     if (confirmed != true) {
       return;
@@ -202,6 +162,17 @@ class _WerkaDetailScreenState extends State<WerkaDetailScreen> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
+    final detailRows = <({String label, String value})>[
+      (label: 'Supplier', value: widget.record.supplierName),
+      (
+        label: 'Mahsulot',
+        value: '${widget.record.itemCode} • ${widget.record.itemName}',
+      ),
+      (
+        label: 'Jo‘natilgan',
+        value: '${widget.record.sentQty.toStringAsFixed(2)} ${widget.record.uom}',
+      ),
+    ];
     return Scaffold(
       extendBody: true,
       backgroundColor: AppTheme.shellStart(context),
@@ -238,42 +209,91 @@ class _WerkaDetailScreenState extends State<WerkaDetailScreen> {
                   Card.filled(
                     margin: EdgeInsets.zero,
                     color: scheme.surfaceContainerLow,
+                    clipBehavior: Clip.antiAlias,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(18),
+                      padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _WerkaDetailField(
-                            label: 'Supplier',
-                            value: widget.record.supplierName,
+                          Text(
+                            widget.record.itemName,
+                            style: textTheme.headlineSmall,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            widget.record.itemCode,
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          Card.filled(
+                            margin: EdgeInsets.zero,
+                            color: scheme.surfaceContainer,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: Column(
+                              children: [
+                                for (int index = 0;
+                                    index < detailRows.length;
+                                    index++) ...[
+                                  _WerkaDetailInfoRow(
+                                    label: detailRows[index].label,
+                                    value: detailRows[index].value,
+                                    isFirst: index == 0,
+                                    isLast: index == detailRows.length - 1,
+                                  ),
+                                  if (index != detailRows.length - 1)
+                                    Divider(
+                                      height: 1,
+                                      thickness: 1,
+                                      indent: 16,
+                                      endIndent: 16,
+                                      color: scheme.outlineVariant
+                                          .withValues(alpha: 0.55),
+                                    ),
+                                ],
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 14),
-                          _WerkaDetailField(
-                            label: 'Mahsulot',
-                            value:
-                                '${widget.record.itemCode} • ${widget.record.itemName}',
-                          ),
-                          const SizedBox(height: 14),
-                          _WerkaDetailField(
-                            label: 'Jo‘natilgan',
-                            value:
-                                '${widget.record.sentQty.toStringAsFixed(2)} ${widget.record.uom}',
-                          ),
-                          const SizedBox(height: 14),
-                          Text('Qabul qilingan', style: textTheme.bodySmall),
-                          const SizedBox(height: 6),
-                          TextField(
-                            controller: controller,
-                            keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true),
-                            style: textTheme.displaySmall,
-                            readOnly: fullReturnMode,
-                            decoration: InputDecoration(
-                              hintText: '0',
-                              suffixText: widget.record.uom,
+                          Card.filled(
+                            margin: EdgeInsets.zero,
+                            color: scheme.surfaceContainer,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(18),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Qabul qilingan',
+                                    style: textTheme.bodyMedium?.copyWith(
+                                      color: scheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  TextField(
+                                    controller: controller,
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
+                                    style: textTheme.displaySmall,
+                                    readOnly: fullReturnMode,
+                                    decoration: InputDecoration(
+                                      hintText: '0',
+                                      suffixText: widget.record.uom,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -440,36 +460,54 @@ class _WerkaDetailScreenState extends State<WerkaDetailScreen> {
   }
 }
 
-class _WerkaDetailField extends StatelessWidget {
-  const _WerkaDetailField({
+class _WerkaDetailInfoRow extends StatelessWidget {
+  const _WerkaDetailInfoRow({
     required this.label,
     required this.value,
+    required this.isFirst,
+    required this.isLast,
   });
 
   final String label;
   final String value;
+  final bool isFirst;
+  final bool isLast;
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: textTheme.bodySmall),
-        const SizedBox(height: 6),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHigh,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Text(
-            value,
-            style: textTheme.titleMedium,
-          ),
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(isFirst ? 24 : 0),
+          topRight: Radius.circular(isFirst ? 24 : 0),
+          bottomLeft: Radius.circular(isLast ? 24 : 0),
+          bottomRight: Radius.circular(isLast ? 24 : 0),
         ),
-      ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: theme.textTheme.titleMedium,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
