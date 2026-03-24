@@ -488,7 +488,7 @@ class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
                               opacity: _refreshing ? 1 : (0.35 + (0.65 * progress)),
                               child: const AppLoadingIndicator(
                                 size: 20,
-                                glyphSize: 10,
+                                glyphSize: 13,
                               ),
                             ),
                           ),
