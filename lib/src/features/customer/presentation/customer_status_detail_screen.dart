@@ -2,6 +2,7 @@ import '../../../app/app_router.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_loading_indicator.dart';
+import '../../../core/widgets/app_retry_state.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
@@ -102,16 +103,7 @@ class _CustomerStatusDetailScreenState
                       );
                     }
                     if (store.error != null && !store.loaded) {
-                      return Center(
-                        child: Card.filled(
-                          margin: EdgeInsets.zero,
-                          color: scheme.surfaceContainerLow,
-                          child: Padding(
-                            padding: const EdgeInsets.all(18),
-                            child: Text('${store.error}'),
-                          ),
-                        ),
-                      );
+                      return AppRetryState(onRetry: _reload);
                     }
                     final items = store.itemsForKind(widget.kind);
                     if (items.isEmpty) {

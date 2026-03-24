@@ -6,6 +6,7 @@ import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/session/app_session.dart';
 import '../../../core/theme/app_motion.dart';
 import '../../../core/widgets/app_loading_indicator.dart';
+import '../../../core/widgets/app_retry_state.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/m3_confirm_dialog.dart';
 import '../../../core/widgets/motion_widgets.dart';
@@ -208,9 +209,7 @@ class _CustomerNotificationsScreenState
               physics: const TopRefreshScrollPhysics(),
               padding: EdgeInsets.fromLTRB(0, 8, 0, bottomPadding),
               children: [
-                _NotificationPanel(
-                  child: Text('${store.error}'),
-                ),
+                AppRetryState(onRetry: _reload),
               ],
             ),
           );
