@@ -133,14 +133,37 @@ class _WerkaStatusDetailScreenState extends State<WerkaStatusDetailScreen> {
                       child: ListView(
                         padding: const EdgeInsets.only(bottom: 110),
                         children: [
-                          for (int index = 0; index < items.length; index++) ...[
-                            _WerkaStatusRecordCard(
-                              record: items[index],
-                              onTap: () => _openRecord(items[index]),
+                          Card.filled(
+                            margin: EdgeInsets.zero,
+                            color: scheme.surfaceContainerLow,
+                            clipBehavior: Clip.antiAlias,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(28),
                             ),
-                            if (index != items.length - 1)
-                              const SizedBox(height: 12),
-                          ],
+                            child: Column(
+                              children: [
+                                for (int index = 0;
+                                    index < items.length;
+                                    index++) ...[
+                                  _WerkaStatusRecordRow(
+                                    record: items[index],
+                                    isFirst: index == 0,
+                                    isLast: index == items.length - 1,
+                                    onTap: () => _openRecord(items[index]),
+                                  ),
+                                  if (index != items.length - 1)
+                                    Divider(
+                                      height: 1,
+                                      thickness: 1,
+                                      indent: 16,
+                                      endIndent: 16,
+                                      color: scheme.outlineVariant
+                                          .withValues(alpha: 0.55),
+                                    ),
+                                ],
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     );
@@ -190,75 +213,94 @@ class _WerkaStatusDetailScreenState extends State<WerkaStatusDetailScreen> {
   }
 }
 
-class _WerkaStatusRecordCard extends StatelessWidget {
-  const _WerkaStatusRecordCard({
+class _WerkaStatusRecordRow extends StatelessWidget {
+  const _WerkaStatusRecordRow({
     required this.record,
+    required this.isFirst,
+    required this.isLast,
     required this.onTap,
   });
 
   final DispatchRecord record;
+  final bool isFirst;
+  final bool isLast;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = Theme.of(context).colorScheme;
-    final shape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(28),
+    final borderRadius = BorderRadius.only(
+      topLeft: Radius.circular(isFirst ? 28 : 0),
+      topRight: Radius.circular(isFirst ? 28 : 0),
+      bottomLeft: Radius.circular(isLast ? 28 : 0),
+      bottomRight: Radius.circular(isLast ? 28 : 0),
     );
-    return Card.filled(
-      margin: EdgeInsets.zero,
-      color: scheme.surfaceContainerLow,
-      clipBehavior: Clip.antiAlias,
-      shape: shape,
+    return Material(
+      color: Colors.transparent,
       child: InkWell(
-        customBorder: shape,
+        borderRadius: borderRadius,
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-          child: Column(
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
                       record.itemName.trim().isEmpty
                           ? record.itemCode
                           : record.itemName,
-                      style: theme.textTheme.titleLarge,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 3),
+                    if (record.note.trim().isNotEmpty)
+                      Text(
+                        record.note,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      )
+                    else if (record.acceptedQty > 0)
+                      Text(
+                        context.l10n.acceptedQtyLabel(
+                          record.acceptedQty,
+                          record.uom,
+                        ),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(height: 4),
                   Text(
                     record.createdLabel,
-                    style: theme.textTheme.bodySmall,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
-              Text(
-                '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
-                style: theme.textTheme.headlineMedium,
-              ),
-              if (record.acceptedQty > 0) ...[
-                const SizedBox(height: 6),
-                Text(
-                  context.l10n.acceptedQtyLabel(
-                    record.acceptedQty,
-                    record.uom,
-                  ),
-                  style: theme.textTheme.bodySmall,
-                ),
-              ],
-              if (record.note.trim().isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Text(
-                  record.note,
-                  style: theme.textTheme.bodySmall,
-                ),
-              ],
             ],
           ),
         ),
