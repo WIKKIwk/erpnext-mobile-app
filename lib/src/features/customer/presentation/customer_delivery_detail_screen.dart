@@ -3,6 +3,7 @@ import '../../../core/api/mobile_api.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/widgets/app_shell.dart';
+import '../../../core/widgets/app_retry_state.dart';
 import '../../../core/widgets/m3_confirm_dialog.dart';
 import 'widgets/customer_dock.dart';
 import '../../shared/models/app_models.dart';
@@ -254,15 +255,7 @@ class _CustomerDeliveryDetailScreenState
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(
-              child: Card.filled(
-                margin: EdgeInsets.zero,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text('${snapshot.error}'),
-                ),
-              ),
-            );
+            return AppRetryState(onRetry: _reload);
           }
           final detail = snapshot.data!;
           final record = detail.record;

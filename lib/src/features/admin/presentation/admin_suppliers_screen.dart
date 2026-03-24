@@ -1,6 +1,7 @@
 import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
 import '../../../core/widgets/app_shell.dart';
+import '../../../core/widgets/app_retry_state.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/admin_dock.dart';
@@ -90,15 +91,7 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(
-              child: Card.filled(
-                margin: EdgeInsets.zero,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text('Users yuklanmadi: ${snapshot.error}'),
-                ),
-              ),
-            );
+            return AppRetryState(onRetry: _reload);
           }
           final data = snapshot.data ??
               const _AdminSuppliersData(

@@ -1,6 +1,7 @@
 import '../../../core/api/mobile_api.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_shell.dart';
+import '../../../core/widgets/app_retry_state.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/admin_dock.dart';
@@ -104,30 +105,12 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
             return const Center(child: CircularProgressIndicator.adaptive());
           }
           if (snapshot.hasError) {
-            return Center(
-              child: Card.filled(
-                margin: EdgeInsets.zero,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '${context.l10n.adminSettingsLoadFailed}: ${snapshot.error}',
-                      ),
-                      const SizedBox(height: 12),
-                      FilledButton(
-                        onPressed: () {
-                          setState(() {
-                            _future = MobileApi.instance.adminSettings();
-                          });
-                        },
-                        child: Text(context.l10n.retry),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+            return AppRetryState(
+              onRetry: () async {
+                setState(() {
+                  _future = MobileApi.instance.adminSettings();
+                });
+              },
             );
           }
 

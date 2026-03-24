@@ -2,6 +2,7 @@ import '../../../app/app_router.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/widgets/app_shell.dart';
+import '../../../core/widgets/app_retry_state.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../state/admin_store.dart';
 import 'widgets/admin_dock.dart';
@@ -69,26 +70,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (store.summaryError != null && !store.loadedSummary) {
-            return Center(
-              child: Card.filled(
-                margin: EdgeInsets.zero,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                          '${context.l10n.adminSummaryLoadFailed}: ${store.summaryError}'),
-                      const SizedBox(height: 12),
-                      FilledButton(
-                        onPressed: _reload,
-                        child: Text(context.l10n.retry),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
+            return AppRetryState(onRetry: _reload);
           }
 
           final summaryValue = store.summary;

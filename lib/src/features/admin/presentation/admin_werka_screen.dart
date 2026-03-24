@@ -1,5 +1,6 @@
 import '../../../core/api/mobile_api.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_retry_state.dart';
 import '../../shared/models/app_models.dart';
 import 'dart:async';
 
@@ -64,6 +65,21 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
         return;
       }
       setState(() => _retryAfterSec -= 1);
+    });
+  }
+
+  Future<void> _reload() async {
+    final future = MobileApi.instance.adminSettings();
+    setState(() {
+      hydrated = false;
+      _future = future;
+    });
+    final updated = await future;
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      werkaCode = updated.werkaCode;
     });
   }
 
@@ -138,9 +154,7 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
                 children: [
                   _AdminWerkaHeader(theme: theme),
                   const SizedBox(height: 20),
-                  _AdminWerkaNoticeCard(
-                    child: Text('Werka yuklanmadi: ${snapshot.error}'),
-                  ),
+                  AppRetryState(onRetry: _reload, padding: EdgeInsets.zero),
                 ],
               );
             }
@@ -316,31 +330,6 @@ class _AdminWerkaField extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
       ),
       child: child,
-    );
-  }
-}
-
-class _AdminWerkaNoticeCard extends StatelessWidget {
-  const _AdminWerkaNoticeCard({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Card.filled(
-      margin: EdgeInsets.zero,
-      color: scheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
-        side: BorderSide(
-          color: scheme.outlineVariant.withValues(alpha: 0.7),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: child,
-      ),
     );
   }
 }

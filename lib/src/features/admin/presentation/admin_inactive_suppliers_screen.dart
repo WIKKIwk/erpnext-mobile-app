@@ -1,5 +1,6 @@
 import '../../../core/api/mobile_api.dart';
 import '../../../core/widgets/app_shell.dart';
+import '../../../core/widgets/app_retry_state.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../shared/models/app_models.dart';
@@ -77,21 +78,7 @@ class _AdminInactiveSuppliersScreenState
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(
-              child: SoftCard(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('Inactive supplierlar yuklanmadi: ${snapshot.error}'),
-                    const SizedBox(height: 12),
-                    FilledButton(
-                      onPressed: _reload,
-                      child: const Text('Qayta urinish'),
-                    ),
-                  ],
-                ),
-              ),
-            );
+            return AppRetryState(onRetry: _reload);
           }
 
           final items = snapshot.data ?? const <AdminSupplier>[];

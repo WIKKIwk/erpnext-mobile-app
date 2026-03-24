@@ -3,6 +3,7 @@ import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/session/app_session.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_shell.dart';
+import '../../../core/widgets/app_retry_state.dart';
 import '../../../core/widgets/m3_confirm_dialog.dart';
 import '../../shared/models/app_models.dart';
 import '../state/admin_store.dart';
@@ -101,23 +102,7 @@ class _AdminActivityScreenState extends State<AdminActivityScreen> {
           if (store.activityError != null &&
               !store.loadedActivity &&
               items.isEmpty) {
-            return Center(
-              child: Card.filled(
-                margin: EdgeInsets.zero,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                        '${context.l10n.adminActivityTitle} yuklanmadi: ${store.activityError}'),
-                    const SizedBox(height: 12),
-                    FilledButton(
-                      onPressed: _reload,
-                      child: Text(context.l10n.retry),
-                    ),
-                  ],
-                ),
-              ),
-            );
+            return AppRetryState(onRetry: _reload);
           }
 
           if (items.isEmpty) {

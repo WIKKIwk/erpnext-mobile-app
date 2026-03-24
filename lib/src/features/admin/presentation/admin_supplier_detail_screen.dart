@@ -1,6 +1,7 @@
 import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
 import '../../../core/widgets/app_shell.dart';
+import '../../../core/widgets/app_retry_state.dart';
 import '../../../core/widgets/m3_confirm_dialog.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../../shared/models/app_models.dart';
@@ -223,23 +224,7 @@ class _AdminSupplierDetailScreenState extends State<AdminSupplierDetailScreen> {
           }
           if (snapshot.hasError) {
             return Center(
-              child: Card.filled(
-                margin: EdgeInsets.zero,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('Supplier detail yuklanmadi: ${snapshot.error}'),
-                      const SizedBox(height: 12),
-                      FilledButton(
-                        onPressed: _reload,
-                        child: const Text('Qayta urinish'),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              child: AppRetryState(onRetry: _reload),
             );
           }
 

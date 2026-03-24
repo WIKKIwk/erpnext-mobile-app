@@ -1,5 +1,6 @@
 import '../../../core/api/mobile_api.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_retry_state.dart';
 import '../../../core/widgets/m3_confirm_dialog.dart';
 import '../../shared/models/app_models.dart';
 import 'dart:async';
@@ -385,25 +386,7 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
             ),
             if (_loadError != null) ...[
               const SizedBox(height: 12),
-              _AdminCustomerNoticeCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Customer detail yuklanmadi',
-                      style: theme.textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    Text('$_loadError'),
-                    const SizedBox(height: 12),
-                    FilledButton(
-                      onPressed: _reload,
-                      child: const Text('Qayta urinish'),
-                    ),
-                  ],
-                ),
-              ),
+              AppRetryState(onRetry: _reload, padding: EdgeInsets.zero),
             ],
           ],
         ),
@@ -861,31 +844,6 @@ Future<void> _showAssignedItemsSheet(
       );
     },
   );
-}
-
-class _AdminCustomerNoticeCard extends StatelessWidget {
-  const _AdminCustomerNoticeCard({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Card.filled(
-      margin: EdgeInsets.zero,
-      color: scheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
-        side: BorderSide(
-          color: scheme.outlineVariant.withValues(alpha: 0.7),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: child,
-      ),
-    );
-  }
 }
 
 class _DetailField extends StatelessWidget {
