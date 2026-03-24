@@ -7,6 +7,7 @@ import '../../../core/session/app_session.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_controller.dart';
 import '../../../core/widgets/app_shell.dart';
+import '../../../core/widgets/m3_confirm_dialog.dart';
 import '../../../core/widgets/motion_widgets.dart';
 import '../../../core/widgets/top_refresh_scroll_physics.dart';
 import '../data/profile_avatar_cache.dart';
@@ -217,26 +218,12 @@ class _ProfileScreenState extends State<ProfileScreen>
           SecurityController.instance.biometricEnabledForCurrentUser) {
         return;
       }
-      final enable = await showDialog<bool>(
+      final enable = await showM3ConfirmDialog(
         context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Tezkor ochish'),
-            content: const Text(
-              'Face ID yoki fingerprint bilan tez ochishni yoqasizmi?',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Yo‘q'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Ha'),
-              ),
-            ],
-          );
-        },
+        title: 'Tezkor ochish',
+        message: 'Face ID yoki fingerprint bilan tez ochishni yoqasizmi?',
+        cancelLabel: context.l10n.no,
+        confirmLabel: context.l10n.yes,
       );
       if (enable == true) {
         await _toggleBiometric(true);
