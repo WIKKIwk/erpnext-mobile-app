@@ -114,23 +114,24 @@ extension MobileApiWerka on MobileApi {
   Future<List<CustomerItemOption>> werkaCustomerItemOptions({
     String query = '',
   }) async {
+    final trimmedQuery = query.trim();
     final response = await _sendAuthorized(
       () => http.get(
         Uri.parse('$baseUrl/v1/mobile/werka/customer-item-options').replace(
-          queryParameters: query.trim().isEmpty ? null : {'q': query.trim()},
+          queryParameters: trimmedQuery.isEmpty ? null : {'q': trimmedQuery},
         ),
         headers: _headers(requireToken()),
       ),
     );
-    if (response.statusCode != 200) {
-      throw Exception('Werka customer item options failed');
+    if (response.statusCode == 200) {
+      final List<dynamic> json = jsonDecode(response.body) as List<dynamic>;
+      return json
+          .map(
+            (item) => CustomerItemOption.fromJson(item as Map<String, dynamic>),
+          )
+          .toList();
     }
-    final List<dynamic> json = jsonDecode(response.body) as List<dynamic>;
-    return json
-        .map(
-          (item) => CustomerItemOption.fromJson(item as Map<String, dynamic>),
-        )
-        .toList();
+    return _fallbackWerkaCustomerItemOptions(query: trimmedQuery);
   }
 
   Future<DispatchRecord> createWerkaUnannouncedDraft({
@@ -289,5 +290,88 @@ extension MobileApiWerka on MobileApi {
     return DispatchRecord.fromJson(
       jsonDecode(response.body) as Map<String, dynamic>,
     );
+  }
+
+  Future<List<CustomerItemOption>> _fallbackWerkaCustomerItemOptions({
+    required String query,
+  }) async {
+    final customers = await werkaCustomers();
+    final normalizedQuery = query.toLowerCase();
+    final optionLists = await Future.wait(
+      customers.map((customer) async {
+        final customerMatches = normalizedQuery.isNotEmpty &&
+            _matchesCustomer(customer, normalizedQuery);
+        final items = await werkaCustomerItems(
+          customerRef: customer.ref,
+          query: customerMatches ? '' : query,
+        );
+        return items
+            .map(
+              (item) => CustomerItemOption(
+                customerRef: customer.ref,
+                customerName: customer.name,
+                customerPhone: customer.phone,
+                itemCode: item.code,
+                itemName: item.name,
+                uom: item.uom,
+                warehouse: item.warehouse,
+              ),
+            )
+            .toList(growable: false);
+      }),
+    );
+
+    final seen = <String>{};
+    final filtered = <CustomerItemOption>[];
+    for (final options in optionLists) {
+      for (final option in options) {
+        if (normalizedQuery.isNotEmpty &&
+            !_matchesCustomerItemOption(option, normalizedQuery)) {
+          continue;
+        }
+        final key = '${option.customerRef}|${option.itemCode}';
+        if (!seen.add(key)) {
+          continue;
+        }
+        filtered.add(option);
+      }
+    }
+
+    filtered.sort((left, right) {
+      final itemCompare =
+          left.itemName.toLowerCase().compareTo(right.itemName.toLowerCase());
+      if (itemCompare != 0) {
+        return itemCompare;
+      }
+      final customerCompare = left.customerName
+          .toLowerCase()
+          .compareTo(right.customerName.toLowerCase());
+      if (customerCompare != 0) {
+        return customerCompare;
+      }
+      return left.itemCode.toLowerCase().compareTo(right.itemCode.toLowerCase());
+    });
+
+    return filtered;
+  }
+
+  bool _matchesCustomer(
+    CustomerDirectoryEntry customer,
+    String normalizedQuery,
+  ) {
+    return customer.name.toLowerCase().contains(normalizedQuery) ||
+        customer.phone.toLowerCase().contains(normalizedQuery) ||
+        customer.ref.toLowerCase().contains(normalizedQuery);
+  }
+
+  bool _matchesCustomerItemOption(
+    CustomerItemOption option,
+    String normalizedQuery,
+  ) {
+    return option.itemName.toLowerCase().contains(normalizedQuery) ||
+        option.itemCode.toLowerCase().contains(normalizedQuery) ||
+        option.customerName.toLowerCase().contains(normalizedQuery) ||
+        option.customerPhone.toLowerCase().contains(normalizedQuery) ||
+        option.customerRef.toLowerCase().contains(normalizedQuery);
   }
 }

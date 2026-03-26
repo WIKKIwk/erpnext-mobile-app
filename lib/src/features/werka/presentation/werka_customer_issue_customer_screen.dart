@@ -30,7 +30,7 @@ class WerkaCustomerIssueCustomerScreen extends StatefulWidget {
 class _WerkaCustomerIssueCustomerScreenState
     extends State<WerkaCustomerIssueCustomerScreen> {
   late Future<List<CustomerDirectoryEntry>> _customersFuture;
-  late Future<List<CustomerItemOption>> _itemOptionsFuture;
+  Future<List<CustomerItemOption>>? _itemOptionsFuture;
   final TextEditingController _qtyController = TextEditingController(text: '1');
 
   CustomerDirectoryEntry? _selectedCustomer;
@@ -43,7 +43,6 @@ class _WerkaCustomerIssueCustomerScreenState
   void initState() {
     super.initState();
     _customersFuture = MobileApi.instance.werkaCustomers();
-    _itemOptionsFuture = MobileApi.instance.werkaCustomerItemOptions();
     if (widget.prefill != null) {
       _applyPrefill(widget.prefill!);
     }
@@ -57,12 +56,11 @@ class _WerkaCustomerIssueCustomerScreenState
 
   Future<void> _reloadCustomers() async {
     final customersFuture = MobileApi.instance.werkaCustomers();
-    final itemOptionsFuture = MobileApi.instance.werkaCustomerItemOptions();
     setState(() {
       _customersFuture = customersFuture;
-      _itemOptionsFuture = itemOptionsFuture;
+      _itemOptionsFuture = null;
     });
-    await Future.wait([customersFuture, itemOptionsFuture]);
+    await customersFuture;
   }
 
   Future<void> _loadItemsForCustomer(
@@ -215,7 +213,21 @@ class _WerkaCustomerIssueCustomerScreenState
       return;
     }
     final l10n = context.l10n;
-    final options = await _itemOptionsFuture;
+    final future =
+        _itemOptionsFuture ??= MobileApi.instance.werkaCustomerItemOptions();
+    List<CustomerItemOption> options;
+    try {
+      options = await future;
+    } catch (error) {
+      _itemOptionsFuture = null;
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Mol ro‘yxati yuklanmadi: $error')),
+      );
+      return;
+    }
     if (!mounted) {
       return;
     }
