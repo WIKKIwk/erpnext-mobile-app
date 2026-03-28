@@ -13,6 +13,21 @@ part 'mobile_api_customer.dart';
 part 'mobile_api_supplier_notifications.dart';
 part 'mobile_api_werka.dart';
 
+class MobileApiException implements Exception {
+  const MobileApiException({
+    required this.code,
+    required this.message,
+    this.statusCode,
+  });
+
+  final String code;
+  final String message;
+  final int? statusCode;
+
+  @override
+  String toString() => message;
+}
+
 String maskPushToken(String token) {
   final trimmed = token.trim();
   if (trimmed.isEmpty) {

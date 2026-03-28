@@ -177,6 +177,18 @@ extension MobileApiWerka on MobileApi {
       ),
     );
     if (response.statusCode != 200) {
+      Map<String, dynamic> payload = const <String, dynamic>{};
+      try {
+        payload = jsonDecode(response.body) as Map<String, dynamic>;
+      } catch (_) {}
+      final code = (payload['error_code'] as String? ?? '').trim();
+      if (code == 'insufficient_stock') {
+        throw const MobileApiException(
+          code: 'insufficient_stock',
+          message: 'Insufficient stock',
+          statusCode: 409,
+        );
+      }
       throw Exception('Werka customer issue create failed');
     }
     return WerkaCustomerIssueRecord.fromJson(
@@ -349,7 +361,9 @@ extension MobileApiWerka on MobileApi {
       if (customerCompare != 0) {
         return customerCompare;
       }
-      return left.itemCode.toLowerCase().compareTo(right.itemCode.toLowerCase());
+      return left.itemCode
+          .toLowerCase()
+          .compareTo(right.itemCode.toLowerCase());
     });
 
     return filtered;

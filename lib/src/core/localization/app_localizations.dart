@@ -282,6 +282,11 @@ class AppLocalizations {
         'Server disconnected. Try again.',
         'Сервер отключен. Повторите попытку.',
       );
+  String get insufficientStockMessage => _t(
+        'Omborda yetarli mol yo‘q.',
+        'There is not enough stock in the warehouse.',
+        'На складе недостаточно товара.',
+      );
   String unannouncedSuppliersFailed(Object error) => _t(
         'Server uzilgan. Qayta urining.',
         'Server disconnected. Try again.',

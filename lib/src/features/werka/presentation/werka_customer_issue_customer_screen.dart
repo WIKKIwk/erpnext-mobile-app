@@ -419,8 +419,12 @@ class _WerkaCustomerIssueCustomerScreenState
       if (!mounted) {
         return;
       }
+      final message =
+          error is MobileApiException && error.code == 'insufficient_stock'
+              ? l10n.insufficientStockMessage
+              : l10n.customerIssueFailed(error);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.customerIssueFailed(error))),
+        SnackBar(content: Text(message)),
       );
     } finally {
       if (mounted) {
@@ -484,8 +488,7 @@ class _WerkaCustomerIssueCustomerScreenState
                           style: theme.textTheme.headlineMedium,
                         ),
                         const SizedBox(height: 18),
-                        Text(l10n.itemLabel,
-                            style: theme.textTheme.bodySmall),
+                        Text(l10n.itemLabel, style: theme.textTheme.bodySmall),
                         const SizedBox(height: 6),
                         SizedBox(
                           width: double.infinity,
