@@ -45,6 +45,8 @@ class MobileApi {
   static final MobileApi instance = MobileApi._();
   static const String _lastCodeKey = 'last_login_code';
   static const String _lastPhoneKey = 'last_login_phone';
+  Future<List<CustomerDirectoryEntry>>? _werkaCustomersFuture;
+  Future<List<CustomerItemOption>>? _werkaCustomerItemOptionsFuture;
 
   static const String baseUrl = String.fromEnvironment(
     'MOBILE_API_BASE_URL',
@@ -111,5 +113,22 @@ class MobileApi {
     } catch (_) {
       return false;
     }
+  }
+
+  // Prime the customer issue lookups before the picker opens so the first
+  // "select item" tap doesn't have to wait for a cold network request.
+  void primeWerkaCustomerIssueLookups() {
+    werkaCustomers();
+    werkaCustomerItemOptions();
+  }
+
+  void clearSessionCaches() {
+    _werkaCustomersFuture = null;
+    _werkaCustomerItemOptionsFuture = null;
+  }
+
+  void clearWerkaCustomerIssueLookups() {
+    _werkaCustomersFuture = null;
+    _werkaCustomerItemOptionsFuture = null;
   }
 }

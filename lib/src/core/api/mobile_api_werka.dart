@@ -3,6 +3,36 @@ part of 'mobile_api.dart';
 extension MobileApiWerka on MobileApi {
   String get baseUrl => MobileApi.baseUrl;
 
+  Future<List<CustomerDirectoryEntry>> _cacheWerkaCustomers() {
+    final cached = _werkaCustomersFuture;
+    if (cached != null) {
+      return cached;
+    }
+    final future = _fetchWerkaCustomers(query: '');
+    _werkaCustomersFuture = future;
+    future.catchError((_) {
+      if (identical(_werkaCustomersFuture, future)) {
+        _werkaCustomersFuture = null;
+      }
+    });
+    return future;
+  }
+
+  Future<List<CustomerItemOption>> _cacheWerkaCustomerItemOptions() {
+    final cached = _werkaCustomerItemOptionsFuture;
+    if (cached != null) {
+      return cached;
+    }
+    final future = _fetchWerkaCustomerItemOptions(query: '');
+    _werkaCustomerItemOptionsFuture = future;
+    future.catchError((_) {
+      if (identical(_werkaCustomerItemOptionsFuture, future)) {
+        _werkaCustomerItemOptionsFuture = null;
+      }
+    });
+    return future;
+  }
+
   Future<List<DispatchRecord>> werkaPending() async {
     final http.Response response = await _sendAuthorized(
       () => http.get(
@@ -42,10 +72,20 @@ extension MobileApiWerka on MobileApi {
   Future<List<CustomerDirectoryEntry>> werkaCustomers({
     String query = '',
   }) async {
+    final trimmedQuery = query.trim();
+    if (trimmedQuery.isEmpty) {
+      return _cacheWerkaCustomers();
+    }
+    return _fetchWerkaCustomers(query: trimmedQuery);
+  }
+
+  Future<List<CustomerDirectoryEntry>> _fetchWerkaCustomers({
+    required String query,
+  }) async {
     final response = await _sendAuthorized(
       () => http.get(
         Uri.parse('$baseUrl/v1/mobile/werka/customers').replace(
-          queryParameters: query.trim().isEmpty ? null : {'q': query.trim()},
+          queryParameters: query.isEmpty ? null : {'q': query},
         ),
         headers: _headers(requireToken()),
       ),
@@ -115,10 +155,19 @@ extension MobileApiWerka on MobileApi {
     String query = '',
   }) async {
     final trimmedQuery = query.trim();
+    if (trimmedQuery.isEmpty) {
+      return _cacheWerkaCustomerItemOptions();
+    }
+    return _fetchWerkaCustomerItemOptions(query: trimmedQuery);
+  }
+
+  Future<List<CustomerItemOption>> _fetchWerkaCustomerItemOptions({
+    required String query,
+  }) async {
     final response = await _sendAuthorized(
       () => http.get(
         Uri.parse('$baseUrl/v1/mobile/werka/customer-item-options').replace(
-          queryParameters: trimmedQuery.isEmpty ? null : {'q': trimmedQuery},
+          queryParameters: query.isEmpty ? null : {'q': query},
         ),
         headers: _headers(requireToken()),
       ),
@@ -131,7 +180,7 @@ extension MobileApiWerka on MobileApi {
           )
           .toList();
     }
-    return _fallbackWerkaCustomerItemOptions(query: trimmedQuery);
+    return _fallbackWerkaCustomerItemOptions(query: query);
   }
 
   Future<DispatchRecord> createWerkaUnannouncedDraft({

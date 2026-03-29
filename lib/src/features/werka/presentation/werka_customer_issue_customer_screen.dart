@@ -43,6 +43,7 @@ class _WerkaCustomerIssueCustomerScreenState
   void initState() {
     super.initState();
     _customersFuture = MobileApi.instance.werkaCustomers();
+    _itemOptionsFuture = MobileApi.instance.werkaCustomerItemOptions();
     if (widget.prefill != null) {
       _applyPrefill(widget.prefill!);
     }
@@ -55,10 +56,12 @@ class _WerkaCustomerIssueCustomerScreenState
   }
 
   Future<void> _reloadCustomers() async {
+    MobileApi.instance.clearWerkaCustomerIssueLookups();
     final customersFuture = MobileApi.instance.werkaCustomers();
+    final itemOptionsFuture = MobileApi.instance.werkaCustomerItemOptions();
     setState(() {
       _customersFuture = customersFuture;
-      _itemOptionsFuture = null;
+      _itemOptionsFuture = itemOptionsFuture;
     });
     await customersFuture;
   }
