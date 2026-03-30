@@ -32,7 +32,15 @@ extension MobileApiAuthProfile on MobileApi {
     final String token = json['token'] as String? ?? '';
     final SessionProfile profile =
         SessionProfile.fromJson(json['profile'] as Map<String, dynamic>);
-    await AppSession.instance.setSession(token: token, profile: profile);
+    final WerkaHomeData? werkaHome = profile.role == UserRole.werka &&
+            json['werka_home'] is Map<String, dynamic>
+        ? WerkaHomeData.fromJson(json['werka_home'] as Map<String, dynamic>)
+        : null;
+    await AppSession.instance.setSession(
+      token: token,
+      profile: profile,
+      werkaHomeBootstrap: werkaHome,
+    );
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(MobileApi._lastPhoneKey, phone);
     await prefs.setString(MobileApi._lastCodeKey, code);

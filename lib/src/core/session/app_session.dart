@@ -13,6 +13,7 @@ class AppSession {
 
   String? token;
   SessionProfile? profile;
+  WerkaHomeData? werkaHomeBootstrap;
 
   bool get isLoggedIn => token != null && profile != null;
   String get homeRoute {
@@ -50,6 +51,7 @@ class AppSession {
   Future<void> setSession({
     required String token,
     required SessionProfile profile,
+    WerkaHomeData? werkaHomeBootstrap,
   }) async {
     final previousProfile = this.profile;
     final previousKey = previousProfile == null
@@ -63,6 +65,7 @@ class AppSession {
     }
     this.token = token;
     this.profile = profile;
+    this.werkaHomeBootstrap = werkaHomeBootstrap;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_tokenKey, token);
     await prefs.setString(_profileKey, jsonEncode(profile.toJson()));
@@ -72,6 +75,7 @@ class AppSession {
     final previousProfile = profile;
     token = null;
     profile = null;
+    werkaHomeBootstrap = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
     await prefs.remove(_profileKey);
@@ -84,5 +88,11 @@ class AppSession {
     profile = nextProfile;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_profileKey, jsonEncode(nextProfile.toJson()));
+  }
+
+  WerkaHomeData? consumeWerkaHomeBootstrap() {
+    final value = werkaHomeBootstrap;
+    werkaHomeBootstrap = null;
+    return value;
   }
 }

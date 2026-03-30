@@ -1,5 +1,6 @@
 import '../../../core/api/mobile_api.dart';
 import '../../../core/notifications/werka_runtime_store.dart';
+import '../../../core/session/app_session.dart';
 import '../../shared/models/app_models.dart';
 import 'package:flutter/foundation.dart';
 
@@ -108,6 +109,16 @@ class WerkaStore extends ChangeNotifier {
   Future<void> bootstrapHome({bool force = false}) async {
     if (_loadingHome) return;
     if (_loadedHome && !force) return;
+    final bootstrap =
+        force ? null : AppSession.instance.consumeWerkaHomeBootstrap();
+    if (bootstrap != null) {
+      _summary = bootstrap.summary;
+      _pendingItems = bootstrap.pendingItems;
+      _loadedHome = true;
+      _homeError = null;
+      notifyListeners();
+      return;
+    }
     await refreshHome();
   }
 
