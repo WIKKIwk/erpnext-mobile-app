@@ -27,14 +27,41 @@ if [ ! -f "$CREDENTIALS_FILE" ]; then
 	exit 1
 fi
 
+stop_existing_tunnel() {
+	pids_file=""
+	if [ -f "$TUNNEL_PID" ]; then
+		pids_file="$(cat "$TUNNEL_PID" 2>/dev/null || true)"
+	fi
+	pids_match="$(pgrep -f "cloudflared tunnel --config $TUNNEL_CONFIG run $TUNNEL_NAME" || true)"
+	pids="$(printf '%s\n%s\n' "$pids_file" "$pids_match" | tr ' ' '\n' | awk 'NF' | sort -u | paste -sd' ' -)"
+	if [ -n "${pids:-}" ]; then
+		echo "Stopping stale domain tunnel process(es): $pids"
+		kill $pids 2>/dev/null || true
+		sleep 1
+		alive="$(for pid in $pids; do kill -0 "$pid" 2>/dev/null && echo "$pid"; done || true)"
+		if [ -n "${alive:-}" ]; then
+			echo "Force killing stale domain tunnel process(es): $alive"
+			kill -9 $alive 2>/dev/null || true
+		fi
+	fi
+	rm -f "$TUNNEL_PID" "$TUNNEL_URL_FILE"
+}
+
+current_service=""
+if [ -f "$TUNNEL_CONFIG" ]; then
+	current_service="$(sed -n 's/^    service: //p' "$TUNNEL_CONFIG" | head -n1 | tr -d '\r')"
+fi
+
 if [ -f "$TUNNEL_PID" ]; then
 	PID="$(cat "$TUNNEL_PID" 2>/dev/null || true)"
-	if [ -n "${PID:-}" ] && kill -0 "$PID" 2>/dev/null; then
+	if [ -n "${PID:-}" ] && kill -0 "$PID" 2>/dev/null && [ "$current_service" = "$CORE_URL" ]; then
 		printf 'https://%s\n' "$PUBLIC_HOSTNAME" >"$TUNNEL_URL_FILE"
 		cat "$TUNNEL_URL_FILE"
 		exit 0
 	fi
-	rm -f "$TUNNEL_PID"
+	stop_existing_tunnel
+elif [ -n "$current_service" ] && [ "$current_service" != "$CORE_URL" ]; then
+	stop_existing_tunnel
 fi
 
 cat >"$TUNNEL_CONFIG" <<EOF
