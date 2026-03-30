@@ -343,6 +343,28 @@ class WerkaHomeSummary {
   }
 }
 
+class WerkaHomeData {
+  const WerkaHomeData({
+    required this.summary,
+    required this.pendingItems,
+  });
+
+  final WerkaHomeSummary summary;
+  final List<DispatchRecord> pendingItems;
+
+  factory WerkaHomeData.fromJson(Map<String, dynamic> json) {
+    final pending = json['pending_items'] as List<dynamic>? ?? const [];
+    return WerkaHomeData(
+      summary: WerkaHomeSummary.fromJson(
+        json['summary'] as Map<String, dynamic>? ?? const {},
+      ),
+      pendingItems: pending
+          .map((item) => DispatchRecord.fromJson(item as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
 enum WerkaStatusKind {
   pending,
   confirmed,

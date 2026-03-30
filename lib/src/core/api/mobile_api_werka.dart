@@ -261,6 +261,21 @@ extension MobileApiWerka on MobileApi {
     );
   }
 
+  Future<WerkaHomeData> werkaHome() async {
+    final http.Response response = await _sendAuthorized(
+      () => http.get(
+        Uri.parse('$baseUrl/v1/mobile/werka/home'),
+        headers: _headers(requireToken()),
+      ),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Werka home failed');
+    }
+    return WerkaHomeData.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  }
+
   Future<List<WerkaStatusBreakdownEntry>> werkaStatusBreakdown(
     WerkaStatusKind kind,
   ) async {

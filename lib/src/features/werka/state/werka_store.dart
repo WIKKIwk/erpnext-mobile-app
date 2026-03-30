@@ -123,12 +123,9 @@ class WerkaStore extends ChangeNotifier {
     _homeError = null;
     notifyListeners();
     try {
-      final results = await Future.wait<dynamic>([
-        MobileApi.instance.werkaSummary(),
-        MobileApi.instance.werkaPending(),
-      ]);
-      _summary = results[0] as WerkaHomeSummary;
-      _pendingItems = results[1] as List<DispatchRecord>;
+      final home = await MobileApi.instance.werkaHome();
+      _summary = home.summary;
+      _pendingItems = home.pendingItems;
       WerkaRuntimeStore.instance.reconcileWithServer(
         pendingItems: _pendingItems,
         historyItems: _historyItems,
