@@ -253,6 +253,8 @@ class AppLocalizations {
       '${qty.toStringAsFixed(0)} $uom $statusWord';
   String receiptCountLabel(int count) =>
       isUzbek ? '$count ta receipt' : '$count receipts';
+  String recordCountLabel(int count) =>
+      isUzbek ? '$count ta hujjat' : '$count records';
   String customerFlowMetric(num qty, String uom) =>
       '${qty.toStringAsFixed(0)} $uom $sentToCustomer';
   String supplierFlowMetric(num qty, String uom) =>

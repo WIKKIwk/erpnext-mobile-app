@@ -280,7 +280,7 @@ class _WerkaBreakdownRow extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(
                         AppLocalizations.of(context)
-                            .receiptCountLabel(entry.receiptCount),
+                            .recordCountLabel(entry.receiptCount),
                         style: theme.textTheme.bodySmall,
                       ),
                     ],
