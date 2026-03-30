@@ -295,20 +295,22 @@ class M3AsyncPickerSheet<T> extends StatefulWidget {
     super.key,
     required this.title,
     required this.hintText,
-    required this.loadItems,
+    required this.loadPage,
     required this.itemTitle,
     required this.itemSubtitle,
     required this.onSelected,
     this.supportingText,
+    this.pageSize = 50,
   });
 
   final String title;
   final String hintText;
-  final Future<List<T>> Function(String query) loadItems;
+  final Future<List<T>> Function(String query, int offset, int limit) loadPage;
   final String Function(T item) itemTitle;
   final String Function(T item) itemSubtitle;
   final ValueChanged<T> onSelected;
   final String? supportingText;
+  final int pageSize;
 
   @override
   State<M3AsyncPickerSheet<T>> createState() => _M3AsyncPickerSheetState<T>();
@@ -316,9 +318,12 @@ class M3AsyncPickerSheet<T> extends StatefulWidget {
 
 class _M3AsyncPickerSheetState<T> extends State<M3AsyncPickerSheet<T>> {
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   Timer? _debounce;
   String _query = '';
   bool _loading = true;
+  bool _loadingMore = false;
+  bool _hasMore = true;
   Object? _error;
   List<T> _items = <T>[];
   int _requestVersion = 0;
@@ -326,29 +331,56 @@ class _M3AsyncPickerSheetState<T> extends State<M3AsyncPickerSheet<T>> {
   @override
   void initState() {
     super.initState();
-    _reload();
+    _scrollController.addListener(_handleScroll);
+    _reload(reset: true);
   }
 
   @override
   void dispose() {
     _debounce?.cancel();
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
-  Future<void> _reload() async {
+  void _handleScroll() {
+    if (!_scrollController.hasClients ||
+        _loading ||
+        _loadingMore ||
+        !_hasMore) {
+      return;
+    }
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 240) {
+      _reload(reset: false);
+    }
+  }
+
+  Future<void> _reload({required bool reset}) async {
     final requestVersion = ++_requestVersion;
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+    if (reset) {
+      setState(() {
+        _loading = true;
+        _loadingMore = false;
+        _error = null;
+        _hasMore = true;
+        _items = <T>[];
+      });
+    } else {
+      setState(() {
+        _loadingMore = true;
+      });
+    }
+    final offset = reset ? 0 : _items.length;
     try {
-      final items = await widget.loadItems(_query.trim());
+      final items =
+          await widget.loadPage(_query.trim(), offset, widget.pageSize);
       if (!mounted || requestVersion != _requestVersion) {
         return;
       }
       setState(() {
-        _items = items;
+        _items = reset ? items : [..._items, ...items];
+        _hasMore = items.length >= widget.pageSize;
       });
     } catch (error) {
       if (!mounted || requestVersion != _requestVersion) {
@@ -361,6 +393,7 @@ class _M3AsyncPickerSheetState<T> extends State<M3AsyncPickerSheet<T>> {
       if (mounted) {
         setState(() {
           _loading = false;
+          _loadingMore = false;
         });
       }
     }
@@ -369,7 +402,9 @@ class _M3AsyncPickerSheetState<T> extends State<M3AsyncPickerSheet<T>> {
   void _scheduleReload(String nextQuery) {
     _debounce?.cancel();
     _query = nextQuery;
-    _debounce = Timer(const Duration(milliseconds: 220), _reload);
+    _debounce = Timer(const Duration(milliseconds: 220), () {
+      _reload(reset: true);
+    });
   }
 
   @override
@@ -398,7 +433,7 @@ class _M3AsyncPickerSheetState<T> extends State<M3AsyncPickerSheet<T>> {
               ),
               const SizedBox(height: 12),
               FilledButton.tonal(
-                onPressed: _reload,
+                onPressed: () => _reload(reset: true),
                 child: Text(l10n.retry),
               ),
             ],
@@ -422,8 +457,9 @@ class _M3AsyncPickerSheetState<T> extends State<M3AsyncPickerSheet<T>> {
         color: scheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(24),
         child: ListView.separated(
+          controller: _scrollController,
           shrinkWrap: true,
-          itemCount: _items.length,
+          itemCount: _items.length + (_loadingMore ? 1 : 0),
           separatorBuilder: (context, index) => Divider(
             height: 1,
             thickness: 1,
@@ -432,6 +468,12 @@ class _M3AsyncPickerSheetState<T> extends State<M3AsyncPickerSheet<T>> {
             color: scheme.outlineVariant.withValues(alpha: 0.5),
           ),
           itemBuilder: (context, index) {
+            if (index >= _items.length) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 18),
+                child: Center(child: AppLoadingIndicator()),
+              );
+            }
             final item = _items[index];
             final subtitle = widget.itemSubtitle(item).trim();
             final isFirst = index == 0;

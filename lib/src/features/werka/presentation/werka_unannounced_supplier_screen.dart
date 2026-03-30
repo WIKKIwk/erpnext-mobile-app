@@ -78,9 +78,10 @@ class _WerkaUnannouncedSupplierScreenState
         return M3AsyncPickerSheet<SupplierDirectoryEntry>(
           title: context.l10n.selectSupplier,
           hintText: context.l10n.searchSupplier,
-          loadItems: (query) => MobileApi.instance.werkaSuppliers(
+          loadPage: (query, offset, limit) => MobileApi.instance.werkaSuppliers(
             query: query,
-            limit: MobileApi.werkaPickerLimit,
+            offset: offset,
+            limit: limit,
           ),
           itemTitle: (item) => item.name,
           itemSubtitle: (item) => item.phone,
@@ -114,10 +115,12 @@ class _WerkaUnannouncedSupplierScreenState
           title: context.l10n.selectItem,
           supportingText: _selectedSupplier!.name,
           hintText: context.l10n.searchItem,
-          loadItems: (query) => MobileApi.instance.werkaSupplierItems(
+          loadPage: (query, offset, limit) =>
+              MobileApi.instance.werkaSupplierItems(
             supplierRef: _selectedSupplier!.ref,
             query: query,
-            limit: MobileApi.werkaPickerLimit,
+            offset: offset,
+            limit: limit,
           ),
           itemTitle: (item) => item.name,
           itemSubtitle: (item) => item.code,

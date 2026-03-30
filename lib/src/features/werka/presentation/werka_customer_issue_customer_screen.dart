@@ -95,9 +95,10 @@ class _WerkaCustomerIssueCustomerScreenState
         return M3AsyncPickerSheet<CustomerDirectoryEntry>(
           title: context.l10n.selectCustomer,
           hintText: context.l10n.searchCustomer,
-          loadItems: (query) => MobileApi.instance.werkaCustomers(
+          loadPage: (query, offset, limit) => MobileApi.instance.werkaCustomers(
             query: query,
-            limit: MobileApi.werkaPickerLimit,
+            offset: offset,
+            limit: limit,
           ),
           itemTitle: (item) => item.name,
           itemSubtitle: (item) => item.phone,
@@ -131,10 +132,12 @@ class _WerkaCustomerIssueCustomerScreenState
             title: context.l10n.selectItem,
             supportingText: _selectedCustomer!.name,
             hintText: context.l10n.searchItem,
-            loadItems: (query) => MobileApi.instance.werkaCustomerItems(
+            loadPage: (query, offset, limit) =>
+                MobileApi.instance.werkaCustomerItems(
               customerRef: _selectedCustomer!.ref,
               query: query,
-              limit: MobileApi.werkaPickerLimit,
+              offset: offset,
+              limit: limit,
             ),
             itemTitle: (item) => item.name,
             itemSubtitle: (item) => item.code,
@@ -159,9 +162,11 @@ class _WerkaCustomerIssueCustomerScreenState
         return M3AsyncPickerSheet<CustomerItemOption>(
           title: context.l10n.selectItem,
           hintText: context.l10n.searchItem,
-          loadItems: (query) => MobileApi.instance.werkaCustomerItemOptions(
+          loadPage: (query, offset, limit) =>
+              MobileApi.instance.werkaCustomerItemOptions(
             query: query,
-            limit: MobileApi.werkaPickerLimit,
+            offset: offset,
+            limit: limit,
           ),
           itemTitle: (item) => item.itemName,
           itemSubtitle: (item) => '${item.customerName} • ${item.itemCode}',

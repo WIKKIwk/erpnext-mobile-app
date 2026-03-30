@@ -22,6 +22,7 @@ extension MobileApiWerka on MobileApi {
   Future<List<SupplierDirectoryEntry>> werkaSuppliers({
     String query = '',
     int limit = 200,
+    int offset = 0,
   }) async {
     final http.Response response = await _sendAuthorized(
       () => http.get(
@@ -29,6 +30,7 @@ extension MobileApiWerka on MobileApi {
           queryParameters: {
             if (query.trim().isNotEmpty) 'q': query.trim(),
             if (limit > 0) 'limit': '$limit',
+            if (offset > 0) 'offset': '$offset',
           },
         ),
         headers: _headers(requireToken()),
@@ -50,13 +52,16 @@ extension MobileApiWerka on MobileApi {
   Future<List<CustomerDirectoryEntry>> werkaCustomers({
     String query = '',
     int limit = 200,
+    int offset = 0,
   }) async {
-    return _fetchWerkaCustomers(query: query.trim(), limit: limit);
+    return _fetchWerkaCustomers(
+        query: query.trim(), limit: limit, offset: offset);
   }
 
   Future<List<CustomerDirectoryEntry>> _fetchWerkaCustomers({
     required String query,
     required int limit,
+    required int offset,
   }) async {
     final response = await _sendAuthorized(
       () => http.get(
@@ -64,6 +69,7 @@ extension MobileApiWerka on MobileApi {
           queryParameters: {
             if (query.isNotEmpty) 'q': query,
             if (limit > 0) 'limit': '$limit',
+            if (offset > 0) 'offset': '$offset',
           },
         ),
         headers: _headers(requireToken()),
@@ -86,6 +92,7 @@ extension MobileApiWerka on MobileApi {
     required String supplierRef,
     String query = '',
     int limit = 100,
+    int offset = 0,
   }) async {
     final response = await _sendAuthorized(
       () => http.get(
@@ -94,6 +101,7 @@ extension MobileApiWerka on MobileApi {
             'supplier_ref': supplierRef,
             if (query.trim().isNotEmpty) 'q': query.trim(),
             if (limit > 0) 'limit': '$limit',
+            if (offset > 0) 'offset': '$offset',
           },
         ),
         headers: _headers(requireToken()),
@@ -112,6 +120,7 @@ extension MobileApiWerka on MobileApi {
     required String customerRef,
     String query = '',
     int limit = 100,
+    int offset = 0,
   }) async {
     final response = await _sendAuthorized(
       () => http.get(
@@ -120,6 +129,7 @@ extension MobileApiWerka on MobileApi {
             'customer_ref': customerRef,
             if (query.trim().isNotEmpty) 'q': query.trim(),
             if (limit > 0) 'limit': '$limit',
+            if (offset > 0) 'offset': '$offset',
           },
         ),
         headers: _headers(requireToken()),
@@ -137,13 +147,19 @@ extension MobileApiWerka on MobileApi {
   Future<List<CustomerItemOption>> werkaCustomerItemOptions({
     String query = '',
     int limit = 200,
+    int offset = 0,
   }) async {
-    return _fetchWerkaCustomerItemOptions(query: query.trim(), limit: limit);
+    return _fetchWerkaCustomerItemOptions(
+      query: query.trim(),
+      limit: limit,
+      offset: offset,
+    );
   }
 
   Future<List<CustomerItemOption>> _fetchWerkaCustomerItemOptions({
     required String query,
     required int limit,
+    required int offset,
   }) async {
     final response = await _sendAuthorized(
       () => http.get(
@@ -151,6 +167,7 @@ extension MobileApiWerka on MobileApi {
           queryParameters: {
             if (query.isNotEmpty) 'q': query,
             if (limit > 0) 'limit': '$limit',
+            if (offset > 0) 'offset': '$offset',
           },
         ),
         headers: _headers(requireToken()),
