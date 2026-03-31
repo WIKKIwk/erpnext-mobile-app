@@ -13,6 +13,11 @@ class CustomerStore extends ChangeNotifier {
   bool _loading = false;
   bool _loaded = false;
   Object? _error;
+  CustomerHomeSummary _summary = const CustomerHomeSummary(
+    pendingCount: 0,
+    confirmedCount: 0,
+    rejectedCount: 0,
+  );
 
   List<DispatchRecord> _pendingItems = const <DispatchRecord>[];
   List<DispatchRecord> _confirmedItems = const <DispatchRecord>[];
@@ -52,11 +57,8 @@ class CustomerStore extends ChangeNotifier {
     };
   }
 
-  CustomerHomeSummary get summary => CustomerHomeSummary(
-        pendingCount: pendingItems.length,
-        confirmedCount: confirmedItems.length,
-        rejectedCount: rejectedItems.length,
-      );
+  CustomerHomeSummary get summary =>
+      CustomerDeliveryRuntimeStore.instance.applySummary(_summary);
 
   Future<void> bootstrap({bool force = false}) async {
     if (_loading) {
@@ -77,13 +79,15 @@ class CustomerStore extends ChangeNotifier {
     notifyListeners();
     try {
       final results = await Future.wait<dynamic>([
+        MobileApi.instance.customerSummary(),
         MobileApi.instance.customerStatusDetails(CustomerStatusKind.pending),
         MobileApi.instance.customerStatusDetails(CustomerStatusKind.confirmed),
         MobileApi.instance.customerStatusDetails(CustomerStatusKind.rejected),
       ]);
-      _pendingItems = results[0] as List<DispatchRecord>;
-      _confirmedItems = results[1] as List<DispatchRecord>;
-      _rejectedItems = results[2] as List<DispatchRecord>;
+      _summary = results[0] as CustomerHomeSummary;
+      _pendingItems = results[1] as List<DispatchRecord>;
+      _confirmedItems = results[2] as List<DispatchRecord>;
+      _rejectedItems = results[3] as List<DispatchRecord>;
       _historyItems = _mergeHistoryItems(
         _pendingItems,
         _confirmedItems,
@@ -150,7 +154,8 @@ class CustomerStore extends ChangeNotifier {
       for (final item in rejectedItems) item.id: item,
     };
     final result = byId.values.toList()
-      ..sort((a, b) => compareCreatedLabelsDesc(a.createdLabel, b.createdLabel));
+      ..sort(
+          (a, b) => compareCreatedLabelsDesc(a.createdLabel, b.createdLabel));
     return result;
   }
 
@@ -158,6 +163,11 @@ class CustomerStore extends ChangeNotifier {
     _loading = false;
     _loaded = false;
     _error = null;
+    _summary = const CustomerHomeSummary(
+      pendingCount: 0,
+      confirmedCount: 0,
+      rejectedCount: 0,
+    );
     _pendingItems = const <DispatchRecord>[];
     _confirmedItems = const <DispatchRecord>[];
     _rejectedItems = const <DispatchRecord>[];
