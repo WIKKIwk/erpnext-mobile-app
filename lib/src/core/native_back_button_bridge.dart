@@ -37,15 +37,6 @@ class NativeBackButtonBridge extends NavigatorObserver {
     return visible;
   }
 
-  static void syncTitleFromBuild(BuildContext context, String? title) {
-    if (!_isSupportedPlatform) {
-      return;
-    }
-    final navigator = Navigator.maybeOf(context);
-    final visible = navigator?.canPop() ?? false;
-    instance._syncTitleFromBuild(visible ? title : null);
-  }
-
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPush(route, previousRoute);
@@ -96,21 +87,6 @@ class NativeBackButtonBridge extends NavigatorObserver {
   Future<void> _setVisible(bool visible) async {
     try {
       await _channel.invokeMethod('setBackButtonVisible', visible);
-    } catch (_) {}
-  }
-
-  void _syncTitleFromBuild(String? title) {
-    if (!_initialized) {
-      return;
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      unawaited(_setTitle(title));
-    });
-  }
-
-  Future<void> _setTitle(String? title) async {
-    try {
-      await _channel.invokeMethod('setBackButtonTitle', title);
     } catch (_) {}
   }
 

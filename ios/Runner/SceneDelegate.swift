@@ -34,12 +34,8 @@ final class NativeBackNavigationController: UINavigationController {
     messenger: flutterBinaryMessenger,
     onVisibilityChanged: { [weak self] visible in
       self?.setBackButtonVisible(visible)
-    },
-    onTitleChanged: { [weak self] title in
-      self?.setBackButtonTitle(title)
     }
   )
-  private var backButtonTitle: String?
 
   private var flutterBinaryMessenger: FlutterBinaryMessenger {
     rootFlutterViewController.binaryMessenger
@@ -70,10 +66,6 @@ final class NativeBackNavigationController: UINavigationController {
       topViewController?.navigationItem.leftBarButtonItem = visible
         ? makeBackBarButtonItem()
         : nil
-      topViewController?.navigationItem.leftItemsSupplementBackButton = visible
-      topViewController?.navigationItem.leftBarButtonItems = visible
-        ? makeBackTitleItems()
-        : nil
       setNavigationBarHidden(!visible, animated: false)
       navigationBar.layoutIfNeeded()
     }
@@ -88,30 +80,6 @@ final class NativeBackNavigationController: UINavigationController {
       target: self,
       action: #selector(handleBackButtonTap)
     )
-  }
-
-  private func setBackButtonTitle(_ title: String?) {
-    backButtonTitle = title?.trimmingCharacters(in: .whitespacesAndNewlines)
-    UIView.performWithoutAnimation {
-      topViewController?.navigationItem.leftItemsSupplementBackButton = true
-      topViewController?.navigationItem.leftBarButtonItems = makeBackTitleItems()
-      navigationBar.layoutIfNeeded()
-    }
-  }
-
-  private func makeBackTitleItems() -> [UIBarButtonItem]? {
-    guard
-      let title = backButtonTitle,
-      !title.isEmpty
-    else {
-      return nil
-    }
-    let label = UILabel()
-    label.text = title
-    label.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
-    label.textColor = .label
-    label.lineBreakMode = .byTruncatingTail
-    return [UIBarButtonItem(customView: label)]
   }
 
   @objc
@@ -137,19 +105,16 @@ final class NativeBackNavigationController: UINavigationController {
 private final class NativeBackButtonChannelBridge: NSObject {
   private let channel: FlutterMethodChannel
   private let onVisibilityChanged: (Bool) -> Void
-  private let onTitleChanged: (String?) -> Void
 
   init(
     messenger: FlutterBinaryMessenger,
-    onVisibilityChanged: @escaping (Bool) -> Void,
-    onTitleChanged: @escaping (String?) -> Void
+    onVisibilityChanged: @escaping (Bool) -> Void
   ) {
     self.channel = FlutterMethodChannel(
       name: "accord/native_back_button",
       binaryMessenger: messenger
     )
     self.onVisibilityChanged = onVisibilityChanged
-    self.onTitleChanged = onTitleChanged
     super.init()
     channel.setMethodCallHandler(handleMethodCall)
     channel.invokeMethod("nativeBackButtonReady", arguments: nil)
@@ -165,12 +130,6 @@ private final class NativeBackButtonChannelBridge: NSObject {
       let visible = (call.arguments as? Bool) ?? false
       DispatchQueue.main.async {
         self.onVisibilityChanged(visible)
-      }
-      result(nil)
-    case "setBackButtonTitle":
-      let title = call.arguments as? String
-      DispatchQueue.main.async {
-        self.onTitleChanged(title)
       }
       result(nil)
     default:

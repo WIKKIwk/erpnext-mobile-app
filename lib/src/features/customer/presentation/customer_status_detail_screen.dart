@@ -1,7 +1,6 @@
 import '../../../app/app_router.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/native_back_button_bridge.dart';
 import '../../../core/widgets/app_loading_indicator.dart';
 import '../../../core/widgets/app_retry_state.dart';
 import '../../../core/widgets/app_shell.dart';
@@ -63,12 +62,7 @@ class _CustomerStatusDetailScreenState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final useNativeHeader = useNativeBackButton(context);
-    NativeBackButtonBridge.syncTitleFromBuild(
-      context,
-      useNativeHeader ? _title : null,
-    );
-    final showFlutterBackButton = !useNativeHeader;
+    final showFlutterBackButton = !useNativeBackButton(context);
     return Scaffold(
       extendBody: true,
       backgroundColor: AppTheme.shellStart(context),
@@ -76,26 +70,25 @@ class _CustomerStatusDetailScreenState
         bottom: false,
         child: Column(
           children: [
-            if (showFlutterBackButton)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
-                child: Row(
-                  children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+              child: Row(
+                children: [
+                  if (showFlutterBackButton) ...[
                     NativeBackButtonSlot(
                       onPressed: () => Navigator.of(context).maybePop(),
                     ),
                     const SizedBox(width: 14),
-                    Expanded(
-                      child: Text(
-                        _title,
-                        style: theme.textTheme.headlineMedium,
-                      ),
-                    ),
                   ],
-                ),
-              )
-            else
-              const SizedBox(height: 8),
+                  Expanded(
+                    child: Text(
+                      _title,
+                      style: theme.textTheme.headlineMedium,
+                    ),
+                  ),
+                ],
+              ),
+            ),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(14, 0, 16, 0),
