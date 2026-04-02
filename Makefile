@@ -3,6 +3,15 @@ LOCAL_API_URL ?= http://127.0.0.1:8081
 JDK_HOME ?= /usr/lib/jvm/java-17-openjdk
 APK_NAME ?= accord.apk
 ERP_ROOT ?= ../../erpnext_n1/erp
+HOST_OS := $(shell uname -s)
+
+ifeq ($(HOST_OS),Darwin)
+RUN_DEVICE ?= chrome
+RUN_DART_DEFINES ?= --dart-define=APP_FORCE_DEVICE_PREVIEW=true
+else
+RUN_DEVICE ?= linux
+RUN_DART_DEFINES ?=
+endif
 
 .PHONY: run web analyze test deps backend-up backend-stop core-up core-stop remote-up remote-stop remote-url apk-remote run-remote android-sdk-setup domain-up domain-up-fast domain-url apk-domain run-domain bench-start bench-restart bench-stop bench-limit-start bench-limit-stop prepare-run run-local web-local
 
@@ -82,7 +91,7 @@ remote-stop:
 	@./stop_remote_core.sh
 
 run: prepare-run deps
-	@flutter run -d linux --dart-define=MOBILE_API_BASE_URL=$(API_URL)
+	@flutter run -d $(RUN_DEVICE) --dart-define=MOBILE_API_BASE_URL=$(API_URL) $(RUN_DART_DEFINES)
 
 web: prepare-run deps
 	@flutter run -d chrome --dart-define=MOBILE_API_BASE_URL=$(API_URL)
