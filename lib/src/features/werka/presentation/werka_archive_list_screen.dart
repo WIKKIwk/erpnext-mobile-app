@@ -1,4 +1,5 @@
 import '../../../core/api/mobile_api.dart';
+import '../../../core/files/archive_pdf_saver.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_loading_indicator.dart';
 import '../../../core/widgets/app_retry_state.dart';
@@ -32,6 +33,7 @@ class WerkaArchiveListScreen extends StatefulWidget {
 
 class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
   bool _loading = true;
+  bool _downloading = false;
   Object? _error;
   WerkaArchiveResponse? _data;
 
@@ -132,6 +134,43 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
     return value.toStringAsFixed(2);
   }
 
+  Future<void> _downloadPdf() async {
+    if (_downloading) {
+      return;
+    }
+    setState(() => _downloading = true);
+    try {
+      final file = await MobileApi.instance.downloadWerkaArchivePdf(
+        kind: widget.args.kind,
+        period: widget.args.period,
+      );
+      final savedAt = await saveArchivePdfFile(
+        bytes: file.bytes,
+        filename: file.filename,
+      );
+      if (!mounted) {
+        return;
+      }
+      final message = savedAt == file.filename
+          ? context.l10n.archivePdfDownloadStartedWeb
+          : context.l10n.archivePdfSavedAt(savedAt);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.archivePdfFailed)),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _downloading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final title = '${_kindTitle(context.l10n)} • ${_periodTitle(context.l10n)}';
@@ -139,6 +178,17 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
     return AppShell(
       title: title,
       subtitle: '',
+      actions: [
+        IconButton.filledTonal(
+          onPressed: (_data?.items.isNotEmpty ?? false) && !_downloading
+              ? _downloadPdf
+              : null,
+          icon: Icon(
+            _downloading ? Icons.hourglass_top_rounded : Icons.download_rounded,
+          ),
+          tooltip: context.l10n.archiveDownloadPdfAction,
+        ),
+      ],
       leading: NativeBackButtonSlot(
         onPressed: () => Navigator.of(context).maybePop(),
       ),
@@ -220,13 +270,6 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
                       ],
                     ),
                   ],
-                  const SizedBox(height: 10),
-                  Text(
-                    context.l10n.archivePdfNextPhase,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
                 ],
               ),
             ),

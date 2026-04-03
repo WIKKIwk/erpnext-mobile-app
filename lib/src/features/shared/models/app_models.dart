@@ -483,6 +483,18 @@ class ArchiveTotalByUOM {
   }
 }
 
+class DownloadedFile {
+  const DownloadedFile({
+    required this.filename,
+    required this.contentType,
+    required this.bytes,
+  });
+
+  final String filename;
+  final String contentType;
+  final List<int> bytes;
+}
+
 class WerkaArchiveSummary {
   const WerkaArchiveSummary({
     required this.recordCount,

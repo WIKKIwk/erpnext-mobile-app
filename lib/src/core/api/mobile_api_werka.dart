@@ -482,6 +482,35 @@ extension MobileApiWerka on MobileApi {
     );
   }
 
+  Future<DownloadedFile> downloadWerkaArchivePdf({
+    required WerkaArchiveKind kind,
+    required WerkaArchivePeriod period,
+  }) async {
+    final response = await _sendAuthorized(
+      () => http.get(
+        Uri.parse('$baseUrl/v1/mobile/werka/archive/pdf').replace(
+          queryParameters: {
+            'kind': kind.name,
+            'period': period.name,
+          },
+        ),
+        headers: _headers(requireToken()),
+      ),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Werka archive pdf failed');
+    }
+    final disposition = response.headers['content-disposition'] ?? '';
+    final filenameMatch =
+        RegExp(r'filename=\"?([^\";]+)\"?').firstMatch(disposition);
+    final filename = (filenameMatch?.group(1) ?? 'werka-archive.pdf').trim();
+    return DownloadedFile(
+      filename: filename,
+      contentType: response.headers['content-type'] ?? 'application/pdf',
+      bytes: response.bodyBytes,
+    );
+  }
+
   Future<DispatchRecord> confirmReceipt({
     required String receiptID,
     required double acceptedQty,

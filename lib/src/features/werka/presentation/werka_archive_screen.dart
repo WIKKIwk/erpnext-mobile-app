@@ -10,9 +10,6 @@ class WerkaArchiveScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
     return AppShell(
       title: context.l10n.archiveTitle,
       subtitle: '',
@@ -47,20 +44,6 @@ class WerkaArchiveScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          Card.filled(
-            margin: EdgeInsets.zero,
-            color: scheme.surfaceContainerLow,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(28),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(18),
-              child: Text(
-                context.l10n.archivePdfNextPhase,
-                style: theme.textTheme.bodyMedium,
-              ),
-            ),
-          ),
         ],
       ),
     );

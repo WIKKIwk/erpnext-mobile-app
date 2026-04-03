@@ -226,10 +226,24 @@ class AppLocalizations {
         'There are no records in this section yet.',
         'В этом разделе пока нет записей.',
       );
-  String get archivePdfNextPhase => _t(
-        'PDF yuklab olish keyingi bosqichda qo‘shiladi.',
-        'PDF download will be added in the next phase.',
-        'Загрузка PDF будет добавлена на следующем этапе.',
+  String get archiveDownloadPdfAction =>
+      _t('Yuklab olish', 'Download', 'Скачать');
+  String get archiveDownloadingPdf =>
+      _t('PDF yuklanmoqda...', 'Downloading PDF...', 'PDF загружается...');
+  String archivePdfSavedAt(String location) => _t(
+        'PDF saqlandi: $location',
+        'PDF saved: $location',
+        'PDF сохранён: $location',
+      );
+  String get archivePdfDownloadStartedWeb => _t(
+        'PDF yuklab olish boshlandi.',
+        'PDF download started.',
+        'Загрузка PDF началась.',
+      );
+  String get archivePdfFailed => _t(
+        'PDF yuklab bo‘lmadi. Qayta urinib ko‘ring.',
+        'Failed to download PDF. Try again.',
+        'Не удалось загрузить PDF. Попробуйте снова.',
       );
   String archiveRecordCountLabel(int count) => _t(
         '$count ta yozuv',
