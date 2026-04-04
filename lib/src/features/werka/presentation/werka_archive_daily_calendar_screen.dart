@@ -344,8 +344,8 @@ class _CalendarDayCell extends StatelessWidget {
           ? scheme.primaryContainer
           : scheme.surfaceContainerHighest.withValues(alpha: 0.45),
       borderRadius: BorderRadius.circular(18),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(18),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Container(
           alignment: Alignment.center,

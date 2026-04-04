@@ -98,4 +98,63 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.byType(WerkaArchiveDailyCalendarScreen), findsOneWidget);
   });
+
+  testWidgets('daily calendar opens list when active day is tapped',
+      (tester) async {
+    Future<WerkaArchiveResponse> archiveLoader({
+      required WerkaArchiveKind kind,
+      required WerkaArchivePeriod period,
+      DateTime? from,
+      DateTime? to,
+    }) async {
+      return WerkaArchiveResponse(
+        kind: kind,
+        period: period,
+        from: from,
+        to: to,
+        summary: const WerkaArchiveSummary(
+          recordCount: 1,
+          totalsByUOM: [
+            ArchiveTotalByUOM(uom: 'Kg', qty: 3),
+          ],
+        ),
+        items: const [
+          DispatchRecord(
+            id: 'MAT-DN-TEST',
+            supplierRef: 'CUS-001',
+            supplierName: 'Customer One',
+            itemCode: 'ITEM-001',
+            itemName: 'Rice',
+            uom: 'Kg',
+            sentQty: 3,
+            acceptedQty: 0,
+            amount: 0,
+            currency: '',
+            note: '',
+            eventType: '',
+            highlight: '',
+            status: DispatchStatus.pending,
+            createdLabel: '2026-04-03 10:00:00',
+          ),
+        ],
+      );
+    }
+
+    await tester.pumpWidget(
+      _wrap(
+        WerkaArchiveDailyCalendarScreen(
+          kind: WerkaArchiveKind.sent,
+          archiveLoader: archiveLoader,
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('3').first);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(WerkaArchiveListScreen), findsOneWidget);
+  });
 }
