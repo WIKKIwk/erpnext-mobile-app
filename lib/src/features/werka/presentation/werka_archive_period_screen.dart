@@ -33,11 +33,24 @@ class _WerkaArchivePeriodScreenState extends State<WerkaArchivePeriodScreen> {
   }
 
   void _openList(BuildContext context, WerkaArchivePeriod period) {
+    final now = DateTime.now();
+    DateTime? from;
+    DateTime? to;
+    if (period == WerkaArchivePeriod.daily) {
+      final selected = DateUtils.dateOnly(now);
+      from = selected;
+      to = selected;
+    } else if (period == WerkaArchivePeriod.monthly) {
+      from = DateTime(now.year, now.month, 1);
+      to = DateTime(now.year, now.month + 1, 0);
+    }
     Navigator.of(context).pushNamed(
       AppRoutes.werkaArchiveList,
       arguments: WerkaArchiveListArgs(
         kind: widget.kind,
         period: period,
+        from: from,
+        to: to,
       ),
     );
   }
