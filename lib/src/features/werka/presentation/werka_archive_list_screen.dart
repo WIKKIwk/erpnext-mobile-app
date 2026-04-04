@@ -463,6 +463,14 @@ class _ArchiveFilterCard extends StatelessWidget {
             ),
             FilledButton.tonalIcon(
               onPressed: onTap,
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(0, 48),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+              ),
               icon: const Icon(Icons.calendar_month_outlined),
               label: Text(actionLabel),
             ),
