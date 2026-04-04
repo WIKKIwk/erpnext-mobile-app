@@ -467,12 +467,11 @@ extension MobileApiWerka on MobileApi {
   }) async {
     final queryParameters = <String, String>{
       'kind': kind.name,
+      'period': period.name,
     };
-    if (period == WerkaArchivePeriod.custom && from != null && to != null) {
+    if (from != null && to != null) {
       queryParameters['from'] = _formatArchiveDate(from);
       queryParameters['to'] = _formatArchiveDate(to);
-    } else {
-      queryParameters['period'] = period.name;
     }
     final http.Response response = await _sendAuthorized(
       () => http.get(
@@ -498,12 +497,11 @@ extension MobileApiWerka on MobileApi {
   }) async {
     final queryParameters = <String, String>{
       'kind': kind.name,
+      'period': period.name,
     };
-    if (period == WerkaArchivePeriod.custom && from != null && to != null) {
+    if (from != null && to != null) {
       queryParameters['from'] = _formatArchiveDate(from);
       queryParameters['to'] = _formatArchiveDate(to);
-    } else {
-      queryParameters['period'] = period.name;
     }
     final response = await _sendAuthorized(
       () => http.get(

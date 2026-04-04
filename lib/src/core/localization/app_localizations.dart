@@ -221,6 +221,8 @@ class AppLocalizations {
         'Date range',
         'Период дат',
       );
+  String get archiveDateTitle => _t('Sana', 'Date', 'Дата');
+  String get archiveMonthTitle => _t('Oy', 'Month', 'Месяц');
   String get archiveStartDateLabel => _t(
         'Boshlanish sana',
         'Start date',
@@ -233,6 +235,8 @@ class AppLocalizations {
       );
   String get archiveSelectDateAction =>
       _t('Tanlash', 'Select', 'Выбрать');
+  String get archiveSelectMonthAction =>
+      _t('Oy tanlash', 'Choose month', 'Выбрать месяц');
   String get archiveViewAction => _t('Ko‘rish', 'View', 'Открыть');
   String get archiveCustomRangeHint => _t(
         'Aynan kerakli kun yoki oraliqni tanlang.',

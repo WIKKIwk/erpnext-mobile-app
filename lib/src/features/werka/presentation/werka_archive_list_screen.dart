@@ -40,10 +40,14 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
   bool _downloading = false;
   Object? _error;
   WerkaArchiveResponse? _data;
+  late DateTime? _from;
+  late DateTime? _to;
 
   @override
   void initState() {
     super.initState();
+    _from = widget.args.from;
+    _to = widget.args.to;
     _load();
   }
 
@@ -56,8 +60,8 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
       final data = await MobileApi.instance.werkaArchive(
         kind: widget.args.kind,
         period: widget.args.period,
-        from: widget.args.from,
-        to: widget.args.to,
+        from: _from,
+        to: _to,
       );
       if (!mounted) {
         return;
@@ -108,9 +112,7 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
   String _subtitle(BuildContext context) {
     final from = widget.args.from;
     final to = widget.args.to;
-    if (widget.args.period != WerkaArchivePeriod.custom ||
-        from == null ||
-        to == null) {
+    if (from == null || to == null) {
       return '';
     }
     final localizations = MaterialLocalizations.of(context);
@@ -163,8 +165,8 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
       final file = await MobileApi.instance.downloadWerkaArchivePdf(
         kind: widget.args.kind,
         period: widget.args.period,
-        from: widget.args.from,
-        to: widget.args.to,
+        from: _from,
+        to: _to,
       );
       final savedAt = await saveArchivePdfFile(
         bytes: file.bytes,
@@ -257,6 +259,24 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(4, 0, 4, 110),
         children: [
+          if (widget.args.period == WerkaArchivePeriod.daily ||
+              widget.args.period == WerkaArchivePeriod.monthly) ...[
+            _ArchiveFilterCard(
+              title: widget.args.period == WerkaArchivePeriod.daily
+                  ? context.l10n.archiveDateTitle
+                  : context.l10n.archiveMonthTitle,
+              value: widget.args.period == WerkaArchivePeriod.daily
+                  ? _selectedDateLabel(context)
+                  : _selectedMonthLabel(context),
+              actionLabel: widget.args.period == WerkaArchivePeriod.daily
+                  ? context.l10n.archiveSelectDateAction
+                  : context.l10n.archiveSelectMonthAction,
+              onTap: widget.args.period == WerkaArchivePeriod.daily
+                  ? _pickDailyDate
+                  : _pickMonthlyDate,
+            ),
+            const SizedBox(height: 14),
+          ],
           Card.filled(
             margin: EdgeInsets.zero,
             color: scheme.surfaceContainerLow,
@@ -331,6 +351,116 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  String _selectedDateLabel(BuildContext context) {
+    final value = _from;
+    if (value == null) {
+      return context.l10n.archiveSelectDateAction;
+    }
+    return MaterialLocalizations.of(context).formatMediumDate(value);
+  }
+
+  String _selectedMonthLabel(BuildContext context) {
+    final value = _from;
+    if (value == null) {
+      return context.l10n.archiveSelectMonthAction;
+    }
+    return MaterialLocalizations.of(context).formatMonthYear(value);
+  }
+
+  Future<void> _pickDailyDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _from ?? DateUtils.dateOnly(now),
+      firstDate: DateTime(now.year - 5),
+      lastDate: DateTime(now.year + 1, 12, 31),
+      helpText: context.l10n.archiveDateTitle,
+    );
+    if (picked == null || !mounted) {
+      return;
+    }
+    final selected = DateUtils.dateOnly(picked);
+    setState(() {
+      _from = selected;
+      _to = selected;
+    });
+    await _load();
+  }
+
+  Future<void> _pickMonthlyDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _from ?? DateTime(now.year, now.month, 1),
+      firstDate: DateTime(now.year - 5),
+      lastDate: DateTime(now.year + 1, 12, 31),
+      initialDatePickerMode: DatePickerMode.year,
+      helpText: context.l10n.archiveMonthTitle,
+    );
+    if (picked == null || !mounted) {
+      return;
+    }
+    setState(() {
+      _from = DateTime(picked.year, picked.month, 1);
+      _to = DateTime(picked.year, picked.month + 1, 0);
+    });
+    await _load();
+  }
+}
+
+class _ArchiveFilterCard extends StatelessWidget {
+  const _ArchiveFilterCard({
+    required this.title,
+    required this.value,
+    required this.actionLabel,
+    required this.onTap,
+  });
+
+  final String title;
+  final String value;
+  final String actionLabel;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Card.filled(
+      margin: EdgeInsets.zero,
+      color: scheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(value, style: theme.textTheme.titleLarge),
+                ],
+              ),
+            ),
+            FilledButton.tonalIcon(
+              onPressed: onTap,
+              icon: const Icon(Icons.calendar_month_outlined),
+              label: Text(actionLabel),
+            ),
+          ],
+        ),
       ),
     );
   }
