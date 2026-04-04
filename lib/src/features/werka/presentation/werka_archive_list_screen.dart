@@ -59,7 +59,7 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
     } else if (widget.args.period == WerkaArchivePeriod.monthly &&
         (_from == null || _to == null)) {
       _from = DateTime(now.year, now.month, 1);
-      _to = DateTime(now.year, now.month + 1, 0);
+      _to = _lastDayOfMonth(now.year, now.month);
     }
     _monthPickerYear = (_from ?? DateTime.now()).year;
     _load();
@@ -443,10 +443,14 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
   Future<void> _setMonthlyDate(int month) async {
     setState(() {
       _from = DateTime(_monthPickerYear, month, 1);
-      _to = DateTime(_monthPickerYear, month + 1, 0);
+      _to = _lastDayOfMonth(_monthPickerYear, month);
       _showDateCalendar = false;
     });
     await _load();
+  }
+
+  DateTime _lastDayOfMonth(int year, int month) {
+    return DateTime(year, month + 1, 1).subtract(const Duration(days: 1));
   }
 }
 

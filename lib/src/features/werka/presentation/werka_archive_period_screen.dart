@@ -42,7 +42,7 @@ class _WerkaArchivePeriodScreenState extends State<WerkaArchivePeriodScreen> {
       to = selected;
     } else if (period == WerkaArchivePeriod.monthly) {
       from = DateTime(now.year, now.month, 1);
-      to = DateTime(now.year, now.month + 1, 0);
+      to = _lastDayOfMonth(now.year, now.month);
     }
     Navigator.of(context).pushNamed(
       AppRoutes.werkaArchiveList,
@@ -85,6 +85,10 @@ class _WerkaArchivePeriodScreenState extends State<WerkaArchivePeriodScreen> {
         ],
       ),
     );
+  }
+
+  DateTime _lastDayOfMonth(int year, int month) {
+    return DateTime(year, month + 1, 1).subtract(const Duration(days: 1));
   }
 }
 
