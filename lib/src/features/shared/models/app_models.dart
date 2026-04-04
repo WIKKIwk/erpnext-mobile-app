@@ -464,6 +464,7 @@ enum WerkaArchivePeriod {
   daily,
   monthly,
   yearly,
+  custom,
 }
 
 class ArchiveTotalByUOM {
@@ -567,6 +568,8 @@ WerkaArchivePeriod parseWerkaArchivePeriod(String value) {
       return WerkaArchivePeriod.daily;
     case 'monthly':
       return WerkaArchivePeriod.monthly;
+    case 'custom':
+      return WerkaArchivePeriod.custom;
     default:
       return WerkaArchivePeriod.yearly;
   }

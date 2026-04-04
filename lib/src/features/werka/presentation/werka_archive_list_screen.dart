@@ -13,10 +13,14 @@ class WerkaArchiveListArgs {
   const WerkaArchiveListArgs({
     required this.kind,
     required this.period,
+    this.from,
+    this.to,
   });
 
   final WerkaArchiveKind kind;
   final WerkaArchivePeriod period;
+  final DateTime? from;
+  final DateTime? to;
 }
 
 class WerkaArchiveListScreen extends StatefulWidget {
@@ -52,6 +56,8 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
       final data = await MobileApi.instance.werkaArchive(
         kind: widget.args.kind,
         period: widget.args.period,
+        from: widget.args.from,
+        to: widget.args.to,
       );
       if (!mounted) {
         return;
@@ -94,7 +100,21 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
         return l10n.archiveMonthlyTitle;
       case WerkaArchivePeriod.yearly:
         return l10n.archiveYearlyTitle;
+      case WerkaArchivePeriod.custom:
+        return l10n.archiveCustomRangeTitle;
     }
+  }
+
+  String _subtitle(BuildContext context) {
+    final from = widget.args.from;
+    final to = widget.args.to;
+    if (widget.args.period != WerkaArchivePeriod.custom ||
+        from == null ||
+        to == null) {
+      return '';
+    }
+    final localizations = MaterialLocalizations.of(context);
+    return '${localizations.formatMediumDate(from)} - ${localizations.formatMediumDate(to)}';
   }
 
   String _metricLabel(DispatchRecord item) {
@@ -143,6 +163,8 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
       final file = await MobileApi.instance.downloadWerkaArchivePdf(
         kind: widget.args.kind,
         period: widget.args.period,
+        from: widget.args.from,
+        to: widget.args.to,
       );
       final savedAt = await saveArchivePdfFile(
         bytes: file.bytes,
@@ -177,7 +199,7 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
     useNativeNavigationTitle(context, title);
     return AppShell(
       title: title,
-      subtitle: '',
+      subtitle: _subtitle(context),
       actions: [
         IconButton.filledTonal(
           onPressed: (_data?.items.isNotEmpty ?? false) && !_downloading

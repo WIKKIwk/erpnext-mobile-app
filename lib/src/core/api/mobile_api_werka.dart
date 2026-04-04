@@ -462,14 +462,22 @@ extension MobileApiWerka on MobileApi {
   Future<WerkaArchiveResponse> werkaArchive({
     required WerkaArchiveKind kind,
     required WerkaArchivePeriod period,
+    DateTime? from,
+    DateTime? to,
   }) async {
+    final queryParameters = <String, String>{
+      'kind': kind.name,
+    };
+    if (period == WerkaArchivePeriod.custom && from != null && to != null) {
+      queryParameters['from'] = _formatArchiveDate(from);
+      queryParameters['to'] = _formatArchiveDate(to);
+    } else {
+      queryParameters['period'] = period.name;
+    }
     final http.Response response = await _sendAuthorized(
       () => http.get(
         Uri.parse('$baseUrl/v1/mobile/werka/archive').replace(
-          queryParameters: {
-            'kind': kind.name,
-            'period': period.name,
-          },
+          queryParameters: queryParameters,
         ),
         headers: _headers(requireToken()),
       ),
@@ -485,14 +493,22 @@ extension MobileApiWerka on MobileApi {
   Future<DownloadedFile> downloadWerkaArchivePdf({
     required WerkaArchiveKind kind,
     required WerkaArchivePeriod period,
+    DateTime? from,
+    DateTime? to,
   }) async {
+    final queryParameters = <String, String>{
+      'kind': kind.name,
+    };
+    if (period == WerkaArchivePeriod.custom && from != null && to != null) {
+      queryParameters['from'] = _formatArchiveDate(from);
+      queryParameters['to'] = _formatArchiveDate(to);
+    } else {
+      queryParameters['period'] = period.name;
+    }
     final response = await _sendAuthorized(
       () => http.get(
         Uri.parse('$baseUrl/v1/mobile/werka/archive/pdf').replace(
-          queryParameters: {
-            'kind': kind.name,
-            'period': period.name,
-          },
+          queryParameters: queryParameters,
         ),
         headers: _headers(requireToken()),
       ),
@@ -509,6 +525,13 @@ extension MobileApiWerka on MobileApi {
       contentType: response.headers['content-type'] ?? 'application/pdf',
       bytes: response.bodyBytes,
     );
+  }
+
+  String _formatArchiveDate(DateTime value) {
+    final date = DateTime(value.year, value.month, value.day);
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$month-$day';
   }
 
   Future<DispatchRecord> confirmReceipt({

@@ -216,6 +216,34 @@ class AppLocalizations {
   String get archiveDailyTitle => _t('Kunlik', 'Daily', 'Дневной');
   String get archiveMonthlyTitle => _t('Oylik', 'Monthly', 'Месячный');
   String get archiveYearlyTitle => _t('Yillik', 'Yearly', 'Годовой');
+  String get archiveCustomRangeTitle => _t(
+        'Sana oralig‘i',
+        'Date range',
+        'Период дат',
+      );
+  String get archiveStartDateLabel => _t(
+        'Boshlanish sana',
+        'Start date',
+        'Дата начала',
+      );
+  String get archiveEndDateLabel => _t(
+        'Tugash sana',
+        'End date',
+        'Дата окончания',
+      );
+  String get archiveSelectDateAction =>
+      _t('Tanlash', 'Select', 'Выбрать');
+  String get archiveViewAction => _t('Ko‘rish', 'View', 'Открыть');
+  String get archiveCustomRangeHint => _t(
+        'Aynan kerakli kun yoki oraliqni tanlang.',
+        'Choose the exact day or range you need.',
+        'Выберите нужный день или диапазон.',
+      );
+  String get archiveInvalidRange => _t(
+        'Tugash sana boshlanish sanadan oldin bo‘lishi mumkin emas.',
+        'End date cannot be before start date.',
+        'Дата окончания не может быть раньше даты начала.',
+      );
   String get archiveChoosePeriod => _t(
         'Periodni tanlang',
         'Choose a period',
