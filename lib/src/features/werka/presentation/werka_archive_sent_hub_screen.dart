@@ -453,29 +453,22 @@ class _WerkaArchiveSentHubScreenState extends State<WerkaArchiveSentHubScreen> {
       child: Align(
         alignment: Alignment.topCenter,
         heightFactor: _dailyCalendarHeightFactor(context),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onVerticalDragStart: (_) {},
-          onVerticalDragUpdate: (_) {},
-          onVerticalDragEnd: (_) {},
-          onVerticalDragCancel: () {},
-          child: CalendarDatePicker(
-            initialDate: _selectedDate,
-            firstDate: DateTime(DateTime.now().year - 5),
-            lastDate: DateTime(DateTime.now().year + 1, 12, 31),
-            currentDate: DateTime.now(),
-            onDisplayedMonthChanged: (value) async {
-              final nextMonth = DateTime(value.year, value.month, 1);
-              if (nextMonth == _displayMonth) return;
-              setState(() => _displayMonth = nextMonth);
-              await _loadDaily();
-            },
-            onDateChanged: (value) {
-              final date = DateUtils.dateOnly(value);
-              setState(() => _selectedDate = date);
-              _openList(period: WerkaArchivePeriod.daily, from: date, to: date);
-            },
-          ),
+        child: CalendarDatePicker(
+          initialDate: _selectedDate,
+          firstDate: DateTime(DateTime.now().year - 5),
+          lastDate: DateTime(DateTime.now().year + 1, 12, 31),
+          currentDate: DateTime.now(),
+          onDisplayedMonthChanged: (value) async {
+            final nextMonth = DateTime(value.year, value.month, 1);
+            if (nextMonth == _displayMonth) return;
+            setState(() => _displayMonth = nextMonth);
+            await _loadDaily();
+          },
+          onDateChanged: (value) {
+            final date = DateUtils.dateOnly(value);
+            setState(() => _selectedDate = date);
+            _openList(period: WerkaArchivePeriod.daily, from: date, to: date);
+          },
         ),
       ),
     );
@@ -603,18 +596,11 @@ class _AnimatedSentCalendarReveal extends StatelessWidget {
         heightFactor: open ? 1 : 0,
         child: IgnorePointer(
           ignoring: !open,
-          child: GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onVerticalDragStart: (_) {},
-            onVerticalDragUpdate: (_) {},
-            onVerticalDragEnd: (_) {},
-            onVerticalDragCancel: () {},
-            child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOutCubic,
-              opacity: open ? 1 : 0,
-              child: child,
-            ),
+          child: AnimatedOpacity(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            opacity: open ? 1 : 0,
+            child: child,
           ),
         ),
       ),
