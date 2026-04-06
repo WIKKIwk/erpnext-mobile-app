@@ -509,6 +509,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                         TextField(
                           controller: nicknameController,
                           onChanged: (_) => setState(() {}),
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                          cursorColor: Theme.of(context).colorScheme.primary,
                           decoration: InputDecoration(
                             labelText: l10n.nicknameLabel,
                             hintText: l10n.nicknameHint,
