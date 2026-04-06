@@ -12,6 +12,43 @@ enum _DockDeviceClass {
   large,
 }
 
+class SharedDockHero extends StatelessWidget {
+  const SharedDockHero({
+    super.key,
+    required this.tag,
+    required this.child,
+  });
+
+  final String tag;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Hero(
+      tag: 'shared-dock:$tag',
+      transitionOnUserGestures: true,
+      flightShuttleBuilder: (
+        flightContext,
+        animation,
+        flightDirection,
+        fromHeroContext,
+        toHeroContext,
+      ) {
+        final fromChild = (fromHeroContext.widget as Hero).child;
+        final toChild = (toHeroContext.widget as Hero).child;
+        final child = flightDirection == HeroFlightDirection.push
+            ? fromChild
+            : toChild;
+        return Material(
+          color: Colors.transparent,
+          child: child,
+        );
+      },
+      child: child,
+    );
+  }
+}
+
 class SoftCard extends StatelessWidget {
   const SoftCard({
     super.key,

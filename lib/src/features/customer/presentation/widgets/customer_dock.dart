@@ -34,12 +34,14 @@ class CustomerDock extends StatelessWidget {
               AppSession.instance.profile,
             ) &&
             activeTab != CustomerDockTab.notifications;
-        return ActionDock(
-          compact: compact,
-          tightToEdges: tightToEdges,
-          centered: true,
-          liftCenter: false,
-          leading: [
+        return SharedDockHero(
+          tag: 'customer',
+          child: ActionDock(
+            compact: compact,
+            tightToEdges: tightToEdges,
+            centered: true,
+            liftCenter: false,
+            leading: [
             DockButton(
               nativeId: 'customer_home',
               nativeSymbol: 'house',
@@ -64,8 +66,8 @@ class CustomerDock extends StatelessWidget {
                 }
               },
             ),
-          ],
-          center: DockButton(
+            ],
+            center: DockButton(
             nativeId: 'customer_notifications',
             nativeSymbol: 'bell',
             nativeSelectedSymbol: 'bell.fill',
@@ -90,8 +92,8 @@ class CustomerDock extends StatelessWidget {
                 );
               }
             },
-          ),
-          trailing: [
+            ),
+            trailing: [
             DockButton(
               nativeId: 'customer_profile',
               nativeSymbol: 'person.crop.circle',
@@ -115,7 +117,8 @@ class CustomerDock extends StatelessWidget {
                 );
               },
             ),
-          ],
+            ],
+          ),
         );
       },
     );

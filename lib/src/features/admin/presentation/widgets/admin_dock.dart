@@ -25,10 +25,12 @@ class AdminDock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ActionDock(
-      compact: compact,
-      tightToEdges: tightToEdges,
-      leading: [
+    return SharedDockHero(
+      tag: 'admin',
+      child: ActionDock(
+        compact: compact,
+        tightToEdges: tightToEdges,
+        leading: [
         DockButton(
           nativeId: 'admin_home',
           nativeSymbol: 'house',
@@ -63,8 +65,8 @@ class AdminDock extends StatelessWidget {
             );
           },
         ),
-      ],
-      center: DockButton(
+        ],
+        center: DockButton(
         nativeId: 'admin_create',
         nativeSymbol: 'plus',
         nativeSelectedSymbol: 'plus',
@@ -81,8 +83,8 @@ class AdminDock extends StatelessWidget {
             (route) => false,
           );
         },
-      ),
-      trailing: [
+        ),
+        trailing: [
         DockButton(
           nativeId: 'admin_activity',
           nativeSymbol: 'clock',
@@ -122,7 +124,8 @@ class AdminDock extends StatelessWidget {
                 .pushNamedAndRemoveUntil(AppRoutes.profile, (route) => false);
           },
         ),
-      ],
+        ],
+      ),
     );
   }
 }

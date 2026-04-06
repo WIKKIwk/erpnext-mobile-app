@@ -33,110 +33,113 @@ class WerkaDock extends StatelessWidget {
               AppSession.instance.profile,
             ) &&
             activeTab != WerkaDockTab.notifications;
-        return ActionDock(
-          compact: compact,
-          tightToEdges: tightToEdges,
-          leading: [
-            DockButton(
-              nativeId: 'werka_home',
-              nativeSymbol: 'house',
-              nativeSelectedSymbol: 'house.fill',
-              nativeRouteName: AppRoutes.werkaHome,
-              nativeReplaceStack: true,
-              icon: Icons.home_outlined,
-              selectedIcon: Icons.home_rounded,
-              active: activeTab == WerkaDockTab.home,
-              compact: compact,
-              onTap: () {
-                if (activeTab == WerkaDockTab.home) {
-                  return;
-                }
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                  AppRoutes.werkaHome,
-                  (route) => false,
-                );
-              },
-            ),
-            DockButton(
-              nativeId: 'werka_notifications',
-              nativeSymbol: 'bell',
-              nativeSelectedSymbol: 'bell.fill',
-              nativeRouteName: AppRoutes.werkaNotifications,
-              nativeReplaceStack: true,
-              icon: Icons.notifications_outlined,
-              selectedIcon: Icons.notifications_rounded,
-              active: activeTab == WerkaDockTab.notifications,
-              compact: compact,
-              showBadge: showBadge,
-              onTap: () {
-                if (activeTab == WerkaDockTab.notifications) {
-                  return;
-                }
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                  AppRoutes.werkaNotifications,
-                  (route) => false,
-                );
-              },
-            ),
-          ],
-          center: DockButton(
-            nativeId: 'werka_create',
-            nativeSymbol: 'plus',
-            nativeSelectedSymbol: 'plus',
-            nativeRouteName: AppRoutes.werkaCreateHub,
-            icon: Icons.add_rounded,
-            selectedIcon: Icons.add_rounded,
-            primary: true,
+        return SharedDockHero(
+          tag: 'werka',
+          child: ActionDock(
             compact: compact,
-            onTap: () {
-              Navigator.of(context).pushNamed(AppRoutes.werkaCreateHub);
-            },
+            tightToEdges: tightToEdges,
+            leading: [
+              DockButton(
+                nativeId: 'werka_home',
+                nativeSymbol: 'house',
+                nativeSelectedSymbol: 'house.fill',
+                nativeRouteName: AppRoutes.werkaHome,
+                nativeReplaceStack: true,
+                icon: Icons.home_outlined,
+                selectedIcon: Icons.home_rounded,
+                active: activeTab == WerkaDockTab.home,
+                compact: compact,
+                onTap: () {
+                  if (activeTab == WerkaDockTab.home) {
+                    return;
+                  }
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    AppRoutes.werkaHome,
+                    (route) => false,
+                  );
+                },
+              ),
+              DockButton(
+                nativeId: 'werka_notifications',
+                nativeSymbol: 'bell',
+                nativeSelectedSymbol: 'bell.fill',
+                nativeRouteName: AppRoutes.werkaNotifications,
+                nativeReplaceStack: true,
+                icon: Icons.notifications_outlined,
+                selectedIcon: Icons.notifications_rounded,
+                active: activeTab == WerkaDockTab.notifications,
+                compact: compact,
+                showBadge: showBadge,
+                onTap: () {
+                  if (activeTab == WerkaDockTab.notifications) {
+                    return;
+                  }
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    AppRoutes.werkaNotifications,
+                    (route) => false,
+                  );
+                },
+              ),
+            ],
+            center: DockButton(
+              nativeId: 'werka_create',
+              nativeSymbol: 'plus',
+              nativeSelectedSymbol: 'plus',
+              nativeRouteName: AppRoutes.werkaCreateHub,
+              icon: Icons.add_rounded,
+              selectedIcon: Icons.add_rounded,
+              primary: true,
+              compact: compact,
+              onTap: () {
+                Navigator.of(context).pushNamed(AppRoutes.werkaCreateHub);
+              },
+            ),
+            trailing: [
+              DockButton(
+                nativeId: 'werka_archive',
+                nativeSymbol: 'archivebox',
+                nativeSelectedSymbol: 'archivebox.fill',
+                nativeRouteName: AppRoutes.werkaArchive,
+                nativeReplaceStack: true,
+                icon: Icons.archive_outlined,
+                selectedIcon: Icons.archive_rounded,
+                active: activeTab == WerkaDockTab.archive,
+                compact: compact,
+                onTap: () {
+                  if (activeTab == WerkaDockTab.archive) {
+                    return;
+                  }
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    AppRoutes.werkaArchive,
+                    (route) => false,
+                  );
+                },
+              ),
+              DockButton(
+                nativeId: 'werka_profile',
+                nativeSymbol: 'person.crop.circle',
+                nativeSelectedSymbol: 'person.crop.circle.fill',
+                nativeRouteName: AppRoutes.profile,
+                nativeReplaceStack: true,
+                icon: Icons.account_circle_outlined,
+                selectedIcon: Icons.account_circle_rounded,
+                active: activeTab == WerkaDockTab.profile,
+                compact: compact,
+                onHoldComplete: activeTab == WerkaDockTab.profile
+                    ? () => showLogoutPrompt(context)
+                    : null,
+                onTap: () {
+                  if (activeTab == WerkaDockTab.profile) {
+                    return;
+                  }
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    AppRoutes.profile,
+                    (route) => false,
+                  );
+                },
+              ),
+            ],
           ),
-          trailing: [
-            DockButton(
-              nativeId: 'werka_archive',
-              nativeSymbol: 'archivebox',
-              nativeSelectedSymbol: 'archivebox.fill',
-              nativeRouteName: AppRoutes.werkaArchive,
-              nativeReplaceStack: true,
-              icon: Icons.archive_outlined,
-              selectedIcon: Icons.archive_rounded,
-              active: activeTab == WerkaDockTab.archive,
-              compact: compact,
-              onTap: () {
-                if (activeTab == WerkaDockTab.archive) {
-                  return;
-                }
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                  AppRoutes.werkaArchive,
-                  (route) => false,
-                );
-              },
-            ),
-            DockButton(
-              nativeId: 'werka_profile',
-              nativeSymbol: 'person.crop.circle',
-              nativeSelectedSymbol: 'person.crop.circle.fill',
-              nativeRouteName: AppRoutes.profile,
-              nativeReplaceStack: true,
-              icon: Icons.account_circle_outlined,
-              selectedIcon: Icons.account_circle_rounded,
-              active: activeTab == WerkaDockTab.profile,
-              compact: compact,
-              onHoldComplete: activeTab == WerkaDockTab.profile
-                  ? () => showLogoutPrompt(context)
-                  : null,
-              onTap: () {
-                if (activeTab == WerkaDockTab.profile) {
-                  return;
-                }
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                  AppRoutes.profile,
-                  (route) => false,
-                );
-              },
-            ),
-          ],
         );
       },
     );
