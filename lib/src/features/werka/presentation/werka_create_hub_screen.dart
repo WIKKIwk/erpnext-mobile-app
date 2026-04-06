@@ -20,10 +20,10 @@ class WerkaCreateHubScreen extends StatelessWidget {
       bottom: const WerkaDock(activeTab: null),
       contentPadding: const EdgeInsets.fromLTRB(10, 0, 12, 0),
       child: ListView(
-        padding: EdgeInsets.zero,
+        padding: const EdgeInsets.only(bottom: 110),
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.fromLTRB(4, 10, 4, 0),
             child: Card.filled(
               margin: EdgeInsets.zero,
               clipBehavior: Clip.antiAlias,
