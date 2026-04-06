@@ -93,158 +93,157 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
 
     return AppShell(
-      title: 'Accord',
+      title: '',
       subtitle: '',
+      contentPadding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
       child: LayoutBuilder(
         builder: (context, constraints) {
+          final double topSpacing = constraints.maxHeight >= 760 ? 12 : 4;
           return SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: Center(
+            physics: const ClampingScrollPhysics(),
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: 396,
+                  minHeight: constraints.maxHeight,
+                ),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(18, 0, 18, 28),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 420),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        SmoothAppear(
-                          delay: const Duration(milliseconds: 20),
-                          child: Text(
-                            'Sign in',
-                            style: theme.textTheme.displaySmall?.copyWith(
-                              fontSize: 42,
-                              letterSpacing: -1.2,
-                            ),
+                  padding: EdgeInsets.fromLTRB(0, topSpacing, 0, 28),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SmoothAppear(
+                        delay: const Duration(milliseconds: 20),
+                        offset: const Offset(0, 12),
+                        child: Text(
+                          'Sign in',
+                          style: theme.textTheme.displaySmall?.copyWith(
+                            fontSize: 40,
+                            letterSpacing: -1.4,
+                            height: 1.02,
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        SmoothAppear(
-                          delay: const Duration(milliseconds: 50),
-                          child: Text(
-                            'Use your phone number and access code to continue.',
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                              height: 1.45,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        SmoothAppear(
-                          delay: const Duration(milliseconds: 90),
+                      ),
+                      const SizedBox(height: 28),
+                      SmoothAppear(
+                        delay: const Duration(milliseconds: 170),
+                        offset: const Offset(0, 12),
+                        child: AutofillGroup(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Text(
-                                'Account access',
-                                style: theme.textTheme.titleLarge,
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'ERPNext bilan bog‘langan profilingizga kiring.',
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: scheme.onSurfaceVariant,
+                              TextField(
+                                controller: phoneController,
+                                focusNode: phoneFocusNode,
+                                textInputAction: TextInputAction.next,
+                                keyboardType: TextInputType.phone,
+                                autocorrect: false,
+                                enableSuggestions: true,
+                                autofillHints: const [
+                                  AutofillHints.telephoneNumber,
+                                ],
+                                decoration: const InputDecoration(
+                                  labelText: 'Telefon raqam',
+                                  hintText: '+998901234567',
+                                  prefixIcon: Icon(Icons.phone_outlined),
                                 ),
                               ),
-                              const SizedBox(height: 18),
-                              AutofillGroup(
-                                child: Column(
-                                  children: [
-                                    TextField(
-                                      controller: phoneController,
-                                      focusNode: phoneFocusNode,
-                                      textInputAction: TextInputAction.next,
-                                      keyboardType: TextInputType.phone,
-                                      autocorrect: false,
-                                      enableSuggestions: true,
-                                      autofillHints: const [
-                                        AutofillHints.telephoneNumber,
-                                      ],
-                                      decoration: const InputDecoration(
-                                        labelText: 'Telefon raqam',
-                                        hintText: '+998901234567',
-                                        prefixIcon: Icon(Icons.phone_outlined),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 14),
-                                    TextField(
-                                      controller: codeController,
-                                      focusNode: codeFocusNode,
-                                      textInputAction: TextInputAction.done,
-                                      autocorrect: false,
-                                      enableSuggestions: false,
-                                      onSubmitted: (_) {
-                                        if (!loading) {
-                                          submitLogin(context);
-                                        }
-                                      },
-                                      decoration: const InputDecoration(
-                                        labelText: 'Code',
-                                        hintText: '10XXXXXXXXXX',
-                                        prefixIcon:
-                                            Icon(Icons.password_outlined),
-                                      ),
-                                    ),
-                                  ],
+                              const SizedBox(height: 14),
+                              TextField(
+                                controller: codeController,
+                                focusNode: codeFocusNode,
+                                textInputAction: TextInputAction.done,
+                                autocorrect: false,
+                                enableSuggestions: false,
+                                onSubmitted: (_) {
+                                  if (!loading) {
+                                    submitLogin(context);
+                                  }
+                                },
+                                decoration: const InputDecoration(
+                                  labelText: 'Code',
+                                  hintText: '10XXXXXXXXXX',
+                                  prefixIcon: Icon(Icons.password_outlined),
                                 ),
-                              ),
-                              if (errorText != null) ...[
-                                const SizedBox(height: 16),
-                                Container(
-                                  padding: const EdgeInsets.all(14),
-                                  decoration: BoxDecoration(
-                                    color: scheme.errorContainer,
-                                    borderRadius: BorderRadius.circular(18),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.error_outline_rounded,
-                                        color: scheme.onErrorContainer,
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: Text(
-                                          errorText!,
-                                          style: theme.textTheme.bodyMedium
-                                              ?.copyWith(
-                                            color: scheme.onErrorContainer,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                              const SizedBox(height: 18),
-                              FilledButton(
-                                onPressed:
-                                    loading ? null : () => submitLogin(context),
-                                child: loading
-                                    ? const SizedBox(
-                                        height: 18,
-                                        width: 18,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2.2,
-                                        ),
-                                      )
-                                    : const Text('Login'),
                               ),
                             ],
                           ),
                         ),
+                      ),
+                      if (errorText != null) ...[
+                        const SizedBox(height: 14),
+                        SmoothAppear(
+                          delay: const Duration(milliseconds: 210),
+                          offset: const Offset(0, 8),
+                          child: _LoginErrorBanner(message: errorText!),
+                        ),
                       ],
-                    ),
+                      const SizedBox(height: 22),
+                      SmoothAppear(
+                        delay: const Duration(milliseconds: 220),
+                        offset: const Offset(0, 10),
+                        child: FilledButton(
+                          onPressed:
+                              loading ? null : () => submitLogin(context),
+                          child: loading
+                              ? const SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.2,
+                                  ),
+                                )
+                              : const Text('Login'),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _LoginErrorBanner extends StatelessWidget {
+  const _LoginErrorBanner({
+    required this.message,
+  });
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: scheme.errorContainer,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.error_outline_rounded,
+            color: scheme.onErrorContainer,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: scheme.onErrorContainer,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1007050280656",
+    "project_id": "oneni-ami",
+    "storage_bucket": "oneni-ami.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1007050280656:android:de3538ba418d5e6267d8d5",
+        "android_client_info": {
+          "package_name": "com.example.erpnext_stock_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQ90ih2sEzPg8y9okVUsQai3MnrhepAYc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

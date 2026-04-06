@@ -4,7 +4,9 @@ import '../../../core/session/app_session.dart';
 import '../../../core/widgets/app_loading_indicator.dart';
 import '../../../core/widgets/app_shell.dart';
 import 'login_screen.dart';
+import 'welcome_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AppEntryScreen extends StatefulWidget {
   const AppEntryScreen({super.key});
@@ -14,8 +16,11 @@ class AppEntryScreen extends StatefulWidget {
 }
 
 class _AppEntryScreenState extends State<AppEntryScreen> {
+  static const String _welcomeSeenKey = 'welcome_screen_seen';
+
   bool _booting = true;
   bool _showLogin = false;
+  bool _showWelcome = false;
   bool _navigated = false;
 
   @override
@@ -41,12 +46,15 @@ class _AppEntryScreenState extends State<AppEntryScreen> {
     }
 
     if (!AppSession.instance.isLoggedIn) {
+      final prefs = await SharedPreferences.getInstance();
+      final bool welcomeSeen = prefs.getBool(_welcomeSeenKey) ?? false;
       if (!mounted) {
         return;
       }
       setState(() {
         _booting = false;
-        _showLogin = true;
+        _showWelcome = !welcomeSeen;
+        _showLogin = welcomeSeen;
       });
       return;
     }
@@ -64,6 +72,7 @@ class _AppEntryScreenState extends State<AppEntryScreen> {
     if (!AppSession.instance.isLoggedIn) {
       setState(() {
         _booting = false;
+        _showWelcome = false;
         _showLogin = true;
       });
       return;
@@ -78,6 +87,22 @@ class _AppEntryScreenState extends State<AppEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_showWelcome) {
+      return WelcomeScreen(
+        onGetStarted: () async {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool(_welcomeSeenKey, true);
+          if (!mounted) {
+            return;
+          }
+          setState(() {
+            _showWelcome = false;
+            _showLogin = true;
+          });
+        },
+      );
+    }
+
     if (_showLogin) {
       return const LoginScreen();
     }

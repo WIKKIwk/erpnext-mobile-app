@@ -31,6 +31,12 @@ class AppLocalizations {
   }
 
   String get appTitle => _t('Accord', 'Accord', 'Accord');
+  String get welcomeToAccord => _t(
+        'Accord mobil ilovasiga xush kelibsiz',
+        'Welcome to Accord mobile app',
+        'Добро пожаловать в мобильное приложение Accord',
+      );
+  String get getStarted => _t('Boshlash', 'Get started', 'Начать');
   String get profileTitle => _t('Profil', 'Profile', 'Профиль');
   String get werkaAccount =>
       _t('Omborchi akkaunti', 'Wmanager account', 'Аккаунт кладовщика');
@@ -258,8 +264,7 @@ class AppLocalizations {
         'End date',
         'Дата окончания',
       );
-  String get archiveSelectDateAction =>
-      _t('Tanlash', 'Select', 'Выбрать');
+  String get archiveSelectDateAction => _t('Tanlash', 'Select', 'Выбрать');
   String get archiveSelectMonthAction =>
       _t('Oy tanlash', 'Choose month', 'Выбрать месяц');
   String get archiveViewAction => _t('Ko‘rish', 'View', 'Открыть');
