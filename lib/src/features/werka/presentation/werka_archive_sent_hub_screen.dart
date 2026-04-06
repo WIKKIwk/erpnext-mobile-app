@@ -419,23 +419,30 @@ class _WerkaArchiveSentHubScreenState extends State<WerkaArchiveSentHubScreen> {
           ],
         ),
         const SizedBox(height: 12),
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: [
-            for (final year in years)
-              _SentHubYearCell(
-                year: year,
-                active: _activeYears.contains(year),
-                onTap: () {
-                  _openList(
-                    period: WerkaArchivePeriod.yearly,
-                    from: DateTime(year, 1, 1),
-                    to: DateTime(year, 12, 31),
-                  );
-                },
-              ),
-          ],
+        LayoutBuilder(
+          builder: (context, constraints) {
+            const spacing = 10.0;
+            final cellWidth = (constraints.maxWidth - (spacing * 2)) / 3;
+            return Wrap(
+              spacing: spacing,
+              runSpacing: spacing,
+              children: [
+                for (final year in years)
+                  _SentHubYearCell(
+                    width: cellWidth,
+                    year: year,
+                    active: _activeYears.contains(year),
+                    onTap: () {
+                      _openList(
+                        period: WerkaArchivePeriod.yearly,
+                        from: DateTime(year, 1, 1),
+                        to: DateTime(year, 12, 31),
+                      );
+                    },
+                  ),
+              ],
+            );
+          },
         ),
       ],
     );
@@ -668,11 +675,13 @@ class _SentHubMonthCell extends StatelessWidget {
 
 class _SentHubYearCell extends StatelessWidget {
   const _SentHubYearCell({
+    required this.width,
     required this.year,
     required this.active,
     required this.onTap,
   });
 
+  final double width;
   final int year;
   final bool active;
   final VoidCallback onTap;
@@ -682,7 +691,7 @@ class _SentHubYearCell extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
     return SizedBox(
-      width: 100,
+      width: width,
       child: Material(
         color: active
             ? scheme.primaryContainer
