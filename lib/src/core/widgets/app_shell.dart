@@ -116,7 +116,17 @@ class AppShell extends StatelessWidget {
                   ),
                 ),
               if (useNativeTitle) const Spacer(),
-              if (actions != null) ...actions!,
+              if (actions != null) ...[
+                const SizedBox(width: 12),
+                Transform.translate(
+                  offset: const Offset(0, -10),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: actions!,
+                  ),
+                ),
+              ],
             ],
           ),
         ),
