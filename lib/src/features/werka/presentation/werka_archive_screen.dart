@@ -20,7 +20,7 @@ class WerkaArchiveScreen extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 110),
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.fromLTRB(4, 10, 4, 0),
             child: _ArchiveModuleGroup(
               rows: [
                 _ArchiveModuleRowData(
