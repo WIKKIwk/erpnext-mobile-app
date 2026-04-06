@@ -3,7 +3,6 @@ import '../theme/app_theme.dart';
 import '../native_back_button_bridge.dart';
 import '../native_dock_bridge.dart';
 import 'app_loading_indicator.dart';
-import 'flutter_dock_overlay.dart';
 import 'shared_header_title.dart';
 import 'package:flutter/material.dart';
 
@@ -51,22 +50,19 @@ class AppShell extends StatelessWidget {
       NativeDockBridge.instance.clearFromBuild();
     }
     final route = ModalRoute.of(context);
-    final owner = route ?? this;
-    final isCurrent = route?.isCurrent ?? true;
-    if (isCurrent) {
-      if (bottom != null) {
-        FlutterDockOverlayController.instance.show(
-          owner: owner,
-          dock: bottom!,
-          padding: bottomPadding,
-        );
-      } else {
-        FlutterDockOverlayController.instance.clear(owner);
-      }
-    }
+    final showBottom = bottom != null && (route?.isCurrent ?? true);
 
     return Scaffold(
       extendBody: true,
+      bottomNavigationBar: !showBottom
+          ? null
+          : SafeArea(
+              top: false,
+              child: Padding(
+                padding: bottomPadding,
+                child: bottom!,
+              ),
+            ),
       body: DecoratedBox(
         decoration: BoxDecoration(
           color: AppTheme.shellStart(context),
