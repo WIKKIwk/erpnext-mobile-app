@@ -99,39 +99,24 @@ class AppShell extends StatelessWidget {
               ],
               if (!useNativeTitle)
                 Expanded(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      minHeight: AppTheme.headerActionSize,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SharedHeaderTitle(
-                          title: title,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SharedHeaderTitle(
+                        title: title,
+                      ),
+                      if (subtitle.trim().isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          subtitle,
+                          style: theme.textTheme.bodyMedium,
                         ),
-                        if (subtitle.trim().isNotEmpty) ...[
-                          const SizedBox(height: 6),
-                          Text(
-                            subtitle,
-                            style: theme.textTheme.bodyMedium,
-                          ),
-                        ],
                       ],
-                    ),
+                    ],
                   ),
                 ),
               if (useNativeTitle) const Spacer(),
-              if (actions != null) ...[
-                const SizedBox(width: 12),
-                Transform.translate(
-                  offset: const Offset(0, -10),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: actions!,
-                  ),
-                ),
-              ],
+              if (actions != null) ...actions!,
             ],
           ),
         ),
