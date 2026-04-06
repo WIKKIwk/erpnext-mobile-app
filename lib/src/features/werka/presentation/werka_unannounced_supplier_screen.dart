@@ -4,7 +4,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/notifications/werka_runtime_store.dart';
 import '../../../core/search/search_activity_store.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/native_back_button.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/m3_picker_sheet.dart';
@@ -244,114 +244,108 @@ class _WerkaUnannouncedSupplierScreenState
     final canSubmit =
         _selectedSupplier != null && _selectedItem != null && !_submitting;
 
-    return Scaffold(
-      backgroundColor: AppTheme.shellStart(context),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-          children: [
-            _WerkaUnannouncedHeader(theme: theme),
-            const SizedBox(height: 20),
-            Card.filled(
-              margin: EdgeInsets.zero,
-              color: scheme.surfaceContainerLow,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(28),
-                side: BorderSide(
-                  color: scheme.outlineVariant.withValues(alpha: 0.7),
-                ),
+    return AppShell(
+      title: context.l10n.unannouncedTitle,
+      subtitle: '',
+      leading: NativeBackButtonSlot(
+        onPressed: () => Navigator.of(context).maybePop(),
+      ),
+      bottom: const WerkaDock(activeTab: null),
+      contentPadding: const EdgeInsets.fromLTRB(10, 0, 12, 0),
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(4, 0, 4, 24),
+        children: [
+          Card.filled(
+            margin: EdgeInsets.zero,
+            color: scheme.surfaceContainerLow,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+              side: BorderSide(
+                color: scheme.outlineVariant.withValues(alpha: 0.7),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      context.l10n.unannouncedTitle,
-                      style: theme.textTheme.headlineMedium,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    context.l10n.unannouncedTitle,
+                    style: theme.textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    context.l10n.supplierLabel,
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 6),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: _submitting ? null : _pickSupplier,
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          _selectedSupplier?.name ?? context.l10n.selectSupplier,
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 18),
+                  ),
+                  if (_selectedSupplier != null) ...[
+                    const SizedBox(height: 14),
                     Text(
-                      context.l10n.supplierLabel,
+                      context.l10n.itemLabel,
                       style: theme.textTheme.bodySmall,
                     ),
                     const SizedBox(height: 6),
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton(
-                        onPressed: _submitting ? null : _pickSupplier,
+                        onPressed: canPickItem ? _pickItem : null,
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            _selectedSupplier?.name ??
-                                context.l10n.selectSupplier,
+                            _selectedItem?.name ?? context.l10n.selectItem,
                           ),
-                        ),
-                      ),
-                    ),
-                    if (_selectedSupplier != null) ...[
-                      const SizedBox(height: 14),
-                      Text(
-                        context.l10n.itemLabel,
-                        style: theme.textTheme.bodySmall,
-                      ),
-                      const SizedBox(height: 6),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton(
-                          onPressed: canPickItem ? _pickItem : null,
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              _selectedItem?.name ?? context.l10n.selectItem,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                    if (_selectedItem != null) ...[
-                      const SizedBox(height: 14),
-                      Text(
-                        context.l10n.amountLabel,
-                        style: theme.textTheme.bodySmall,
-                      ),
-                      const SizedBox(height: 6),
-                      TextField(
-                        controller: _qtyController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: '0',
-                          suffixText: _selectedItem!.uom,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 18),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: canSubmit ? _submit : null,
-                        child: Text(
-                          _submitting
-                              ? context.l10n.pinSaving
-                              : context.l10n.confirmTitle,
                         ),
                       ),
                     ),
                   ],
-                ),
+                  if (_selectedItem != null) ...[
+                    const SizedBox(height: 14),
+                    Text(
+                      context.l10n.amountLabel,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _qtyController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: '0',
+                        suffixText: _selectedItem!.uom,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 18),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: canSubmit ? _submit : null,
+                      child: Text(
+                        _submitting
+                            ? context.l10n.pinSaving
+                            : context.l10n.confirmTitle,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: const SafeArea(
-        top: false,
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: WerkaDock(activeTab: null),
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -373,31 +367,4 @@ class WerkaUnannouncedPrefillArgs {
   final String itemName;
   final double qty;
   final String uom;
-}
-
-class _WerkaUnannouncedHeader extends StatelessWidget {
-  const _WerkaUnannouncedHeader({required this.theme});
-
-  final ThemeData theme;
-
-  @override
-  Widget build(BuildContext context) {
-    final showFlutterBackButton = !useNativeBackButton(context);
-    return Row(
-      children: [
-        if (showFlutterBackButton) ...[
-          NativeBackButtonSlot(
-            onPressed: () => Navigator.of(context).maybePop(),
-          ),
-          const SizedBox(width: 14),
-        ],
-        Expanded(
-          child: Text(
-            context.l10n.unannouncedTitle,
-            style: theme.textTheme.headlineMedium,
-          ),
-        ),
-      ],
-    );
-  }
 }

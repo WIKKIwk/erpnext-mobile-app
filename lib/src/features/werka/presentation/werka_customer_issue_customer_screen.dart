@@ -5,7 +5,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/notifications/werka_runtime_store.dart';
 import '../../../core/search/search_activity_store.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/native_back_button.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/m3_picker_sheet.dart';
@@ -369,133 +369,126 @@ class _WerkaCustomerIssueCustomerScreenState
     final canSubmit =
         _selectedCustomer != null && _selectedItem != null && !_submitting;
 
-    return Scaffold(
-      backgroundColor: AppTheme.shellStart(context),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-          children: [
-            _WerkaCustomerIssueHeader(theme: theme),
-            const SizedBox(height: 20),
-            Card.filled(
-              margin: EdgeInsets.zero,
-              color: scheme.surfaceContainerLow,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(28),
-                side: BorderSide(
-                  color: scheme.outlineVariant.withValues(alpha: 0.7),
-                ),
+    return AppShell(
+      title: l10n.customerIssueTitle,
+      subtitle: '',
+      leading: NativeBackButtonSlot(
+        onPressed: () => Navigator.of(context).maybePop(),
+      ),
+      bottom: const WerkaDock(activeTab: null),
+      contentPadding: const EdgeInsets.fromLTRB(10, 0, 12, 0),
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(4, 0, 4, 24),
+        children: [
+          Card.filled(
+            margin: EdgeInsets.zero,
+            color: scheme.surfaceContainerLow,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+              side: BorderSide(
+                color: scheme.outlineVariant.withValues(alpha: 0.7),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.customerIssueTitle,
+                    style: theme.textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 18),
+                  Text(l10n.itemLabel, style: theme.textTheme.bodySmall),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _submitting ? null : _pickItem,
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(_selectedItem?.name ?? l10n.selectItem),
+                          ),
+                        ),
+                      ),
+                      if (_selectedItem != null) ...[
+                        const SizedBox(width: 8),
+                        IconButton.filledTonal(
+                          tooltip: 'Clear item',
+                          onPressed: _submitting ? null : _clearSelectedItem,
+                          icon: const Icon(Icons.close_rounded),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Text(l10n.customerLabel, style: theme.textTheme.bodySmall),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _submitting ? null : _pickCustomer,
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              _selectedCustomer?.name ?? l10n.selectCustomer,
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (_selectedCustomer != null) ...[
+                        const SizedBox(width: 8),
+                        IconButton.filledTonal(
+                          tooltip: 'Clear customer',
+                          onPressed: _submitting ? null : _clearSelectedCustomer,
+                          icon: const Icon(Icons.close_rounded),
+                        ),
+                      ],
+                    ],
+                  ),
+                  if (_selectedCustomer != null &&
+                      _selectedItem == null &&
+                      _selectedCustomer!.phone.trim().isNotEmpty) ...[
+                    const SizedBox(height: 18),
                     Text(
-                      l10n.customerIssueTitle,
-                      style: theme.textTheme.headlineMedium,
-                    ),
-                    const SizedBox(height: 18),
-                    Text(l10n.itemLabel, style: theme.textTheme.bodySmall),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: _submitting ? null : _pickItem,
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child:
-                                  Text(_selectedItem?.name ?? l10n.selectItem),
-                            ),
-                          ),
-                        ),
-                        if (_selectedItem != null) ...[
-                          const SizedBox(width: 8),
-                          IconButton.filledTonal(
-                            tooltip: 'Clear item',
-                            onPressed: _submitting ? null : _clearSelectedItem,
-                            icon: const Icon(Icons.close_rounded),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Text(l10n.customerLabel, style: theme.textTheme.bodySmall),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: _submitting ? null : _pickCustomer,
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                _selectedCustomer?.name ?? l10n.selectCustomer,
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (_selectedCustomer != null) ...[
-                          const SizedBox(width: 8),
-                          IconButton.filledTonal(
-                            tooltip: 'Clear customer',
-                            onPressed:
-                                _submitting ? null : _clearSelectedCustomer,
-                            icon: const Icon(Icons.close_rounded),
-                          ),
-                        ],
-                      ],
-                    ),
-                    if (_selectedCustomer != null &&
-                        _selectedItem == null &&
-                        _selectedCustomer!.phone.trim().isNotEmpty) ...[
-                      const SizedBox(height: 14),
-                      Text(
-                        _selectedCustomer!.phone,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                    if (_selectedItem != null) ...[
-                      const SizedBox(height: 14),
-                      Text(l10n.amountLabel, style: theme.textTheme.bodySmall),
-                      const SizedBox(height: 6),
-                      TextField(
-                        controller: _qtyController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: '0',
-                          suffixText: _selectedItem!.uom,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 18),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: canSubmit ? _submit : null,
-                        child: Text(
-                          _submitting ? l10n.pinSaving : l10n.confirmTitle,
-                        ),
+                      _selectedCustomer!.phone,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
                       ),
                     ),
                   ],
-                ),
+                  if (_selectedItem != null) ...[
+                    const SizedBox(height: 14),
+                    Text(l10n.amountLabel, style: theme.textTheme.bodySmall),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _qtyController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: '0',
+                        suffixText: _selectedItem!.uom,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 18),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: canSubmit ? _submit : null,
+                      child: Text(
+                        _submitting ? l10n.pinSaving : l10n.confirmTitle,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: const SafeArea(
-        top: false,
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: WerkaDock(activeTab: null),
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -517,31 +510,4 @@ class WerkaCustomerIssuePrefillArgs {
   final String itemName;
   final double qty;
   final String uom;
-}
-
-class _WerkaCustomerIssueHeader extends StatelessWidget {
-  const _WerkaCustomerIssueHeader({required this.theme});
-
-  final ThemeData theme;
-
-  @override
-  Widget build(BuildContext context) {
-    final showFlutterBackButton = !useNativeBackButton(context);
-    return Row(
-      children: [
-        if (showFlutterBackButton) ...[
-          NativeBackButtonSlot(
-            onPressed: () => Navigator.of(context).maybePop(),
-          ),
-          const SizedBox(width: 14),
-        ],
-        Expanded(
-          child: Text(
-            context.l10n.customerIssueTitle,
-            style: theme.textTheme.headlineMedium,
-          ),
-        ),
-      ],
-    );
-  }
 }
