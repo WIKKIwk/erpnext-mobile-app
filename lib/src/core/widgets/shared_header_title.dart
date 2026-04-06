@@ -132,13 +132,16 @@ class _AnimatedFlightTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget child = Transform.translate(
-      offset: Offset(shiftX, 0),
-      child: Text(
-        title,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: AppTheme.pageTitleStyle(context),
+    Widget child = ClipRect(
+      child: Transform.translate(
+        offset: Offset(shiftX, 0),
+        child: Text(
+          title,
+          maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.visible,
+          style: AppTheme.pageTitleStyle(context),
+        ),
       ),
     );
 
