@@ -188,7 +188,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final double topSpacing =
-                    constraints.maxHeight >= 760 ? 118 : 82;
+                    constraints.maxHeight >= 760 ? 96 : 64;
                 return SingleChildScrollView(
                   physics: const ClampingScrollPhysics(),
                   child: Align(
