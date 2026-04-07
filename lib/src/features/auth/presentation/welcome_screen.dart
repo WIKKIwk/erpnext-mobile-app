@@ -119,6 +119,16 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     final double headlineFontSize = 46;
     final double headlineLineHeight = 1.02 * headlineFontSize;
     final double headlineHeight = headlineLineHeight * 3.15;
+    final TextStyle? primaryButtonLabelStyle =
+        theme.textTheme.labelMedium?.copyWith(
+      color: scheme.onPrimary,
+      fontWeight: FontWeight.w700,
+    );
+    final double primaryButtonWidth = _measurePrimaryButtonWidth(
+      context,
+      displayL10n.getStarted,
+      primaryButtonLabelStyle,
+    );
 
     return AnimatedBuilder(
       animation: Listenable.merge([
@@ -243,30 +253,29 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           offset: const Offset(0, 10),
                           child: Align(
                             alignment: Alignment.centerRight,
-                            child: AnimatedSize(
+                            child: AnimatedContainer(
                               duration: const Duration(milliseconds: 420),
                               curve: Curves.easeInOutCubicEmphasized,
-                              alignment: Alignment.centerRight,
-                              child: FilledButton(
-                                onPressed: widget.onGetStarted,
-                                style: FilledButton.styleFrom(
-                                  minimumSize: const Size(0, 54),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 28,
-                                    vertical: 15,
+                              width: primaryButtonWidth,
+                              child: SizedBox(
+                                height: 54,
+                                child: FilledButton(
+                                  onPressed: widget.onGetStarted,
+                                  style: FilledButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 28,
+                                      vertical: 15,
+                                    ),
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    visualDensity: VisualDensity.compact,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
                                   ),
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                  visualDensity: VisualDensity.compact,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(999),
-                                  ),
-                                ),
-                                child: _buildAnimatedText(
-                                  displayL10n.getStarted,
-                                  style: theme.textTheme.labelMedium?.copyWith(
-                                    color: scheme.onPrimary,
-                                    fontWeight: FontWeight.w700,
+                                  child: _buildAnimatedText(
+                                    displayL10n.getStarted,
+                                    style: primaryButtonLabelStyle,
                                   ),
                                 ),
                               ),
@@ -305,6 +314,20 @@ class _WelcomeScreenState extends State<WelcomeScreen>
         style: style,
       ),
     );
+  }
+
+  double _measurePrimaryButtonWidth(
+    BuildContext context,
+    String text,
+    TextStyle? style,
+  ) {
+    final TextPainter painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: Directionality.of(context),
+      maxLines: 1,
+    )..layout();
+
+    return math.max(140.0, painter.width + 56);
   }
 
   Future<void> _pickLocale(BuildContext context, Locale currentLocale) async {
