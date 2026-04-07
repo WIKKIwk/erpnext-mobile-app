@@ -29,8 +29,28 @@ class _LoginScreenState extends State<LoginScreen> {
   String? errorText;
   bool loading = false;
 
+  bool get _canSubmit =>
+      phoneController.text.trim().isNotEmpty &&
+      codeController.text.trim().isNotEmpty;
+
+  @override
+  void initState() {
+    super.initState();
+    phoneController.addListener(_handleInputChanged);
+    codeController.addListener(_handleInputChanged);
+  }
+
+  void _handleInputChanged() {
+    if (!mounted) {
+      return;
+    }
+    setState(() {});
+  }
+
   @override
   void dispose() {
+    phoneController.removeListener(_handleInputChanged);
+    codeController.removeListener(_handleInputChanged);
     phoneController.dispose();
     codeController.dispose();
     phoneFocusNode.dispose();
@@ -110,7 +130,19 @@ class _LoginScreenState extends State<LoginScreen> {
       scaffoldBackgroundColor: const Color(0xFF000000),
       inputDecorationTheme: theme.inputDecorationTheme.copyWith(
         filled: true,
-        fillColor: const Color(0xFF263123),
+        fillColor: const Color(0xFF050605),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: Color(0xFF44543D)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: Color(0xFF78916C), width: 1.2),
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: Color(0xFF44543D)),
+        ),
       ),
     );
 
@@ -121,9 +153,9 @@ class _LoginScreenState extends State<LoginScreen> {
         subtitle: '',
         leading: widget.onBack == null
             ? null
-            : AppShellIconAction(
-                icon: Icons.arrow_back_rounded,
-                onTap: widget.onBack!,
+            : IconButton(
+                onPressed: widget.onBack,
+                icon: const Icon(Icons.arrow_back_rounded),
               ),
         contentPadding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
         child: LayoutBuilder(
@@ -212,18 +244,36 @@ class _LoginScreenState extends State<LoginScreen> {
                         SmoothAppear(
                           delay: const Duration(milliseconds: 220),
                           offset: const Offset(0, 10),
-                          child: FilledButton(
-                            onPressed:
-                                loading ? null : () => submitLogin(context),
-                            child: loading
-                                ? const SizedBox(
-                                    height: 18,
-                                    width: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.2,
-                                    ),
-                                  )
-                                : const Text('Login'),
+                          child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 260),
+                            curve: Curves.easeOutCubic,
+                            opacity: (_canSubmit || loading) ? 1 : 0,
+                            child: AnimatedSlide(
+                              duration: const Duration(milliseconds: 260),
+                              curve: Curves.easeOutCubic,
+                              offset: (_canSubmit || loading)
+                                  ? Offset.zero
+                                  : const Offset(0, 0.08),
+                              child: IgnorePointer(
+                                ignoring: !_canSubmit && !loading,
+                                child: FilledButton(
+                                  onPressed: loading
+                                      ? null
+                                      : _canSubmit
+                                          ? () => submitLogin(context)
+                                          : null,
+                                  child: loading
+                                      ? const SizedBox(
+                                          height: 18,
+                                          width: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2.2,
+                                          ),
+                                        )
+                                      : const Text('Login'),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ],
