@@ -205,14 +205,14 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           offset: const Offset(0, 14),
                           child: _WelcomeSelectionRow(
                             icon: Icons.language_rounded,
-                            label: _buildAnimatedText(
+                            label: _buildSoftAnimatedText(
                               displayL10n.languageTitle,
                               style: theme.textTheme.titleLarge?.copyWith(
                                 fontSize: 21,
                                 color: scheme.onSurface,
                               ),
                             ),
-                            value: _buildAnimatedText(
+                            value: _buildSoftAnimatedText(
                               _localeLabel(displayL10n, currentLocale),
                               style: theme.textTheme.bodyLarge?.copyWith(
                                 fontSize: 16,
@@ -230,14 +230,14 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           offset: const Offset(0, 14),
                           child: _WelcomeSelectionRow(
                             icon: Icons.palette_outlined,
-                            label: _buildAnimatedText(
+                            label: _buildSoftAnimatedText(
                               displayL10n.themeTitle,
                               style: theme.textTheme.titleLarge?.copyWith(
                                 fontSize: 21,
                                 color: scheme.onSurface,
                               ),
                             ),
-                            value: _buildAnimatedText(
+                            value: _buildSoftAnimatedText(
                               _themeLabel(displayL10n, currentVariant),
                               style: theme.textTheme.bodyLarge?.copyWith(
                                 fontSize: 16,
@@ -275,7 +275,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                       borderRadius: BorderRadius.circular(999),
                                     ),
                                   ),
-                                  child: _buildAnimatedText(
+                                  child: _buildSoftAnimatedText(
                                     displayL10n.getStarted,
                                     style: primaryButtonLabelStyle,
                                   ),
@@ -309,6 +309,28 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       child: Text(
         text,
         key: ValueKey<String>('$_headlineIndex-$_headlinePhase-$text'),
+        maxLines: maxLines,
+        softWrap: maxLines != 1,
+        overflow: overflow,
+        textAlign: textAlign,
+        style: style,
+      ),
+    );
+  }
+
+  Widget _buildSoftAnimatedText(
+    String text, {
+    required TextStyle? style,
+    int maxLines = 1,
+    TextAlign? textAlign,
+    TextOverflow? overflow,
+  }) {
+    return _SoftBlurMotionText(
+      phase: _headlinePhase,
+      progress: _headlineController.value,
+      child: Text(
+        text,
+        key: ValueKey<String>('soft-$_headlineIndex-$_headlinePhase-$text'),
         maxLines: maxLines,
         softWrap: maxLines != 1,
         overflow: overflow,
@@ -513,6 +535,45 @@ class _HeadlineMotionText extends StatelessWidget {
           ),
           child: child,
         ),
+      ),
+    );
+  }
+}
+
+class _SoftBlurMotionText extends StatelessWidget {
+  const _SoftBlurMotionText({
+    required this.phase,
+    required this.progress,
+    required this.child,
+  });
+
+  final String phase;
+  final double progress;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final double t = Curves.easeOutCubic.transform(progress);
+    final bool isExiting = phase == 'exiting';
+    final double opacity = phase == 'idle'
+        ? 1
+        : isExiting
+            ? 1 - t
+            : t;
+    final double sigma = phase == 'idle'
+        ? 0.01
+        : isExiting
+            ? 3.2 * t
+            : 3.2 * (1 - t);
+
+    return Opacity(
+      opacity: opacity.clamp(0.0, 1.0),
+      child: ImageFiltered(
+        imageFilter: ui.ImageFilter.blur(
+          sigmaX: sigma,
+          sigmaY: sigma * 0.22,
+        ),
+        child: child,
       ),
     );
   }
