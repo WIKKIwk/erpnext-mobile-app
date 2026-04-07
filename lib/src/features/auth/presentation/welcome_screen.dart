@@ -329,6 +329,8 @@ class _CyclingWelcomeHeadlineState extends State<_CyclingWelcomeHeadline>
     }
 
     if (_phase == 'exiting') {
+      _controller.stop();
+      _controller.value = 0;
       setState(() {
         _index = (_index + 1) % _headlineLocales.length;
         _phase = 'entering';
@@ -344,6 +346,8 @@ class _CyclingWelcomeHeadlineState extends State<_CyclingWelcomeHeadline>
     }
 
     if (_phase == 'entering') {
+      _controller.stop();
+      _controller.value = 0;
       setState(() {
         _phase = 'idle';
       });
