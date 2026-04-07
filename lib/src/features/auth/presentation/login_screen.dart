@@ -192,6 +192,9 @@ class _LoginScreenState extends State<LoginScreen> {
         final theme = Theme.of(context);
         final scheme = theme.colorScheme;
         final l10n = AppLocalizations.of(context);
+        final bool isDark = ThemeController.instance.isDark;
+        final Color inputFillColor =
+            isDark ? const Color(0xFF000000) : scheme.surface;
         final darkTheme = theme.copyWith(
           colorScheme: scheme.copyWith(
             surface: const Color(0xFF000000),
@@ -204,7 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
           scaffoldBackgroundColor: const Color(0xFF000000),
           inputDecorationTheme: theme.inputDecorationTheme.copyWith(
             filled: true,
-            fillColor: const Color(0xFF000000),
+            fillColor: inputFillColor,
             labelStyle: theme.inputDecorationTheme.labelStyle?.copyWith(
               color: scheme.onSurface.withValues(alpha: 0.82),
               fontSize: 14,

@@ -364,45 +364,52 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _SelectionOption(
+              _ThemeSelectionOption(
                 title: l10n.themeClassicLabel,
+                swatches: _themeSwatches(AppThemeVariant.classic),
                 active: currentVariant == AppThemeVariant.classic,
                 onTap: () => Navigator.of(context).pop(AppThemeVariant.classic),
               ),
               const SizedBox(height: 10),
-              _SelectionOption(
+              _ThemeSelectionOption(
                 title: l10n.themeEarthLabel,
+                swatches: _themeSwatches(AppThemeVariant.earthy),
                 active: currentVariant == AppThemeVariant.earthy,
                 onTap: () => Navigator.of(context).pop(AppThemeVariant.earthy),
               ),
               const SizedBox(height: 10),
-              _SelectionOption(
+              _ThemeSelectionOption(
                 title: l10n.themeBlushLabel,
+                swatches: _themeSwatches(AppThemeVariant.blush),
                 active: currentVariant == AppThemeVariant.blush,
                 onTap: () => Navigator.of(context).pop(AppThemeVariant.blush),
               ),
               const SizedBox(height: 10),
-              _SelectionOption(
+              _ThemeSelectionOption(
                 title: l10n.themeMossLabel,
+                swatches: _themeSwatches(AppThemeVariant.moss),
                 active: currentVariant == AppThemeVariant.moss,
                 onTap: () => Navigator.of(context).pop(AppThemeVariant.moss),
               ),
               const SizedBox(height: 10),
-              _SelectionOption(
+              _ThemeSelectionOption(
                 title: l10n.themeLavenderLabel,
+                swatches: _themeSwatches(AppThemeVariant.lavender),
                 active: currentVariant == AppThemeVariant.lavender,
                 onTap: () =>
                     Navigator.of(context).pop(AppThemeVariant.lavender),
               ),
               const SizedBox(height: 10),
-              _SelectionOption(
+              _ThemeSelectionOption(
                 title: l10n.themeSlateLabel,
+                swatches: _themeSwatches(AppThemeVariant.slate),
                 active: currentVariant == AppThemeVariant.slate,
                 onTap: () => Navigator.of(context).pop(AppThemeVariant.slate),
               ),
               const SizedBox(height: 10),
-              _SelectionOption(
+              _ThemeSelectionOption(
                 title: l10n.themeOceanLabel,
+                swatches: _themeSwatches(AppThemeVariant.ocean),
                 active: currentVariant == AppThemeVariant.ocean,
                 onTap: () => Navigator.of(context).pop(AppThemeVariant.ocean),
               ),
@@ -1295,11 +1302,13 @@ class _SelectionOption extends StatelessWidget {
     required this.title,
     required this.active,
     required this.onTap,
+    this.trailing,
   });
 
   final String title;
   final bool active;
   final VoidCallback onTap;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -1327,6 +1336,10 @@ class _SelectionOption extends StatelessWidget {
                   ),
                 ),
               ),
+              if (trailing != null) ...[
+                const SizedBox(width: 12),
+                trailing!,
+              ],
               const SizedBox(width: 12),
               AnimatedContainer(
                 duration: const Duration(milliseconds: 220),
@@ -1353,4 +1366,88 @@ class _SelectionOption extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ThemeSelectionOption extends StatelessWidget {
+  const _ThemeSelectionOption({
+    required this.title,
+    required this.swatches,
+    required this.active,
+    required this.onTap,
+  });
+
+  final String title;
+  final List<Color> swatches;
+  final bool active;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return _SelectionOption(
+      title: title,
+      active: active,
+      onTap: onTap,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final swatch in swatches) ...[
+            Container(
+              height: 14,
+              width: 14,
+              decoration: BoxDecoration(
+                color: swatch,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: scheme.outlineVariant.withValues(alpha: 0.45),
+                ),
+              ),
+            ),
+            if (swatch != swatches.last) const SizedBox(width: 6),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+List<Color> _themeSwatches(AppThemeVariant variant) {
+  return switch (variant) {
+    AppThemeVariant.classic => const [
+        Color(0xFF324670),
+        Color(0xFFD8E2FF),
+        Color(0xFF53627F),
+      ],
+    AppThemeVariant.earthy => const [
+        Color(0xFF8A7650),
+        Color(0xFFDBCEA5),
+        Color(0xFF8E977D),
+      ],
+    AppThemeVariant.blush => const [
+        Color(0xFFF5AFAF),
+        Color(0xFFF9DFDF),
+        Color(0xFFFBEFEF),
+      ],
+    AppThemeVariant.moss => const [
+        Color(0xFF84B179),
+        Color(0xFFC7EABB),
+        Color(0xFFA2CB8B),
+      ],
+    AppThemeVariant.lavender => const [
+        Color(0xFF4D4C7D),
+        Color(0xFFD8B9C3),
+        Color(0xFF827397),
+      ],
+    AppThemeVariant.slate => const [
+        Color(0xFF30364F),
+        Color(0xFFACBAC4),
+        Color(0xFFE1D9BC),
+      ],
+    AppThemeVariant.ocean => const [
+        Color(0xFF1C4D8D),
+        Color(0xFF4988C4),
+        Color(0xFFBDE8F5),
+      ],
+  };
 }
