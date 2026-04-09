@@ -338,9 +338,6 @@ final class NativeTabBarController: UITabBarController, UITabBarControllerDelega
     if #available(iOS 18.0, *) {
       mode = .tabBar
     }
-    if #available(iOS 26.0, *) {
-      tabBarMinimizeBehavior = .onScrollDown
-    }
   }
 
   private func applyDockState(_ state: NativeDockState) {
@@ -363,9 +360,6 @@ final class NativeTabBarController: UITabBarController, UITabBarControllerDelega
     guard state.visible, !tabItems.isEmpty else {
       view.isHidden = true
       setSystemTabBarHidden(true)
-      if #available(iOS 26.0, *) {
-        setBottomAccessory(nil, animated: false)
-      }
       return
     }
 
@@ -380,9 +374,6 @@ final class NativeTabBarController: UITabBarController, UITabBarControllerDelega
       self.selectedIndex = 0
     }
 
-    if #available(iOS 26.0, *) {
-      setBottomAccessory(nil, animated: false)
-    }
     setSystemTabBarHidden(false)
   }
 
