@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math' as math;
 
 import '../../../../app/app_router.dart';
@@ -8,35 +7,24 @@ import 'package:flutter/material.dart';
 final ValueNotifier<bool> werkaCreateHubMenuOpen = ValueNotifier<bool>(false);
 
 OverlayEntry? _werkaCreateHubOverlayEntry;
-Completer<void>? _werkaCreateHubCompleter;
 
-Future<void> showWerkaCreateHubSheet(BuildContext context) {
+void showWerkaCreateHubSheet(BuildContext context) {
   if (_werkaCreateHubOverlayEntry != null) {
-    return _werkaCreateHubCompleter?.future ?? Future.value();
+    return;
   }
 
-  final overlay = Navigator.of(context, rootNavigator: true).overlay;
-  if (overlay == null) {
-    return Future.value();
-  }
+  final overlay = Overlay.of(context, rootOverlay: true);
 
   final navigator = Navigator.of(context);
-  final completer = Completer<void>();
   late final OverlayEntry entry;
 
   void closeMenu() {
     if (entry.mounted) {
       entry.remove();
     }
-    if (!completer.isCompleted) {
-      completer.complete();
-    }
     werkaCreateHubMenuOpen.value = false;
     if (_werkaCreateHubOverlayEntry == entry) {
       _werkaCreateHubOverlayEntry = null;
-    }
-    if (_werkaCreateHubCompleter == completer) {
-      _werkaCreateHubCompleter = null;
     }
   }
 
@@ -57,11 +45,8 @@ Future<void> showWerkaCreateHubSheet(BuildContext context) {
   );
 
   _werkaCreateHubOverlayEntry = entry;
-  _werkaCreateHubCompleter = completer;
   werkaCreateHubMenuOpen.value = true;
   overlay.insert(entry);
-
-  return completer.future;
 }
 
 class _WerkaCreateHubOverlay extends StatefulWidget {
