@@ -35,7 +35,7 @@ class AdminDock extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: tightToEdges ? 0 : 8),
       child: AppNavigationBar(
-        height: compact ? 72 : 76,
+        height: compact ? 68 : 72,
         selectedIndex: selectedIndex,
         destinations: [
           AppNavigationDestination(
