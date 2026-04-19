@@ -68,7 +68,7 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
     return AppShell(
       title: context.l10n.werkaRoleName,
       subtitle: '',
-      preferNativeTitle: true,
+      nativeTopBar: true,
       actions: [
         AnimatedBuilder(
           animation: NotificationUnreadStore.instance,
@@ -105,7 +105,7 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
         ),
       ],
       bottom: const WerkaDock(activeTab: WerkaDockTab.home),
-      contentPadding: const EdgeInsets.fromLTRB(10, 0, 12, 0),
+      contentPadding: EdgeInsets.zero,
       child: Column(
         children: [
           Expanded(
@@ -141,16 +141,11 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
                     physics: const TopRefreshScrollPhysics(),
                     padding: EdgeInsets.only(bottom: bottomPadding),
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: _WerkaSummaryCard(summary: currentSummary),
-                      ),
+                      const SizedBox(height: 4),
+                      _WerkaSummaryList(summary: currentSummary),
                       if (previewItems.isNotEmpty) const SizedBox(height: 16),
                       if (previewItems.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: _WerkaPendingSection(items: previewItems),
-                        ),
+                        _WerkaPendingSection(items: previewItems),
                     ],
                   ),
                 );
@@ -163,8 +158,8 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
   }
 }
 
-class _WerkaSummaryCard extends StatelessWidget {
-  const _WerkaSummaryCard({
+class _WerkaSummaryList extends StatelessWidget {
+  const _WerkaSummaryList({
     required this.summary,
   });
 
@@ -174,165 +169,109 @@ class _WerkaSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return SmoothAppear(
-      child: Card.filled(
-        margin: EdgeInsets.zero,
-        clipBehavior: Clip.antiAlias,
-        color: scheme.surfaceContainerLow,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28),
-        ),
-        child: Column(
-          children: [
-            _WerkaSummaryRow(
-              label: context.l10n.pendingStatus,
-              value: summary.pendingCount.toString(),
-              highlighted: true,
-              isFirst: true,
-              onTap: () => Navigator.of(context).pushNamed(
-                AppRoutes.werkaStatusBreakdown,
-                arguments: WerkaStatusKind.pending,
-              ),
+      child: Column(
+        children: [
+          _WerkaSummaryListTile(
+            label: context.l10n.pendingStatus,
+            value: summary.pendingCount.toString(),
+            highlighted: true,
+            onTap: () => Navigator.of(context).pushNamed(
+              AppRoutes.werkaStatusBreakdown,
+              arguments: WerkaStatusKind.pending,
             ),
-            Divider(
-              height: 1,
-              thickness: 1,
-              indent: 18,
-              endIndent: 18,
-              color: scheme.outlineVariant.withValues(alpha: 0.55),
+          ),
+          Divider(
+            height: 1,
+            thickness: 1,
+            indent: 16,
+            endIndent: 16,
+            color: scheme.outlineVariant.withValues(alpha: 0.45),
+          ),
+          _WerkaSummaryListTile(
+            label: context.l10n.confirmedStatus,
+            value: summary.confirmedCount.toString(),
+            onTap: () => Navigator.of(context).pushNamed(
+              AppRoutes.werkaStatusBreakdown,
+              arguments: WerkaStatusKind.confirmed,
             ),
-            _WerkaSummaryRow(
-              label: context.l10n.confirmedStatus,
-              value: summary.confirmedCount.toString(),
-              onTap: () => Navigator.of(context).pushNamed(
-                AppRoutes.werkaStatusBreakdown,
-                arguments: WerkaStatusKind.confirmed,
-              ),
+          ),
+          Divider(
+            height: 1,
+            thickness: 1,
+            indent: 16,
+            endIndent: 16,
+            color: scheme.outlineVariant.withValues(alpha: 0.45),
+          ),
+          _WerkaSummaryListTile(
+            label: context.l10n.returnedStatus,
+            value: summary.returnedCount.toString(),
+            onTap: () => Navigator.of(context).pushNamed(
+              AppRoutes.werkaStatusBreakdown,
+              arguments: WerkaStatusKind.returned,
             ),
-            Divider(
-              height: 1,
-              thickness: 1,
-              indent: 18,
-              endIndent: 18,
-              color: scheme.outlineVariant.withValues(alpha: 0.55),
-            ),
-            _WerkaSummaryRow(
-              label: context.l10n.returnedStatus,
-              value: summary.returnedCount.toString(),
-              isLast: true,
-              onTap: () => Navigator.of(context).pushNamed(
-                AppRoutes.werkaStatusBreakdown,
-                arguments: WerkaStatusKind.returned,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _WerkaSummaryRow extends StatelessWidget {
-  const _WerkaSummaryRow({
+class _WerkaSummaryListTile extends StatelessWidget {
+  const _WerkaSummaryListTile({
     required this.label,
     required this.value,
     required this.onTap,
     this.highlighted = false,
-    this.isFirst = false,
-    this.isLast = false,
   });
 
   final String label;
   final String value;
   final VoidCallback onTap;
   final bool highlighted;
-  final bool isFirst;
-  final bool isLast;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final borderRadius = BorderRadius.only(
-      topLeft: Radius.circular(isFirst ? 28 : 0),
-      topRight: Radius.circular(isFirst ? 28 : 0),
-      bottomLeft: Radius.circular(isLast ? 28 : 0),
-      bottomRight: Radius.circular(isLast ? 28 : 0),
-    );
-    return PressableScale(
-      onTap: onTap,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: borderRadius,
-          onTap: onTap,
-          child: AnimatedContainer(
-            duration: AppMotion.medium,
-            curve: AppMotion.smooth,
-            color: highlighted ? scheme.surfaceContainer : Colors.transparent,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Row(
-                      children: [
-                        if (highlighted) ...[
-                          Container(
-                            width: 4,
-                            height: 24,
-                            decoration: BoxDecoration(
-                              color: scheme.primary,
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                        ],
-                        Text(label, style: theme.textTheme.titleMedium),
-                      ],
-                    ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 16, 8, 14),
+          child: Row(
+            children: [
+              if (highlighted) ...[
+                Container(
+                  width: 4,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: scheme.primary,
+                    borderRadius: BorderRadius.circular(999),
                   ),
-                  FilledButton.tonal(
-                    onPressed: onTap,
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(44, 40),
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      visualDensity: VisualDensity.compact,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    child: AnimatedSwitcher(
-                      duration: AppMotion.medium,
-                      switchInCurve: AppMotion.smooth,
-                      switchOutCurve: AppMotion.smooth,
-                      transitionBuilder: (child, animation) {
-                        return FadeTransition(
-                          opacity: animation,
-                          child: SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(0, 0.12),
-                              end: Offset.zero,
-                            ).animate(animation),
-                            child: child,
-                          ),
-                        );
-                      },
-                      child: Text(
-                        value,
-                        key: ValueKey<String>(value),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    size: 22,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ],
+                ),
+                const SizedBox(width: 12),
+              ],
+              Expanded(
+                child: Text(
+                  label,
+                  style: theme.textTheme.titleMedium,
+                ),
               ),
-            ),
+              const SizedBox(width: 16),
+              Text(
+                value,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 22,
+                color: scheme.onSurfaceVariant,
+              ),
+            ],
           ),
         ),
       ),
@@ -377,7 +316,8 @@ class _WerkaPendingSection extends StatelessWidget {
               const SizedBox(height: 14),
               Card.filled(
                 margin: EdgeInsets.zero,
-                color: isDark ? const Color(0xFF2A2931) : scheme.surfaceContainer,
+                color:
+                    isDark ? const Color(0xFF2A2931) : scheme.surfaceContainer,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
                 ),

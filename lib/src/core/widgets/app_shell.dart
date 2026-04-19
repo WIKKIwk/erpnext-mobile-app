@@ -19,6 +19,7 @@ class AppShell extends StatelessWidget {
     this.bottomPadding = EdgeInsets.zero,
     this.animateOnEnter = true,
     this.preferNativeTitle = false,
+    this.nativeTopBar = false,
     this.backgroundColor,
   });
 
@@ -32,6 +33,7 @@ class AppShell extends StatelessWidget {
   final EdgeInsets bottomPadding;
   final bool animateOnEnter;
   final bool preferNativeTitle;
+  final bool nativeTopBar;
   final Color? backgroundColor;
 
   @override
@@ -54,14 +56,27 @@ class AppShell extends StatelessWidget {
     return Scaffold(
       backgroundColor: backgroundColor ?? theme.scaffoldBackgroundColor,
       extendBody: true,
+      appBar: nativeTopBar
+          ? AppBar(
+              title: Text(title),
+              leading: shouldHideLeading ? null : leading,
+              automaticallyImplyLeading:
+                  shouldHideLeading ? false : leading == null,
+              actions: actions,
+              backgroundColor: backgroundColor ?? theme.scaffoldBackgroundColor,
+              surfaceTintColor: Colors.transparent,
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              toolbarHeight: 64,
+              titleSpacing: 20,
+              centerTitle: false,
+            )
+          : null,
       bottomNavigationBar: bottom == null
           ? null
-          : SafeArea(
-              top: false,
-              child: Padding(
-                padding: bottomPadding,
-                child: bottom!,
-              ),
+          : Padding(
+              padding: bottomPadding,
+              child: bottom!,
             ),
       body: DecoratedBox(
         decoration: BoxDecoration(
@@ -74,64 +89,63 @@ class AppShell extends StatelessWidget {
             theme,
             shouldHideLeading,
             useNativeTitle,
+            showHeader: !nativeTopBar,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildAnimatedContent(
-    BuildContext context,
-    ThemeData theme,
-    bool shouldHideLeading,
-    bool useNativeTitle,
-  ) {
+  Widget _buildAnimatedContent(BuildContext context, ThemeData theme,
+      bool shouldHideLeading, bool useNativeTitle,
+      {required bool showHeader}) {
     final content = Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (!shouldHideLeading && leading != null) ...[
-                HeaderLeadingTransition(
-                  child: leading!,
-                ),
-                const SizedBox(width: 14),
-              ],
-              if (!useNativeTitle)
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SharedHeaderTitle(
-                        title: title,
-                      ),
-                      if (subtitle.trim().isNotEmpty) ...[
-                        const SizedBox(height: 6),
-                        Text(
-                          subtitle,
-                          style: theme.textTheme.bodyMedium,
+        if (showHeader)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (!shouldHideLeading && leading != null) ...[
+                  HeaderLeadingTransition(
+                    child: leading!,
+                  ),
+                  const SizedBox(width: 14),
+                ],
+                if (!useNativeTitle)
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SharedHeaderTitle(
+                          title: title,
                         ),
+                        if (subtitle.trim().isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            subtitle,
+                            style: theme.textTheme.bodyMedium,
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
-                ),
-              if (useNativeTitle) const Spacer(),
-              if (actions != null) ...[
-                const SizedBox(width: 12),
-                Transform.translate(
-                  offset: const Offset(0, -10),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: actions!,
+                if (useNativeTitle) const Spacer(),
+                if (actions != null) ...[
+                  const SizedBox(width: 12),
+                  Transform.translate(
+                    offset: const Offset(0, -10),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: actions!,
+                    ),
                   ),
-                ),
+                ],
               ],
-            ],
+            ),
           ),
-        ),
         Expanded(
           child: Container(
             width: double.infinity,
