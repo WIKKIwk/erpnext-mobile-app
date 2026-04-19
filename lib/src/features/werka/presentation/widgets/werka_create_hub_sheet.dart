@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import '../../../../app/app_router.dart';
@@ -6,64 +7,65 @@ import 'package:flutter/material.dart';
 
 final ValueNotifier<bool> werkaCreateHubMenuOpen = ValueNotifier<bool>(false);
 
+OverlayEntry? _werkaCreateHubOverlayEntry;
+Completer<void>? _werkaCreateHubCompleter;
+
 Future<void> showWerkaCreateHubSheet(BuildContext context) {
-  final scheme = Theme.of(context).colorScheme;
+  if (_werkaCreateHubOverlayEntry != null) {
+    return _werkaCreateHubCompleter?.future ?? Future.value();
+  }
 
-  werkaCreateHubMenuOpen.value = true;
-  return showGeneralDialog<void>(
-    context: context,
-    barrierDismissible: true,
-    barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-    barrierColor: scheme.scrim.withValues(alpha: 0.58),
-    transitionDuration: const Duration(milliseconds: 320),
-    pageBuilder: (dialogContext, animation, secondaryAnimation) {
-      return _WerkaCreateHubFloatingMenu(
-        onClose: () => Navigator.of(dialogContext).pop(),
-        onOpenRoute: (routeName) => _closeAndOpenRoute(
-          dialogContext: dialogContext,
-          parentContext: context,
-          routeName: routeName,
-        ),
-      );
-    },
-    transitionBuilder: (context, animation, secondaryAnimation, child) {
-      final curved = CurvedAnimation(
-        parent: animation,
-        curve: Curves.easeOutCubic,
-        reverseCurve: Curves.easeInCubic,
-      );
-      final slide = Tween<Offset>(
-        begin: const Offset(0, 0.03),
-        end: Offset.zero,
-      ).animate(curved);
+  final overlay = Navigator.of(context, rootNavigator: true).overlay;
+  if (overlay == null) {
+    return Future.value();
+  }
 
-      return FadeTransition(
-        opacity: curved,
-        child: SlideTransition(
-          position: slide,
-          child: child,
-        ),
-      );
-    },
-  ).whenComplete(() {
+  final navigator = Navigator.of(context);
+  final completer = Completer<void>();
+  late final OverlayEntry entry;
+
+  void closeMenu() {
+    if (entry.mounted) {
+      entry.remove();
+    }
+    if (!completer.isCompleted) {
+      completer.complete();
+    }
     werkaCreateHubMenuOpen.value = false;
-  });
+    if (_werkaCreateHubOverlayEntry == entry) {
+      _werkaCreateHubOverlayEntry = null;
+    }
+    if (_werkaCreateHubCompleter == completer) {
+      _werkaCreateHubCompleter = null;
+    }
+  }
+
+  void openRoute(String routeName) {
+    closeMenu();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      navigator.pushNamed(routeName);
+    });
+  }
+
+  entry = OverlayEntry(
+    builder: (overlayContext) {
+      return _WerkaCreateHubOverlay(
+        onClose: closeMenu,
+        onOpenRoute: openRoute,
+      );
+    },
+  );
+
+  _werkaCreateHubOverlayEntry = entry;
+  _werkaCreateHubCompleter = completer;
+  werkaCreateHubMenuOpen.value = true;
+  overlay.insert(entry);
+
+  return completer.future;
 }
 
-void _closeAndOpenRoute({
-  required BuildContext dialogContext,
-  required BuildContext parentContext,
-  required String routeName,
-}) {
-  final navigator = Navigator.of(parentContext);
-  Navigator.of(dialogContext).pop();
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    navigator.pushNamed(routeName);
-  });
-}
-
-class _WerkaCreateHubFloatingMenu extends StatefulWidget {
-  const _WerkaCreateHubFloatingMenu({
+class _WerkaCreateHubOverlay extends StatefulWidget {
+  const _WerkaCreateHubOverlay({
     required this.onClose,
     required this.onOpenRoute,
   });
@@ -72,13 +74,17 @@ class _WerkaCreateHubFloatingMenu extends StatefulWidget {
   final ValueChanged<String> onOpenRoute;
 
   @override
-  State<_WerkaCreateHubFloatingMenu> createState() =>
-      _WerkaCreateHubFloatingMenuState();
+  State<_WerkaCreateHubOverlay> createState() => _WerkaCreateHubOverlayState();
 }
 
-class _WerkaCreateHubFloatingMenuState
-    extends State<_WerkaCreateHubFloatingMenu>
+class _WerkaCreateHubOverlayState extends State<_WerkaCreateHubOverlay>
     with SingleTickerProviderStateMixin {
+  static const double _toggleBottom = 112.0;
+  static const double _toggleCollapsedSize = 58.0;
+  static const double _toggleExpandedSize = 84.0;
+  static const double _menuGap = 14.0;
+  static const double _menuSpacing = 10.0;
+
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 320),
@@ -93,13 +99,20 @@ class _WerkaCreateHubFloatingMenuState
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final size = MediaQuery.sizeOf(context);
     final menuWidth = math.min(320.0, size.width - 32.0);
-    const double bottomAnchor = 124.0;
-    const double menuGap = 14.0;
-    const double collapsedButtonSize = 58.0;
-    const double expandedButtonSize = 84.0;
+    final menuAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+    final toggleAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
     final items = [
       _WerkaFloatingActionItem(
         title: l10n.unannouncedTitle,
@@ -107,7 +120,7 @@ class _WerkaCreateHubFloatingMenuState
         icon: Icons.inventory_2_outlined,
         animation: CurvedAnimation(
           parent: _controller,
-          curve: const Interval(0.08, 0.78, curve: Curves.easeOutCubic),
+          curve: const Interval(0.05, 0.72, curve: Curves.easeOutCubic),
         ),
         onTap: () => widget.onOpenRoute(AppRoutes.werkaUnannouncedSupplier),
       ),
@@ -117,7 +130,7 @@ class _WerkaCreateHubFloatingMenuState
         icon: Icons.send_outlined,
         animation: CurvedAnimation(
           parent: _controller,
-          curve: const Interval(0.18, 0.88, curve: Curves.easeOutCubic),
+          curve: const Interval(0.14, 0.84, curve: Curves.easeOutCubic),
         ),
         onTap: () => widget.onOpenRoute(AppRoutes.werkaCustomerIssueCustomer),
       ),
@@ -127,7 +140,7 @@ class _WerkaCreateHubFloatingMenuState
         icon: Icons.playlist_add_check_rounded,
         animation: CurvedAnimation(
           parent: _controller,
-          curve: const Interval(0.28, 1.0, curve: Curves.easeOutCubic),
+          curve: const Interval(0.24, 1.0, curve: Curves.easeOutCubic),
         ),
         onTap: () => widget.onOpenRoute(AppRoutes.werkaBatchDispatch),
       ),
@@ -135,22 +148,37 @@ class _WerkaCreateHubFloatingMenuState
 
     return Material(
       color: Colors.transparent,
-      child: SafeArea(
-        top: false,
-        bottom: false,
-        minimum: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: widget.onClose,
-                child: const SizedBox.expand(),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: widget.onClose,
+              child: AnimatedBuilder(
+                animation: menuAnimation,
+                builder: (context, _) {
+                  return Container(
+                    color: Colors.black.withValues(alpha: 0.34 * menuAnimation.value),
+                  );
+                },
               ),
             ),
-            PositionedDirectional(
-              end: 16,
-              bottom: bottomAnchor + collapsedButtonSize + menuGap,
+          ),
+          PositionedDirectional(
+            end: 16,
+            bottom: _toggleBottom + _toggleCollapsedSize + _menuGap,
+            child: AnimatedBuilder(
+              animation: menuAnimation,
+              builder: (context, child) {
+                final value = menuAnimation.value;
+                return Opacity(
+                  opacity: value,
+                  child: Transform.translate(
+                    offset: Offset(12 * (1 - value), 12 * (1 - value)),
+                    child: child,
+                  ),
+                );
+              },
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -160,30 +188,27 @@ class _WerkaCreateHubFloatingMenuState
                       width: menuWidth,
                       child: items[index],
                     ),
-                    if (index != items.length - 1) const SizedBox(height: 10),
+                    if (index != items.length - 1)
+                      const SizedBox(height: _menuSpacing),
                   ],
                 ],
               ),
             ),
-            PositionedDirectional(
-              end: 16,
-              bottom: bottomAnchor,
-              child: _WerkaCreateHubToggleButton(
-                animation: CurvedAnimation(
-                  parent: _controller,
-                  curve: Curves.easeOutCubic,
-                  reverseCurve: Curves.easeInCubic,
-                ),
-                onTap: widget.onClose,
-                color: scheme.primaryContainer,
-                foregroundColor: scheme.onPrimaryContainer,
-                collapsedSize: collapsedButtonSize,
-                expandedSize: expandedButtonSize,
-                expandedBorderRadius: 22.0,
-              ),
+          ),
+          PositionedDirectional(
+            end: 16,
+            bottom: _toggleBottom,
+            child: _WerkaCreateHubToggleButton(
+              animation: toggleAnimation,
+              onTap: widget.onClose,
+              color: scheme.primaryContainer,
+              foregroundColor: scheme.onPrimaryContainer,
+              collapsedSize: _toggleCollapsedSize,
+              expandedSize: _toggleExpandedSize,
+              expandedBorderRadius: 22.0,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -212,14 +237,11 @@ class _WerkaFloatingActionItem extends StatelessWidget {
     return AnimatedBuilder(
       animation: animation,
       builder: (context, child) {
-        final value = Curves.easeOutCubic.transform(animation.value.clamp(
-          0.0,
-          1.0,
-        ));
+        final value = animation.value.clamp(0.0, 1.0);
         return Opacity(
           opacity: value,
           child: Transform.translate(
-            offset: Offset(22 * (1 - value), 18 * (1 - value)),
+            offset: Offset(18 * (1 - value), 14 * (1 - value)),
             child: Transform.scale(
               scale: 0.98 + (0.02 * value),
               alignment: Alignment.bottomRight,
@@ -316,10 +338,7 @@ class _WerkaCreateHubToggleButton extends StatelessWidget {
     return AnimatedBuilder(
       animation: animation,
       builder: (context, child) {
-        final value = Curves.easeOutCubic.transform(animation.value.clamp(
-          0.0,
-          1.0,
-        ));
+        final value = animation.value.clamp(0.0, 1.0);
         final size = _lerpDouble(expandedSize, collapsedSize, value);
         final radius = _lerpDouble(expandedBorderRadius, size / 2, value);
         return SizedBox(
@@ -328,7 +347,7 @@ class _WerkaCreateHubToggleButton extends StatelessWidget {
           child: Material(
             color: color,
             elevation: 8,
-            shadowColor: color.withValues(alpha: 0.32),
+            shadowColor: color.withValues(alpha: 0.28),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(radius),
             ),
@@ -344,7 +363,7 @@ class _WerkaCreateHubToggleButton extends StatelessWidget {
                     Opacity(
                       opacity: 1 - value,
                       child: Transform.rotate(
-                        angle: math.pi * 0.12 * value,
+                        angle: math.pi * 0.10 * value,
                         child: Icon(
                           Icons.add_rounded,
                           color: foregroundColor,
@@ -354,10 +373,13 @@ class _WerkaCreateHubToggleButton extends StatelessWidget {
                     ),
                     Opacity(
                       opacity: value,
-                      child: Icon(
-                        Icons.close_rounded,
-                        color: foregroundColor,
-                        size: 28,
+                      child: Transform.translate(
+                        offset: Offset(0, _lerpDouble(0, -1.0, value)),
+                        child: Icon(
+                          Icons.close_rounded,
+                          color: foregroundColor,
+                          size: 28,
+                        ),
                       ),
                     ),
                   ],
