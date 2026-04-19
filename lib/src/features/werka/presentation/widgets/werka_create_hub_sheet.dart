@@ -80,8 +80,6 @@ class _WerkaCreateHubOverlay extends StatefulWidget {
 class _WerkaCreateHubOverlayState extends State<_WerkaCreateHubOverlay>
     with SingleTickerProviderStateMixin {
   static const double _toggleBottom = 112.0;
-  static const double _toggleLeftShift = 16.0;
-  static const double _toggleUpShift = 14.0;
   static const double _toggleCollapsedSize = 58.0;
   static const double _toggleExpandedSize = 84.0;
   static const double _menuGap = 14.0;
@@ -167,7 +165,7 @@ class _WerkaCreateHubOverlayState extends State<_WerkaCreateHubOverlay>
             ),
           ),
           PositionedDirectional(
-            end: 16 + _toggleLeftShift,
+            end: 16,
             bottom: _toggleBottom + _toggleCollapsedSize + _menuGap,
             child: AnimatedBuilder(
               animation: menuAnimation,
@@ -198,8 +196,8 @@ class _WerkaCreateHubOverlayState extends State<_WerkaCreateHubOverlay>
             ),
           ),
           PositionedDirectional(
-            end: 16 + _toggleLeftShift,
-            bottom: _toggleBottom + _toggleUpShift,
+            end: 16,
+            bottom: _toggleBottom,
             child: _WerkaCreateHubToggleButton(
               animation: toggleAnimation,
               onTap: widget.onClose,
@@ -344,25 +342,26 @@ class _WerkaCreateHubToggleButton extends StatelessWidget {
         final size = _lerpDouble(expandedSize, collapsedSize, value);
         final radius = _lerpDouble(expandedBorderRadius, size / 2, value);
         return SizedBox(
-          width: size,
-          height: size,
-          child: Material(
-            color: color,
-            elevation: 8,
-            shadowColor: color.withValues(alpha: 0.28),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(radius),
-            ),
-            child: InkWell(
-              customBorder: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(radius),
-              ),
-              onTap: onTap,
-              child: Center(
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Transform.rotate(
+          width: expandedSize,
+          height: expandedSize,
+          child: Center(
+            child: SizedBox(
+              width: size,
+              height: size,
+              child: Material(
+                color: color,
+                elevation: 8,
+                shadowColor: color.withValues(alpha: 0.28),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(radius),
+                ),
+                child: InkWell(
+                  customBorder: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(radius),
+                  ),
+                  onTap: onTap,
+                  child: Center(
+                    child: Transform.rotate(
                       angle: (-math.pi / 4) * value,
                       child: Transform.scale(
                         scale: 1 - (0.06 * value),
@@ -373,7 +372,7 @@ class _WerkaCreateHubToggleButton extends StatelessWidget {
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
