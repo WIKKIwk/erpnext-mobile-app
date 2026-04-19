@@ -63,7 +63,8 @@ class AppShell extends StatelessWidget {
               automaticallyImplyLeading:
                   shouldHideLeading ? false : leading == null,
               actions: actions,
-              backgroundColor: backgroundColor ?? theme.scaffoldBackgroundColor,
+              backgroundColor:
+                  backgroundColor ?? theme.colorScheme.surfaceContainerLow,
               surfaceTintColor: Colors.transparent,
               elevation: 0,
               scrolledUnderElevation: 0,
