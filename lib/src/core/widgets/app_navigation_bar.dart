@@ -26,6 +26,7 @@ class AppNavigationBar extends StatelessWidget {
     required this.onDestinationSelected,
     this.selectionVisible = true,
     this.height = 80,
+    this.primaryVisible = true,
   });
 
   final List<AppNavigationDestination> destinations;
@@ -33,6 +34,7 @@ class AppNavigationBar extends StatelessWidget {
   final ValueChanged<int> onDestinationSelected;
   final bool selectionVisible;
   final double height;
+  final bool primaryVisible;
 
   @override
   Widget build(BuildContext context) {
@@ -179,7 +181,7 @@ class AppNavigationBar extends StatelessWidget {
                   ),
                 ),
               ),
-              if (hasPrimary)
+              if (hasPrimary && primaryVisible)
                 PositionedDirectional(
                   end: 16,
                   bottom: height + primaryButtonGap,
