@@ -21,6 +21,7 @@ class AppShell extends StatelessWidget {
     this.animateOnEnter = true,
     this.preferNativeTitle = false,
     this.nativeTopBar = false,
+    this.nativeTitleTextStyle,
     this.backgroundColor,
   });
 
@@ -36,6 +37,7 @@ class AppShell extends StatelessWidget {
   final bool animateOnEnter;
   final bool preferNativeTitle;
   final bool nativeTopBar;
+  final TextStyle? nativeTitleTextStyle;
   final Color? backgroundColor;
 
   @override
@@ -61,7 +63,10 @@ class AppShell extends StatelessWidget {
       drawer: drawer,
       appBar: nativeTopBar
           ? AppBar(
-              title: Text(title),
+              title: Text(
+                title,
+                style: nativeTitleTextStyle,
+              ),
               leading: shouldHideLeading ? null : leading,
               automaticallyImplyLeading:
                   shouldHideLeading ? false : leading == null,

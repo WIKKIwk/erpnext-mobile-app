@@ -76,10 +76,15 @@ class _WerkaHomeScreenState extends State<WerkaHomeScreen>
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.viewPaddingOf(context).bottom + 136.0;
+    final titleStyle = Theme.of(context).textTheme.titleLarge?.copyWith(
+          fontSize: 24,
+          fontWeight: FontWeight.w800,
+        );
     return AppShell(
       title: context.l10n.werkaRoleName,
       subtitle: '',
       nativeTopBar: true,
+      nativeTitleTextStyle: titleStyle,
       drawer: _WerkaHomeDrawer(onNavigate: _openDrawerRoute),
       bottom: const WerkaDock(activeTab: WerkaDockTab.home),
       contentPadding: EdgeInsets.zero,
@@ -327,13 +332,17 @@ class _WerkaSummaryListTile extends StatelessWidget {
               Expanded(
                 child: Text(
                   label,
-                  style: theme.textTheme.titleMedium,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontSize: 18.5,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
               Text(
                 value,
                 style: theme.textTheme.titleMedium?.copyWith(
+                  fontSize: 18.5,
                   fontWeight: FontWeight.w700,
                 ),
               ),
