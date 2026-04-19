@@ -68,7 +68,7 @@ class AppShell extends StatelessWidget {
               surfaceTintColor: Colors.transparent,
               elevation: 0,
               scrolledUnderElevation: 0,
-              toolbarHeight: 60,
+              toolbarHeight: 40,
               titleSpacing: 20,
               centerTitle: false,
             )
