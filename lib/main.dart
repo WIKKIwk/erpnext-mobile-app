@@ -13,9 +13,11 @@ import 'src/core/theme/theme_controller.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   await _runStartupStep('native back button bridge', () async {
     await NativeBackButtonBridge.instance.initialize();
   });
@@ -27,7 +29,8 @@ Future<void> main() async {
     LocalNotificationService.instance.initialize,
   );
   await _runStartupStep('session', AppSession.instance.load);
-  await _runStartupStep('notification unread store', NotificationUnreadStore.instance.load);
+  await _runStartupStep(
+      'notification unread store', NotificationUnreadStore.instance.load);
   await _runStartupStep('security', SecurityController.instance.load);
   await _runStartupStep('theme', ThemeController.instance.load);
   await _runStartupStep('locale', LocaleController.instance.load);
