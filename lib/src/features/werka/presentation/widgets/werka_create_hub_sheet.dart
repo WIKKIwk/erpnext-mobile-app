@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import '../../../../app/app_router.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/widgets/app_navigation_bar.dart';
 import 'package:flutter/material.dart';
 
 final ValueNotifier<bool> werkaCreateHubMenuOpen = ValueNotifier<bool>(false);
@@ -63,9 +64,6 @@ class _WerkaCreateHubOverlay extends StatefulWidget {
 
 class _WerkaCreateHubOverlayState extends State<_WerkaCreateHubOverlay>
     with TickerProviderStateMixin {
-  // Keep the overlay toggle centered on the same screen coordinate as the
-  // dock's primary "+" button.
-  static const double _toggleBottom = 104.0;
   static const double _toggleCollapsedSize = 58.0;
   static const double _toggleExpandedSize = 84.0;
   static const double _menuGap = 34.0;
@@ -111,6 +109,15 @@ class _WerkaCreateHubOverlayState extends State<_WerkaCreateHubOverlay>
         : Colors.white.withValues(alpha: 0.34);
     final size = MediaQuery.sizeOf(context);
     final menuWidth = math.min(320.0, size.width - 32.0);
+    final viewMetrics = MediaQueryData.fromView(View.of(context));
+    final double systemBottomInset = math.max(
+      viewMetrics.viewPadding.bottom,
+      viewMetrics.systemGestureInsets.bottom,
+    );
+    const double dockHeight = 60.0;
+    final double toggleBottom = appNavigationBarPrimaryButtonBottom(
+      dockHeight: dockHeight + systemBottomInset,
+    );
     final menuAnimation = CurvedAnimation(
       parent: _menuController,
       curve: Curves.easeOutCubic,
@@ -167,7 +174,7 @@ class _WerkaCreateHubOverlayState extends State<_WerkaCreateHubOverlay>
           ),
           PositionedDirectional(
             end: 16,
-            bottom: _toggleBottom + _toggleCollapsedSize + _menuGap,
+            bottom: toggleBottom + _toggleCollapsedSize + _menuGap,
             child: AnimatedBuilder(
               animation: menuAnimation,
               builder: (context, child) {
@@ -194,7 +201,7 @@ class _WerkaCreateHubOverlayState extends State<_WerkaCreateHubOverlay>
           ),
           PositionedDirectional(
             end: 16,
-            bottom: _toggleBottom,
+            bottom: toggleBottom,
             child: _WerkaCreateHubToggleButton(
               animation: toggleAnimation,
               onTap: widget.onClose,

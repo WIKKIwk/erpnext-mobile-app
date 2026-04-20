@@ -2,6 +2,19 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+const double appNavigationBarPrimaryButtonSize = 84.0;
+const double appNavigationBarPrimaryButtonGap = 44.0;
+const double appNavigationBarPrimaryButtonLift = 10.0;
+
+double appNavigationBarPrimaryButtonBottom({
+  required double dockHeight,
+}) {
+  return dockHeight +
+      appNavigationBarPrimaryButtonGap -
+      (appNavigationBarPrimaryButtonSize / 2) +
+      appNavigationBarPrimaryButtonLift;
+}
+
 class AppNavigationDestination {
   const AppNavigationDestination({
     required this.label,
@@ -40,8 +53,6 @@ class AppNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const double primaryButtonSize = 84.0;
-    const double primaryButtonGap = 44.0;
     final MediaQueryData viewMetrics =
         MediaQueryData.fromView(View.of(context));
     final double systemBottomInset = math.max(
@@ -87,7 +98,8 @@ class AppNavigationBar extends StatelessWidget {
     final double dockHeight = height + systemBottomInset;
     final double hostHeight = dockHeight +
         (hasPrimary && primaryVisible
-            ? primaryButtonSize + primaryButtonGap
+            ? appNavigationBarPrimaryButtonSize +
+                appNavigationBarPrimaryButtonGap
             : 0);
 
     return MediaQuery.removePadding(
@@ -208,7 +220,9 @@ class AppNavigationBar extends StatelessWidget {
                 if (hasPrimary && primaryVisible)
                   PositionedDirectional(
                     end: 16,
-                    bottom: dockHeight + primaryButtonGap - 8,
+                    bottom: appNavigationBarPrimaryButtonBottom(
+                      dockHeight: dockHeight,
+                    ),
                     child: _AppPrimaryNavigationButton(
                       destination: destinations[primaryIndex],
                       selected: primarySelected,
