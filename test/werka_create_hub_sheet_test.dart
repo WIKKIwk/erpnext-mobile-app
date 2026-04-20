@@ -112,7 +112,7 @@ void main() {
         tester.getRect(find.byKey(const ValueKey('werka-hub-toggle-button')));
     expect(
       toggleRect.top - bottomRect.bottom,
-      inInclusiveRange(16.0, 20.0),
+      inInclusiveRange(8.0, 14.0),
     );
   });
 

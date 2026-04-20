@@ -10,6 +10,9 @@ import 'package:flutter/material.dart';
 
 final ValueNotifier<bool> werkaCreateHubMenuOpen = ValueNotifier<bool>(false);
 const double _werkaHubMenuItemHeight = 56.0;
+const double _werkaHubActionPaddingStart = 8.0;
+const double _werkaHubActionPaddingEnd = 10.0;
+const double _werkaHubActionIconGap = 8.0;
 
 OverlayEntry? _werkaCreateHubOverlayEntry;
 final GlobalKey<_WerkaCreateHubOverlayState> _werkaCreateHubOverlayKey =
@@ -84,8 +87,8 @@ class _WerkaCreateHubOverlayState extends State<_WerkaCreateHubOverlay>
     with TickerProviderStateMixin {
   static const double _fabClosedSize = 80.0;
   static const double _fabOpenSize = 56.0;
-  static const double _menuItemGap = 12.0;
-  static const double _groupButtonGap = 16.0;
+  static const double _menuItemGap = 4.0;
+  static const double _groupButtonGap = 10.0;
   static const double _menuTrailingInset = 16.0;
   static const double _stackTrailingInset = 16.0;
   static final SpringDescription _spatialSpring =
@@ -393,7 +396,11 @@ class _WerkaHubActionPill extends StatelessWidget {
     )..layout();
     final double targetWidth = math.max(
       _werkaHubMenuItemHeight,
-      16 + 24 + 12 + titlePainter.width + 16,
+      _werkaHubActionPaddingStart +
+          24 +
+          _werkaHubActionIconGap +
+          titlePainter.width +
+          _werkaHubActionPaddingEnd,
     );
 
     return AnimatedBuilder(
@@ -437,18 +444,21 @@ class _WerkaHubActionPill extends StatelessWidget {
                           width: targetWidth,
                           height: _werkaHubMenuItemHeight,
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: const EdgeInsetsDirectional.only(
+                              start: _werkaHubActionPaddingStart,
+                              end: _werkaHubActionPaddingEnd,
+                            ),
                             child: Row(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
                                   action.icon,
                                   size: 24,
                                   color: scheme.onPrimaryContainer,
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
+                                const SizedBox(width: _werkaHubActionIconGap),
+                                Flexible(
+                                  fit: FlexFit.loose,
                                   child: Text(
                                     action.title,
                                     maxLines: 1,
