@@ -12,6 +12,11 @@ import 'widgets/werka_dock.dart';
 import 'widgets/werka_create_hub_sheet.dart';
 import 'package:flutter/material.dart';
 
+/// Status va «Jarayondagi mahsulotlar» segmented kartalar uchun umumiy o‘lchamlar.
+const double _werkaSegmentGap = 2;
+const double _werkaSegmentCornerLarge = 18;
+const double _werkaSegmentCornerMiddle = 6;
+
 class WerkaHomeScreen extends StatefulWidget {
   const WerkaHomeScreen({super.key});
 
@@ -237,7 +242,7 @@ class _WerkaHomeDrawer extends StatelessWidget {
 
 /// Segment shakli: tepada faqat **yuqori** yumaloqlar (1‑rasm), o‘rtada **to‘rt tomon**
 /// yumaloq (2‑rasm), pastda faqat **pastki** yumaloqlar (1‑rasmni pastga qaratsa).
-enum _WerkaSummarySegmentSlot {
+enum _WerkaSegmentSlot {
   top,
   middle,
   bottom,
@@ -254,11 +259,6 @@ class _WerkaSummaryList extends StatelessWidget {
 
   final WerkaHomeSummary summary;
 
-  /// Segmentlar orasidagi vertikal bo‘shliq (contained / segmented gap).
-  static const double _segmentGap = 2;
-  static const double _segmentRadius = 18;
-  static const double _segmentMiddleRadius = 6;
-
   @override
   Widget build(BuildContext context) {
     return SmoothAppear(
@@ -268,8 +268,8 @@ class _WerkaSummaryList extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _WerkaSummarySegmentCard(
-              slot: _WerkaSummarySegmentSlot.top,
-              cornerRadius: _segmentRadius,
+              slot: _WerkaSegmentSlot.top,
+              cornerRadius: _werkaSegmentCornerLarge,
               label: context.l10n.pendingStatus,
               value: summary.pendingCount.toString(),
               highlighted: true,
@@ -278,10 +278,10 @@ class _WerkaSummaryList extends StatelessWidget {
                 arguments: WerkaStatusKind.pending,
               ),
             ),
-            const SizedBox(height: _segmentGap),
+            const SizedBox(height: _werkaSegmentGap),
             _WerkaSummarySegmentCard(
-              slot: _WerkaSummarySegmentSlot.middle,
-              cornerRadius: _segmentMiddleRadius,
+              slot: _WerkaSegmentSlot.middle,
+              cornerRadius: _werkaSegmentCornerMiddle,
               label: context.l10n.confirmedStatus,
               value: summary.confirmedCount.toString(),
               highlighted: false,
@@ -290,10 +290,10 @@ class _WerkaSummaryList extends StatelessWidget {
                 arguments: WerkaStatusKind.confirmed,
               ),
             ),
-            const SizedBox(height: _segmentGap),
+            const SizedBox(height: _werkaSegmentGap),
             _WerkaSummarySegmentCard(
-              slot: _WerkaSummarySegmentSlot.bottom,
-              cornerRadius: _segmentRadius,
+              slot: _WerkaSegmentSlot.bottom,
+              cornerRadius: _werkaSegmentCornerLarge,
               label: context.l10n.returnedStatus,
               value: summary.returnedCount.toString(),
               highlighted: false,
@@ -311,30 +311,99 @@ class _WerkaSummaryList extends StatelessWidget {
 
 /// Segmentlar oralig‘ida bir-biriga mos mikro‑yumaloqlik (tepa kartaning pastki va
 /// past kartaning **yuqori** burchaklari — bir xil radius, teskaricha).
-const Radius _werkaSummarySegmentJoinMicro = Radius.circular(6);
+const Radius _werkaSegmentJoinMicro = Radius.circular(6);
 
 BorderRadius _borderRadiusForSegmentSlot(
-  _WerkaSummarySegmentSlot slot,
+  _WerkaSegmentSlot slot,
   double r,
 ) {
   final Radius radius = Radius.circular(r);
   switch (slot) {
-    case _WerkaSummarySegmentSlot.top:
+    case _WerkaSegmentSlot.top:
       return BorderRadius.only(
         topLeft: radius,
         topRight: radius,
-        bottomLeft: _werkaSummarySegmentJoinMicro,
-        bottomRight: _werkaSummarySegmentJoinMicro,
+        bottomLeft: _werkaSegmentJoinMicro,
+        bottomRight: _werkaSegmentJoinMicro,
       );
-    case _WerkaSummarySegmentSlot.middle:
+    case _WerkaSegmentSlot.middle:
       return BorderRadius.all(radius);
-    case _WerkaSummarySegmentSlot.bottom:
+    case _WerkaSegmentSlot.bottom:
       return BorderRadius.only(
-        topLeft: _werkaSummarySegmentJoinMicro,
-        topRight: _werkaSummarySegmentJoinMicro,
+        topLeft: _werkaSegmentJoinMicro,
+        topRight: _werkaSegmentJoinMicro,
         bottomLeft: radius,
         bottomRight: radius,
       );
+  }
+}
+
+/// «Jarayondagi mahsulotlar» ichidagi qatorlar: `[top]` title, keyin mahsulot kartalari —
+/// bir nechta bo‘lsa birinchi `middle`, oxirgisi `bottom`; bitta bo‘lsa faqat `bottom`.
+_WerkaSegmentSlot _pendingDispatchSlot(int index, int count) {
+  assert(count >= 1);
+  if (count == 1) return _WerkaSegmentSlot.bottom;
+  if (index == 0) return _WerkaSegmentSlot.middle;
+  if (index == count - 1) return _WerkaSegmentSlot.bottom;
+  return _WerkaSegmentSlot.middle;
+}
+
+double _cornerRadiusForSlotKind(_WerkaSegmentSlot slot) {
+  switch (slot) {
+    case _WerkaSegmentSlot.middle:
+      return _werkaSegmentCornerMiddle;
+    case _WerkaSegmentSlot.top:
+    case _WerkaSegmentSlot.bottom:
+      return _werkaSegmentCornerLarge;
+  }
+}
+
+/// Outline + to‘ldirilgan fon — summary va jarayondagi mahsulotlar segmentlari uchun.
+class _WerkaSegmentSurface extends StatelessWidget {
+  const _WerkaSegmentSurface({
+    required this.slot,
+    required this.cornerRadius,
+    required this.child,
+    this.onTap,
+  });
+
+  final _WerkaSegmentSlot slot;
+  final double cornerRadius;
+  final Widget child;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final BorderRadius radius =
+        _borderRadiusForSegmentSlot(slot, cornerRadius);
+    final Color bg = scheme.surfaceContainerHighest;
+
+    final Widget ink = Ink(
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: radius,
+      ),
+      child: child,
+    );
+
+    return Material(
+      color: Colors.transparent,
+      elevation: 0,
+      shadowColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: radius,
+        side: BorderSide(
+          color: scheme.outlineVariant.withValues(alpha: 0.38),
+          width: 1,
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: onTap != null
+          ? InkWell(onTap: onTap, borderRadius: radius, child: ink)
+          : ink,
+    );
   }
 }
 
@@ -349,7 +418,7 @@ class _WerkaSummarySegmentCard extends StatelessWidget {
     this.highlighted = false,
   });
 
-  final _WerkaSummarySegmentSlot slot;
+  final _WerkaSegmentSlot slot;
   final double cornerRadius;
   final String label;
   final String value;
@@ -450,156 +519,120 @@ class _WerkaPendingSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
-    final bool isDark = theme.brightness == Brightness.dark;
+    final n = items.length;
+
     return SmoothAppear(
       delay: const Duration(milliseconds: 90),
       offset: const Offset(0, 18),
-      child: Card.filled(
-        margin: EdgeInsets.zero,
-        color: scheme.surfaceContainerLow,
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _WerkaSegmentSurface(
+              slot: _WerkaSegmentSlot.top,
+              cornerRadius: _cornerRadiusForSlotKind(_WerkaSegmentSlot.top),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
                 child: Text(
                   context.l10n.inProgressItemsTitle,
                   style: theme.textTheme.titleLarge,
                 ),
               ),
-              const SizedBox(height: 14),
-              Card.filled(
-                margin: EdgeInsets.zero,
-                color:
-                    isDark ? const Color(0xFF2A2931) : scheme.surfaceContainer,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Column(
-                  children: [
-                    for (int index = 0; index < items.length; index++) ...[
-                      _WerkaPendingRow(
-                        record: items[index],
-                        isFirst: index == 0,
-                        isLast: index == items.length - 1,
-                      ),
-                      if (index != items.length - 1)
-                        Divider(
-                          height: 1,
-                          thickness: 1,
-                          indent: 16,
-                          endIndent: 16,
-                          color: scheme.outlineVariant.withValues(alpha: 0.55),
-                        ),
-                    ],
-                  ],
-                ),
+            ),
+            const SizedBox(height: _werkaSegmentGap),
+            for (int index = 0; index < n; index++) ...[
+              if (index > 0) const SizedBox(height: _werkaSegmentGap),
+              _WerkaPendingItemTile(
+                record: items[index],
+                index: index,
+                itemCount: n,
               ),
             ],
-          ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _WerkaPendingRow extends StatelessWidget {
-  const _WerkaPendingRow({
+class _WerkaPendingItemTile extends StatelessWidget {
+  const _WerkaPendingItemTile({
     required this.record,
-    required this.isFirst,
-    required this.isLast,
+    required this.index,
+    required this.itemCount,
   });
 
   final DispatchRecord record;
-  final bool isFirst;
-  final bool isLast;
+  final int index;
+  final int itemCount;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    return PressableScale(
-      onTap: () => Navigator.of(context).pushNamed(
-        record.isDeliveryNote
-            ? AppRoutes.werkaCustomerDeliveryDetail
-            : AppRoutes.werkaDetail,
-        arguments: record,
-      ),
-      child: SizedBox(
-        width: double.infinity,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(isFirst ? 24 : 0),
-              topRight: Radius.circular(isFirst ? 24 : 0),
-              bottomLeft: Radius.circular(isLast ? 24 : 0),
-              bottomRight: Radius.circular(isLast ? 24 : 0),
-            ),
-            onTap: () => Navigator.of(context).pushNamed(
-              record.isDeliveryNote
-                  ? AppRoutes.werkaCustomerDeliveryDetail
-                  : AppRoutes.werkaDetail,
-              arguments: record,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-              child: Row(
+    final slot = _pendingDispatchSlot(index, itemCount);
+    final r = _cornerRadiusForSlotKind(slot);
+
+    void navigate() => Navigator.of(context).pushNamed(
+          record.isDeliveryNote
+              ? AppRoutes.werkaCustomerDeliveryDetail
+              : AppRoutes.werkaDetail,
+          arguments: record,
+        );
+
+    return _WerkaSegmentSurface(
+      slot: slot,
+      cornerRadius: r,
+      onTap: navigate,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          record.itemName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          record.supplierName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
+                  Text(
+                    record.itemName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleMedium,
                   ),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        record.createdLabel,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
+                  const SizedBox(height: 3),
+                  Text(
+                    record.supplierName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
             ),
-          ),
+            const SizedBox(width: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${record.sentQty.toStringAsFixed(0)} ${record.uom}',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  record.createdLabel,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
