@@ -1168,8 +1168,9 @@ class _ThemeSelectionOption extends StatelessWidget {
     return M3SegmentFilledSurface(
       slot: slot,
       cornerRadius: radius,
-      backgroundColor:
-          active ? scheme.secondaryContainer.withValues(alpha: 0.9) : null,
+      backgroundColor: active
+          ? scheme.secondaryContainer.withValues(alpha: 0.9)
+          : scheme.surfaceContainerHighest.withValues(alpha: 0.72),
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
