@@ -690,26 +690,29 @@ class _LanguagePreferenceRow extends StatelessWidget {
                     child: _ProfileSelectionSheet(
                       title: l10n.languageTitle,
                       subtitle: l10n.languageBody,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
+                      child: M3SegmentSpacedColumn(
                         children: [
                           _ProfileSelectionOption(
+                            index: 0,
+                            itemCount: 3,
                             title: l10n.uzbek,
                             subtitle: 'Uzbek',
                             active: currentLocale.languageCode == 'uz',
                             onTap: () =>
                                 Navigator.of(context).pop(const Locale('uz')),
                           ),
-                          const SizedBox(height: 10),
                           _ProfileSelectionOption(
+                            index: 1,
+                            itemCount: 3,
                             title: l10n.english,
                             subtitle: 'English',
                             active: currentLocale.languageCode == 'en',
                             onTap: () =>
                                 Navigator.of(context).pop(const Locale('en')),
                           ),
-                          const SizedBox(height: 10),
                           _ProfileSelectionOption(
+                            index: 2,
+                            itemCount: 3,
                             title: l10n.russian,
                             subtitle: 'Russian',
                             active: currentLocale.languageCode == 'ru',
@@ -1057,12 +1060,16 @@ class _ProfileSelectionSheet extends StatelessWidget {
 
 class _ProfileSelectionOption extends StatelessWidget {
   const _ProfileSelectionOption({
+    required this.index,
+    required this.itemCount,
     required this.title,
     required this.onTap,
     this.subtitle,
     this.active = false,
   });
 
+  final int index;
+  final int itemCount;
   final String title;
   final String? subtitle;
   final bool active;
@@ -1072,67 +1079,67 @@ class _ProfileSelectionOption extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    return Material(
-      color: active
+    final slot = M3SegmentedListGeometry.standaloneListSlotForIndex(
+      index,
+      itemCount,
+    );
+    final radius = M3SegmentedListGeometry.cornerRadiusForSlot(slot);
+    return M3SegmentFilledSurface(
+      slot: slot,
+      cornerRadius: radius,
+      backgroundColor: active
           ? scheme.secondaryContainer.withValues(alpha: 0.9)
-          : scheme.surfaceContainerHighest,
-      borderRadius: BorderRadius.circular(22),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(22),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+          : scheme.surfaceContainerHighest.withValues(alpha: 0.72),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color:
+                          active ? scheme.onSecondaryContainer : scheme.onSurface,
+                    ),
+                  ),
+                  if ((subtitle ?? '').trim().isNotEmpty) ...[
+                    const SizedBox(height: 4),
                     Text(
-                      title,
-                      style: theme.textTheme.titleMedium?.copyWith(
+                      subtitle!,
+                      style: theme.textTheme.bodySmall?.copyWith(
                         color: active
-                            ? scheme.onSecondaryContainer
-                            : scheme.onSurface,
+                            ? scheme.onSecondaryContainer.withValues(alpha: 0.74)
+                            : scheme.onSurfaceVariant,
                       ),
                     ),
-                    if ((subtitle ?? '').trim().isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle!,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: active
-                              ? scheme.onSecondaryContainer
-                                  .withValues(alpha: 0.74)
-                              : scheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
                   ],
-                ),
+                ],
               ),
-              const SizedBox(width: 12),
-              AnimatedContainer(
-                duration: AppMotion.medium,
-                curve: AppMotion.smooth,
-                height: 24,
-                width: 24,
-                decoration: BoxDecoration(
-                  color: active ? scheme.primary : Colors.transparent,
-                  shape: BoxShape.circle,
-                  border:
-                      active ? null : Border.all(color: scheme.outlineVariant),
-                ),
-                child: active
-                    ? Icon(
-                        Icons.check_rounded,
-                        size: 16,
-                        color: scheme.onPrimary,
-                      )
-                    : null,
+            ),
+            const SizedBox(width: 12),
+            AnimatedContainer(
+              duration: AppMotion.medium,
+              curve: AppMotion.smooth,
+              height: 24,
+              width: 24,
+              decoration: BoxDecoration(
+                color: active ? scheme.primary : Colors.transparent,
+                shape: BoxShape.circle,
+                border: active ? null : Border.all(color: scheme.outlineVariant),
               ),
-            ],
-          ),
+              child: active
+                  ? Icon(
+                      Icons.check_rounded,
+                      size: 16,
+                      color: scheme.onPrimary,
+                    )
+                  : null,
+            ),
+          ],
         ),
       ),
     );
