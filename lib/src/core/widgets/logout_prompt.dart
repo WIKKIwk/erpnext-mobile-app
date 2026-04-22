@@ -1,26 +1,28 @@
-import '../api/mobile_api.dart';
 import '../localization/app_localizations.dart';
 import '../security/security_controller.dart';
+import '../session/app_session.dart';
 import 'm3_confirm_dialog.dart';
 import 'package:flutter/material.dart';
 
 Future<void> showLogoutPrompt(BuildContext context) async {
+  final navigator = Navigator.of(context, rootNavigator: true);
+  final l10n = context.l10n;
   final confirmed = await showM3ConfirmDialog(
     context: context,
-    title: context.l10n.logoutTitle,
-    message: context.l10n.logoutPrompt,
-    cancelLabel: context.l10n.no,
-    confirmLabel: context.l10n.yes,
+    title: l10n.logoutTitle,
+    message: l10n.logoutPrompt,
+    cancelLabel: l10n.no,
+    confirmLabel: l10n.yes,
     blurBackground: true,
   );
-  if (confirmed != true || !context.mounted) {
+  if (confirmed != true) {
     return;
   }
 
-  await MobileApi.instance.logout();
+  await AppSession.instance.clear();
   await SecurityController.instance.clearForLogout();
-  if (!context.mounted) {
+  if (!navigator.mounted) {
     return;
   }
-  Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+  navigator.pushNamedAndRemoveUntil('/', (route) => false);
 }
