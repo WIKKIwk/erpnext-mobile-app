@@ -225,7 +225,7 @@ class _WerkaBreakdownSegmentTile extends StatelessWidget {
                 children: [
                   Text(
                     entry.supplierName,
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w700,
@@ -233,7 +233,7 @@ class _WerkaBreakdownSegmentTile extends StatelessWidget {
                       color: scheme.onSurface,
                     ),
                   ),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 3),
                   Text(
                     AppLocalizations.of(context)
                         .recordCountLabel(entry.receiptCount),
