@@ -4,7 +4,9 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/notifications/werka_runtime_store.dart';
 import '../../../core/search/search_activity_store.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_shell.dart';
+import '../../../core/widgets/m3_segmented_list.dart';
 import '../../../core/widgets/native_back_button.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/m3_picker_sheet.dart';
@@ -244,7 +246,6 @@ class _WerkaUnannouncedSupplierScreenState
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     final canPickItem = _selectedSupplier != null && !_submitting;
     final canSubmit =
         _selectedSupplier != null && _selectedItem != null && !_submitting;
@@ -252,33 +253,25 @@ class _WerkaUnannouncedSupplierScreenState
     return AppShell(
       title: context.l10n.unannouncedTitle,
       subtitle: '',
+      nativeTopBar: true,
+      nativeTitleTextStyle: AppTheme.werkaNativeAppBarTitleStyle(context),
       leading: NativeBackButtonSlot(
         onPressed: () => Navigator.of(context).maybePop(),
       ),
       bottom: const WerkaDock(activeTab: null),
-      contentPadding: const EdgeInsets.fromLTRB(10, 0, 12, 0),
+      contentPadding: EdgeInsets.zero,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(4, 0, 4, 24),
+        padding: const EdgeInsets.fromLTRB(4, 4, 4, 24),
         children: [
-          Card.filled(
-            margin: EdgeInsets.zero,
-            color: scheme.surfaceContainerLow,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(28),
-              side: BorderSide(
-                color: scheme.outlineVariant.withValues(alpha: 0.7),
-              ),
-            ),
+          M3SegmentFilledSurface(
+            slot: M3SegmentVerticalSlot.top,
+            cornerRadius: M3SegmentedListGeometry.cornerLarge,
             child: Padding(
               padding: const EdgeInsets.all(18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    context.l10n.unannouncedTitle,
-                    style: theme.textTheme.headlineMedium,
-                  ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 2),
                   Text(
                     context.l10n.supplierLabel,
                     style: theme.textTheme.bodySmall,
@@ -335,7 +328,7 @@ class _WerkaUnannouncedSupplierScreenState
                       ),
                     ),
                   ],
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton(
