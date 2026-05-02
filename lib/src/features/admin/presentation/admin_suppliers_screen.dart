@@ -21,6 +21,7 @@ class AdminSuppliersScreen extends StatefulWidget {
 
 class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
   static const int _pageSize = 20;
+  static const double _prefetchExtentAfterFactor = 2.5;
 
   final ScrollController _scrollController = ScrollController();
   final List<AdminUserListEntry> _items = [];
@@ -62,7 +63,9 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
         (!_supplierHasMore && !_customerHasMore)) {
       return;
     }
-    if (_scrollController.position.extentAfter < 240) {
+    final viewport = _scrollController.position.viewportDimension;
+    final prefetchExtentAfter = viewport * _prefetchExtentAfterFactor;
+    if (_scrollController.position.extentAfter < prefetchExtentAfter) {
       unawaited(_loadMore());
     }
   }
