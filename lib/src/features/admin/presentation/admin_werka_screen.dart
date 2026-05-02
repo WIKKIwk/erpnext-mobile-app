@@ -182,20 +182,6 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
             return ListView(
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Text(
-                    phone.text.trim().isEmpty
-                        ? 'Telefon raqam berilmagan'
-                        : phone.text.trim(),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text('Code', style: theme.textTheme.bodySmall),
-                const SizedBox(height: 6),
                 Card.filled(
                   margin: EdgeInsets.zero,
                   color: scheme.surfaceContainerLow,
@@ -210,8 +196,19 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Text(
+                          phone.text.trim().isEmpty
+                              ? 'Telefon raqam berilmagan'
+                              : phone.text.trim(),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text('Code', style: theme.textTheme.bodySmall),
+                        const SizedBox(height: 6),
                         _AdminWerkaField(
-                          radius: 14,
+                          radius: 12,
                           child: Row(
                             children: [
                               Expanded(
@@ -243,32 +240,50 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
                             ],
                           ),
                         ),
-                        if (_retryAfterSec > 0) ...[
-                          const SizedBox(height: 12),
-                          Text(
-                            'Keyingi code uchun $_retryAfterSec soniya kuting.',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 18),
+                      ],
+                    ),
+                  ),
+                ),
+                if (_retryAfterSec > 0) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    'Keyingi code uchun $_retryAfterSec soniya kuting.',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 12),
+                Card.filled(
+                  margin: EdgeInsets.zero,
+                  color: scheme.surfaceContainerLow,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(28),
+                    side: BorderSide(
+                      color: scheme.outlineVariant.withValues(alpha: 0.7),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         TextField(
                           controller: name,
                           decoration: InputDecoration(
                             labelText: 'Werka name',
                             hintText: 'Werka',
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
                                 color: scheme.outlineVariant,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
                                 color: scheme.primary,
                                 width: 1.4,
@@ -284,16 +299,16 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
                             labelText: 'Werka phone',
                             hintText: '+998901234567',
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
                                 color: scheme.outlineVariant,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
                                 color: scheme.primary,
                                 width: 1.4,
