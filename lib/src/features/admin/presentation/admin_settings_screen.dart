@@ -128,10 +128,11 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
           _fill(settings);
           final theme = Theme.of(context);
           final scheme = theme.colorScheme;
+          final bottomPadding = MediaQuery.viewPaddingOf(context).bottom + 136.0;
 
           return ListView(
             physics: const ClampingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(0, 4, 0, 24),
+            padding: EdgeInsets.fromLTRB(0, 4, 0, bottomPadding),
             children: [
               SmoothAppear(
                 delay: const Duration(milliseconds: 20),
