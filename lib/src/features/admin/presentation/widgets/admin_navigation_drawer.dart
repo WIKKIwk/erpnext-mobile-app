@@ -3,15 +3,53 @@ import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/widgets/logout_prompt.dart';
 import 'package:flutter/material.dart';
 
+final ValueNotifier<bool> adminNavigationDrawerOpen =
+    ValueNotifier<bool>(false);
+
+OverlayEntry? _adminNavigationDrawerOverlayEntry;
+
+void showAdminNavigationDrawer(BuildContext context) {
+  if (_adminNavigationDrawerOverlayEntry != null) {
+    return;
+  }
+
+  final overlay = Overlay.of(context, rootOverlay: true);
+  late final OverlayEntry entry;
+
+  void closeNow() {
+    adminNavigationDrawerOpen.value = false;
+    if (entry.mounted) {
+      entry.remove();
+    }
+    if (_adminNavigationDrawerOverlayEntry == entry) {
+      _adminNavigationDrawerOverlayEntry = null;
+    }
+  }
+
+  entry = OverlayEntry(
+    builder: (overlayContext) {
+      return _AdminNavigationDrawerOverlay(
+        onClose: closeNow,
+      );
+    },
+  );
+
+  _adminNavigationDrawerOverlayEntry = entry;
+  adminNavigationDrawerOpen.value = true;
+  overlay.insert(entry);
+}
+
 class AdminNavigationDrawer extends StatelessWidget {
   const AdminNavigationDrawer({
     super.key,
     required this.selectedIndex,
     required this.onNavigate,
+    this.onCloseDrawer,
   });
 
   final int selectedIndex;
   final ValueChanged<String> onNavigate;
+  final VoidCallback? onCloseDrawer;
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +66,10 @@ class AdminNavigationDrawer extends StatelessWidget {
             selectedIndex: selectedIndex,
             tilePadding: const EdgeInsets.symmetric(horizontal: 4),
             onDestinationSelected: (index) async {
+              final closeDrawer =
+                  onCloseDrawer ?? () => Navigator.of(context).pop();
               if (index == selectedIndex) {
-                Navigator.of(context).pop();
+                closeDrawer();
                 return;
               }
               final route = switch (index) {
@@ -38,7 +78,7 @@ class AdminNavigationDrawer extends StatelessWidget {
                 2 => AppRoutes.adminActivity,
                 _ => AppRoutes.profile,
               };
-              Navigator.of(context).pop();
+              closeDrawer();
               await Future<void>.delayed(const Duration(milliseconds: 220));
               if (!context.mounted) {
                 return;
@@ -104,6 +144,63 @@ class AdminNavigationDrawer extends StatelessWidget {
                 ),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AdminNavigationDrawerOverlay extends StatelessWidget {
+  const _AdminNavigationDrawerOverlay({
+    required this.onClose,
+  });
+
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: onClose,
+              child: ColoredBox(
+                color: Colors.black.withValues(alpha: 0.54),
+              ),
+            ),
+          ),
+          AnimatedBuilder(
+            animation: adminNavigationDrawerOpen,
+            builder: (context, _) {
+              return AnimatedSlide(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                offset: adminNavigationDrawerOpen.value
+                    ? Offset.zero
+                    : const Offset(-1, 0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: SizedBox(
+                    width: 272,
+                    height: double.infinity,
+                    child: AdminNavigationDrawer(
+                      selectedIndex: 0,
+                      onCloseDrawer: onClose,
+                      onNavigate: (route) {
+                        onClose();
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          Navigator.of(context).pushReplacementNamed(route);
+                        });
+                      },
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),

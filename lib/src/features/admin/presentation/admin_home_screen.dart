@@ -53,14 +53,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     await AdminStore.instance.refreshSummary();
   }
 
-  void _openDrawerRoute(String route) {
-    final current = ModalRoute.of(context)?.settings.name;
-    if (current == route) {
-      return;
-    }
-    Navigator.of(context).pushReplacementNamed(route);
-  }
-
   Future<void> _openAndReload(String routeName) async {
     await Navigator.of(context).pushNamed(routeName);
     if (!mounted) {
@@ -73,14 +65,14 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.viewPaddingOf(context).bottom + 136.0;
     return AppShell(
+      leading: AppShellIconAction(
+        icon: Icons.menu_rounded,
+        onTap: () => showAdminNavigationDrawer(context),
+      ),
       title: context.l10n.adminRoleName,
       subtitle: '',
       nativeTopBar: true,
       nativeTitleTextStyle: AppTheme.werkaNativeAppBarTitleStyle(context),
-      drawer: AdminNavigationDrawer(
-        selectedIndex: 0,
-        onNavigate: _openDrawerRoute,
-      ),
       bottom: const AdminDock(activeTab: AdminDockTab.home),
       bottomDockFadeStrength: null,
       contentPadding: EdgeInsets.zero,
