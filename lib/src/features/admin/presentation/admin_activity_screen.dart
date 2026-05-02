@@ -1,3 +1,4 @@
+import '../../../app/app_router.dart';
 import '../../../core/notifications/notification_hidden_store.dart';
 import '../../../core/notifications/refresh_hub.dart';
 import '../../../core/session/app_session.dart';
@@ -10,7 +11,6 @@ import '../../../core/widgets/m3_confirm_dialog.dart';
 import '../../shared/models/app_models.dart';
 import '../state/admin_store.dart';
 import 'widgets/admin_dock.dart';
-import 'widgets/admin_navigation_drawer.dart';
 import 'package:flutter/material.dart';
 
 class AdminActivityScreen extends StatefulWidget {
@@ -76,13 +76,14 @@ class _AdminActivityScreenState extends State<AdminActivityScreen> {
     await AdminStore.instance.refreshActivity();
   }
 
-  void _openDrawerRoute(String routeName) {
-    final current = ModalRoute.of(context)?.settings.name;
-    if (current == routeName) {
+  void _goHomeOrPop() {
+    final nav = Navigator.of(context);
+    if (nav.canPop()) {
+      nav.pop();
       return;
     }
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      routeName,
+    nav.pushNamedAndRemoveUntil(
+      AppRoutes.adminHome,
       (route) => false,
     );
   }
@@ -90,9 +91,9 @@ class _AdminActivityScreenState extends State<AdminActivityScreen> {
   @override
   Widget build(BuildContext context) {
     return AppShell(
-      drawer: AdminNavigationDrawer(
-        selectedIndex: 2,
-        onNavigate: _openDrawerRoute,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_rounded),
+        onPressed: _goHomeOrPop,
       ),
       title: context.l10n.adminActivityTitle,
       subtitle: '',
@@ -100,7 +101,7 @@ class _AdminActivityScreenState extends State<AdminActivityScreen> {
       nativeTitleTextStyle: AppTheme.werkaNativeAppBarTitleStyle(context),
       contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
       actions: [
-        IconButton.filledTonal(
+        IconButton(
           onPressed: _clearAll,
           icon: const Icon(Icons.clear_all_rounded),
         ),

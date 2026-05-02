@@ -74,10 +74,6 @@ class _AdminItemCreateScreenState extends State<AdminItemCreateScreen> {
   @override
   Widget build(BuildContext context) {
     return AppShell(
-      leading: AppShellIconAction(
-        icon: Icons.arrow_back_rounded,
-        onTap: () => Navigator.of(context).maybePop(),
-      ),
       title: 'Item qo‘shish',
       subtitle: '',
       nativeTopBar: true,

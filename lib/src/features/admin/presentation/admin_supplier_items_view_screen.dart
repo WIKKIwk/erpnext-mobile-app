@@ -89,10 +89,6 @@ class _AdminSupplierItemsViewScreenState
   @override
   Widget build(BuildContext context) {
     return AppShell(
-      leading: AppShellIconAction(
-        icon: Icons.arrow_back_rounded,
-        onTap: () => Navigator.of(context).maybePop(),
-      ),
       title: 'Biriktirilgan mahsulotlar',
       subtitle: '',
       nativeTopBar: true,

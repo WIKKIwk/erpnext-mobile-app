@@ -223,10 +223,6 @@ class _AdminSupplierDetailScreenState extends State<AdminSupplierDetailScreen> {
         Navigator.of(context).pop(_changed);
       },
       child: AppShell(
-        leading: AppShellIconAction(
-          icon: Icons.arrow_back_rounded,
-          onTap: () => Navigator.of(context).pop(_changed),
-        ),
         title: 'Supplier',
         subtitle: '',
         nativeTopBar: true,

@@ -154,10 +154,6 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
         Navigator.of(context).pop(changed);
       },
       child: AppShell(
-        leading: AppShellIconAction(
-          icon: Icons.arrow_back_rounded,
-          onTap: () => Navigator.of(context).pop(changed),
-        ),
         title: 'Werka',
         subtitle: '',
         nativeTopBar: true,

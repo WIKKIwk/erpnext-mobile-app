@@ -65,10 +65,6 @@ class _AdminInactiveSuppliersScreenState
   @override
   Widget build(BuildContext context) {
     return AppShell(
-      leading: AppShellIconAction(
-        icon: Icons.arrow_back_rounded,
-        onTap: () => Navigator.of(context).maybePop(),
-      ),
       title: 'Inactive Suppliers',
       subtitle: '',
       nativeTopBar: true,

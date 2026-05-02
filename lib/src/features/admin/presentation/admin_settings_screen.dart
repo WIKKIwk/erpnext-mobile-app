@@ -102,10 +102,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
         Navigator.of(context).pop(changed);
       },
       child: AppShell(
-        leading: AppShellIconAction(
-          icon: Icons.arrow_back_rounded,
-          onTap: () => Navigator.of(context).pop(changed),
-        ),
         title: context.l10n.adminSettingsTitle,
         subtitle: '',
         nativeTopBar: true,
