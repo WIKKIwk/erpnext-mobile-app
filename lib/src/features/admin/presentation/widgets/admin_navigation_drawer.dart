@@ -191,12 +191,11 @@ class _AdminNavigationDrawerOverlay extends StatelessWidget {
                       selectedIndex: 0,
                       onCloseDrawer: onClose,
                       onNavigate: (route) {
+                        final navigator =
+                            Navigator.of(context, rootNavigator: true);
                         onClose();
                         WidgetsBinding.instance.addPostFrameCallback((_) {
-                          Navigator.of(
-                            context,
-                            rootNavigator: true,
-                          ).pushReplacementNamed(route);
+                          navigator.pushReplacementNamed(route);
                         });
                       },
                     ),
