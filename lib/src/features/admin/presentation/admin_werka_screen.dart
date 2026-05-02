@@ -180,17 +180,9 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
             _fill(current);
             final scheme = theme.colorScheme;
             return ListView(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               children: [
-                Text(
-                  phone.text.trim().isEmpty
-                      ? 'Telefon raqam berilmagan'
-                      : phone.text.trim(),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 6),
                 Text('Code', style: theme.textTheme.bodySmall),
                 const SizedBox(height: 6),
                 _AdminWerkaField(
@@ -233,7 +225,7 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 14),
+                const SizedBox(height: 16),
                 TextField(
                   controller: name,
                   decoration: InputDecoration(
