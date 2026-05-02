@@ -81,9 +81,28 @@ extension MobileApiAdmin on MobileApi {
     );
   }
 
-  Future<List<AdminSupplier>> adminSuppliers() async {
-    final page = await adminSuppliersPage();
-    return page.suppliers;
+  Future<List<AdminSupplier>> adminSuppliers({
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    final response = await _sendAuthorized(
+      () => http.get(
+        Uri.parse('$baseUrl/v1/mobile/admin/suppliers/list').replace(
+          queryParameters: {
+            if (limit > 0) 'limit': '$limit',
+            if (offset > 0) 'offset': '$offset',
+          },
+        ),
+        headers: _headers(requireToken()),
+      ),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Admin suppliers failed');
+    }
+    final List<dynamic> json = jsonDecode(response.body) as List<dynamic>;
+    return json
+        .map((item) => AdminSupplier.fromJson(item as Map<String, dynamic>))
+        .toList();
   }
 
   Future<AdminSupplierSummary> adminSupplierSummary() async {
@@ -332,10 +351,18 @@ extension MobileApiAdmin on MobileApi {
     );
   }
 
-  Future<List<CustomerDirectoryEntry>> adminCustomers() async {
+  Future<List<CustomerDirectoryEntry>> adminCustomers({
+    int limit = 20,
+    int offset = 0,
+  }) async {
     final response = await _sendAuthorized(
       () => http.get(
-        Uri.parse('$baseUrl/v1/mobile/admin/customers'),
+        Uri.parse('$baseUrl/v1/mobile/admin/customers/list').replace(
+          queryParameters: {
+            if (limit > 0) 'limit': '$limit',
+            if (offset > 0) 'offset': '$offset',
+          },
+        ),
         headers: _headers(requireToken()),
       ),
     );

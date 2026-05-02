@@ -1,6 +1,5 @@
 import '../../../../core/widgets/m3_segmented_list.dart';
 import '../../../shared/models/app_models.dart';
-import 'admin_summary_card.dart';
 import 'package:flutter/material.dart';
 
 class AdminSupplierListModule extends StatelessWidget {
@@ -16,19 +15,19 @@ class AdminSupplierListModule extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return const AdminSummaryCard(
-        slot: M3SegmentVerticalSlot.top,
-        cornerRadius: M3SegmentedListGeometry.cornerLarge,
-        title: 'Userlar topilmadi',
-        value: '',
-        showChevron: false,
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+        child: Text(
+          'Userlar topilmadi',
+          style: Theme.of(context).textTheme.bodyLarge,
+        ),
       );
     }
 
     return M3SegmentSpacedColumn(
       children: [
         for (int index = 0; index < items.length; index++)
-          _AdminSupplierRow(
+          _AdminUserRow(
             slot: M3SegmentedListGeometry.standaloneListSlotForIndex(
               index,
               items.length,
@@ -41,8 +40,8 @@ class AdminSupplierListModule extends StatelessWidget {
   }
 }
 
-class _AdminSupplierRow extends StatelessWidget {
-  const _AdminSupplierRow({
+class _AdminUserRow extends StatelessWidget {
+  const _AdminUserRow({
     required this.slot,
     required this.item,
     required this.onTap,
@@ -54,17 +53,74 @@ class _AdminSupplierRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final phone = item.phone.trim();
-    final subtitle =
-        item.blocked ? '${item.roleLabel} · Blocked' : item.roleLabel;
+    final subtitleLines = <String>[
+      item.roleLabel,
+      if (item.blocked) 'Blocked',
+      if (phone.isNotEmpty) phone,
+    ];
 
-    return AdminSummaryCard(
+    return M3SegmentFilledSurface(
       slot: slot,
-      cornerRadius: 24,
-      title: item.name,
-      subtitle: subtitle,
-      value: phone.isEmpty ? ' ' : phone,
+      cornerRadius: M3SegmentedListGeometry.cornerRadiusForSlot(slot),
       onTap: onTap,
+      child: ListTile(
+        contentPadding: const EdgeInsets.fromLTRB(16, 10, 12, 10),
+        leading: CircleAvatar(
+          radius: 19,
+          backgroundColor: switch (item.kind) {
+            AdminUserKind.werka => scheme.primaryContainer,
+            AdminUserKind.customer => scheme.tertiaryContainer,
+            AdminUserKind.supplier => scheme.secondaryContainer,
+          },
+          child: Icon(
+            switch (item.kind) {
+              AdminUserKind.werka => Icons.storefront_rounded,
+              AdminUserKind.customer => Icons.groups_rounded,
+              AdminUserKind.supplier => Icons.person_rounded,
+            },
+            color: switch (item.kind) {
+              AdminUserKind.werka => scheme.onPrimaryContainer,
+              AdminUserKind.customer => scheme.onTertiaryContainer,
+              AdminUserKind.supplier => scheme.onSecondaryContainer,
+            },
+            size: 20,
+          ),
+        ),
+        title: Text(
+          item.name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 3),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (final line in subtitleLines)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 1),
+                  child: Text(
+                    line,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        trailing: Icon(
+          Icons.chevron_right_rounded,
+          color: scheme.onSurfaceVariant,
+        ),
+      ),
     );
   }
 }
