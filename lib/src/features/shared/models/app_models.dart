@@ -965,42 +965,6 @@ class AdminSupplierSummary {
   }
 }
 
-class AdminHomeAction {
-  const AdminHomeAction({
-    required this.id,
-    required this.title,
-    required this.subtitle,
-    required this.routeName,
-    required this.highlighted,
-  });
-
-  final String id;
-  final String title;
-  final String subtitle;
-  final String routeName;
-  final bool highlighted;
-
-  factory AdminHomeAction.fromJson(Map<String, dynamic> json) {
-    return AdminHomeAction(
-      id: json['id'] as String? ?? '',
-      title: json['title'] as String? ?? '',
-      subtitle: json['subtitle'] as String? ?? '',
-      routeName: json['route_name'] as String? ?? '',
-      highlighted: json['highlighted'] as bool? ?? false,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'subtitle': subtitle,
-      'route_name': routeName,
-      'highlighted': highlighted,
-    };
-  }
-}
-
 class AdminSuppliersPage {
   const AdminSuppliersPage({
     required this.summary,

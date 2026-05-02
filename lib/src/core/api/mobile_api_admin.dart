@@ -35,22 +35,6 @@ extension MobileApiAdmin on MobileApi {
     );
   }
 
-  Future<List<AdminHomeAction>> adminHomeActions() async {
-    final response = await _sendAuthorized(
-      () => http.get(
-        Uri.parse('$baseUrl/v1/mobile/admin/home/actions'),
-        headers: _headers(requireToken()),
-      ),
-    );
-    if (response.statusCode != 200) {
-      throw Exception('Admin home actions failed');
-    }
-    final List<dynamic> json = jsonDecode(response.body) as List<dynamic>;
-    return json
-        .map((item) => AdminHomeAction.fromJson(item as Map<String, dynamic>))
-        .toList();
-  }
-
   Future<AdminSettings> adminRegenerateWerkaCode() async {
     final response = await _sendAuthorized(
       () => http.post(

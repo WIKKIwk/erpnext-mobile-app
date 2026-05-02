@@ -29,7 +29,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   void initState() {
     super.initState();
     AdminStore.instance.bootstrapSummary();
-    AdminStore.instance.bootstrapHomeActions();
     RefreshHub.instance.addListener(_handlePushRefresh);
   }
 
@@ -51,10 +50,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
 
   Future<void> _reload() async {
-    await Future.wait([
-      AdminStore.instance.refreshSummary(),
-      AdminStore.instance.refreshHomeActions(),
-    ]);
+    await AdminStore.instance.refreshSummary();
   }
 
   Future<void> _openAndReload(String routeName) async {
@@ -121,14 +117,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 16),
-                SmoothAppear(
-                  delay: const Duration(milliseconds: 120),
-                  child: _AdminQuickActionsSection(
-                    actions: store.homeActions,
-                    onTapAction: (routeName) => _openAndReload(routeName),
-                  ),
-                ),
               ],
             ),
           );
@@ -249,141 +237,6 @@ class _AdminBlockedSuppliersSection extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _AdminQuickActionsSection extends StatelessWidget {
-  const _AdminQuickActionsSection({
-    required this.actions,
-    required this.onTapAction,
-  });
-
-  final List<AdminHomeAction> actions;
-  final ValueChanged<String> onTapAction;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final visibleActions = actions.isEmpty
-        ? const <AdminHomeAction>[
-            AdminHomeAction(
-              id: 'erp_settings',
-              title: 'ERP settings',
-              subtitle: 'Core integration and stock defaults',
-              routeName: AppRoutes.adminSettings,
-              highlighted: true,
-            ),
-            AdminHomeAction(
-              id: 'suppliers',
-              title: 'Suppliers',
-              subtitle: 'List, mahsulot biriktirish va block nazorati',
-              routeName: AppRoutes.adminSuppliers,
-              highlighted: false,
-            ),
-            AdminHomeAction(
-              id: 'werka',
-              title: 'Add Werka',
-              subtitle: 'Configure warehouse worker phone and name',
-              routeName: AppRoutes.adminWerka,
-              highlighted: false,
-            ),
-          ]
-        : actions;
-
-    return Card.filled(
-      margin: EdgeInsets.zero,
-      clipBehavior: Clip.antiAlias,
-      color: scheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Tez kirish',
-                style: theme.textTheme.titleLarge,
-              ),
-            ),
-            const SizedBox(height: 14),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: M3SegmentSpacedColumn(
-                children: [
-                  for (int index = 0; index < visibleActions.length; index++)
-                    AdminSummaryCard(
-                      slot: _slotForIndex(index, visibleActions.length),
-                      cornerRadius: M3SegmentedListGeometry.cornerLarge,
-                      title: visibleActions[index].title,
-                      subtitle: visibleActions[index].subtitle,
-                      value: '',
-                      leading: _QuickActionLeadingIcon(
-                        routeName: visibleActions[index].routeName,
-                        highlighted: visibleActions[index].highlighted,
-                      ),
-                      onTap: () => onTapAction(visibleActions[index].routeName),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  M3SegmentVerticalSlot _slotForIndex(int index, int count) {
-    if (count <= 1) {
-      return M3SegmentVerticalSlot.top;
-    }
-    if (index == 0) {
-      return M3SegmentVerticalSlot.top;
-    }
-    if (index == count - 1) {
-      return M3SegmentVerticalSlot.bottom;
-    }
-    return M3SegmentVerticalSlot.middle;
-  }
-}
-
-class _QuickActionLeadingIcon extends StatelessWidget {
-  const _QuickActionLeadingIcon({
-    required this.routeName,
-    required this.highlighted,
-  });
-
-  final String routeName;
-  final bool highlighted;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final Color bg =
-        highlighted ? scheme.primaryContainer : scheme.secondaryContainer;
-    final Color fg =
-        highlighted ? scheme.onPrimaryContainer : scheme.onSecondaryContainer;
-    final IconData icon = switch (routeName) {
-      AppRoutes.adminSettings => Icons.settings_rounded,
-      AppRoutes.adminSuppliers => Icons.groups_rounded,
-      AppRoutes.adminWerka => Icons.storefront_rounded,
-      _ => Icons.arrow_forward_rounded,
-    };
-
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      alignment: Alignment.center,
-      child: Icon(icon, color: fg, size: 22),
     );
   }
 }
