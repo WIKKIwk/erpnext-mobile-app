@@ -15,28 +15,19 @@ class AdminSupplierListModule extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     if (items.isEmpty) {
-      return Card.filled(
-        margin: EdgeInsets.zero,
-        color: scheme.surfaceContainerLow,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Text(
-            'Userlar topilmadi.',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ),
+      return const AdminSummaryCard(
+        slot: M3SegmentVerticalSlot.top,
+        cornerRadius: M3SegmentedListGeometry.cornerLarge,
+        title: 'Userlar topilmadi',
+        value: '',
+        showChevron: false,
       );
     }
 
-    return Column(
+    return M3SegmentSpacedColumn(
       children: [
-        for (int index = 0; index < items.length; index++) ...[
-          if (index > 0) const SizedBox(height: 10),
+        for (int index = 0; index < items.length; index++)
           _AdminSupplierRow(
             slot: M3SegmentedListGeometry.standaloneListSlotForIndex(
               index,
@@ -45,7 +36,6 @@ class AdminSupplierListModule extends StatelessWidget {
             item: items[index],
             onTap: () => onTapUser(items[index]),
           ),
-        ],
       ],
     );
   }
@@ -64,84 +54,17 @@ class _AdminSupplierRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
+    final phone = item.phone.trim();
+    final subtitle =
+        item.blocked ? '${item.roleLabel} · Blocked' : item.roleLabel;
+
     return AdminSummaryCard(
       slot: slot,
       cornerRadius: 24,
+      title: item.name,
+      subtitle: subtitle,
+      value: phone.isEmpty ? ' ' : phone,
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              height: 44,
-              width: 44,
-              decoration: BoxDecoration(
-                color: item.kind == AdminUserKind.werka
-                    ? scheme.secondaryContainer
-                    : scheme.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              alignment: Alignment.center,
-              child: Icon(
-                item.kind == AdminUserKind.werka
-                    ? Icons.inventory_2_outlined
-                    : item.kind == AdminUserKind.customer
-                        ? Icons.groups_2_outlined
-                        : Icons.account_circle_outlined,
-                size: 21,
-                color: item.kind == AdminUserKind.werka
-                    ? scheme.onSecondaryContainer
-                    : scheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    item.roleLabel,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (item.blocked) ...[
-              const SizedBox(width: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: scheme.errorContainer,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  'Blocked',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: scheme.onErrorContainer,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
     );
   }
 }

@@ -6,16 +6,24 @@ class AdminSummaryCard extends StatelessWidget {
     super.key,
     required this.slot,
     required this.cornerRadius,
-    required this.child,
+    required this.title,
+    required this.value,
     this.onTap,
+    this.subtitle,
+    this.leading,
+    this.showChevron = true,
     this.backgroundColor,
     this.borderRadiusOverride,
   });
 
   final M3SegmentVerticalSlot slot;
   final double cornerRadius;
-  final Widget child;
+  final String title;
+  final String value;
   final VoidCallback? onTap;
+  final String? subtitle;
+  final Widget? leading;
+  final bool showChevron;
   final Color? backgroundColor;
   final BorderRadius? borderRadiusOverride;
 
@@ -36,7 +44,64 @@ class AdminSummaryCard extends StatelessWidget {
         color: bg,
         borderRadius: radius,
       ),
-      child: child,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 12, 16),
+        child: Row(
+          children: [
+            if (leading != null) ...[
+              leading!,
+              const SizedBox(width: 14),
+            ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontSize: 18.5,
+                          fontWeight: FontWeight.w700,
+                          color: scheme.onSurface,
+                        ),
+                  ),
+                  if (subtitle != null && subtitle!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle!,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                            height: 1.25,
+                          ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontSize: 18.5,
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onSurface,
+                  ),
+            ),
+            if (showChevron) ...[
+              const SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 22,
+                color: scheme.onSurfaceVariant,
+              ),
+            ],
+          ],
+        ),
+      ),
     );
 
     return Material(

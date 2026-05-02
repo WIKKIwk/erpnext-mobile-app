@@ -159,113 +159,23 @@ class _AdminSummaryList extends StatelessWidget {
         AdminSummaryCard(
           slot: M3SegmentVerticalSlot.top,
           cornerRadius: M3SegmentedListGeometry.cornerLarge,
+          title: 'Jami supplierlar',
+          value: summary.totalSuppliers.toString(),
           onTap: onTapTotal,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 12, 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Jami supplierlar',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontSize: 18.5,
-                          fontWeight: FontWeight.w700,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Text(
-                  summary.totalSuppliers.toString(),
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontSize: 18.5,
-                        fontWeight: FontWeight.w700,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 22,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ],
-            ),
-          ),
         ),
         AdminSummaryCard(
           slot: M3SegmentVerticalSlot.middle,
           cornerRadius: M3SegmentedListGeometry.cornerMiddle,
+          title: 'Faol supplierlar',
+          value: summary.activeSuppliers.toString(),
           onTap: onTapActive,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 12, 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Faol supplierlar',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontSize: 18.5,
-                          fontWeight: FontWeight.w700,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Text(
-                  summary.activeSuppliers.toString(),
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontSize: 18.5,
-                        fontWeight: FontWeight.w700,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 22,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ],
-            ),
-          ),
         ),
         AdminSummaryCard(
           slot: M3SegmentVerticalSlot.bottom,
           cornerRadius: M3SegmentedListGeometry.cornerLarge,
+          title: 'Bloklangan supplierlar',
+          value: summary.blockedSuppliers.toString(),
           onTap: onTapBlocked,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 12, 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Bloklangan supplierlar',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontSize: 18.5,
-                          fontWeight: FontWeight.w700,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Text(
-                  summary.blockedSuppliers.toString(),
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontSize: 18.5,
-                        fontWeight: FontWeight.w700,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 22,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ],
-            ),
-          ),
         ),
       ],
     );
