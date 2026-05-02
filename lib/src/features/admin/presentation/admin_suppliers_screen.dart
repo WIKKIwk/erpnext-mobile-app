@@ -35,30 +35,20 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
   }
 
   Future<_AdminSuppliersData> _loadUsers() async {
-    final results = await Future.wait<dynamic>([
-      MobileApi.instance.adminSupplierSummary(),
-      MobileApi.instance.adminSuppliers(),
-      MobileApi.instance.adminCustomers(),
-      MobileApi.instance.adminSettings(),
-    ]);
-    final AdminSupplierSummary summary = results[0] as AdminSupplierSummary;
-    final List<AdminSupplier> suppliers = results[1] as List<AdminSupplier>;
-    final List<CustomerDirectoryEntry> customers =
-        results[2] as List<CustomerDirectoryEntry>;
-    final AdminSettings settings = results[3] as AdminSettings;
+    final page = await MobileApi.instance.adminSuppliersPage();
 
     final items = <AdminUserListEntry>[
-      if (settings.werkaName.trim().isNotEmpty ||
-          settings.werkaPhone.trim().isNotEmpty)
+      if (page.settings.werkaName.trim().isNotEmpty ||
+          page.settings.werkaPhone.trim().isNotEmpty)
         AdminUserListEntry(
           id: 'werka',
-          name: settings.werkaName.trim().isEmpty
+          name: page.settings.werkaName.trim().isEmpty
               ? 'Werka'
-              : settings.werkaName.trim(),
-          phone: settings.werkaPhone.trim(),
+              : page.settings.werkaName.trim(),
+          phone: page.settings.werkaPhone.trim(),
           kind: AdminUserKind.werka,
         ),
-      ...suppliers.map(
+      ...page.suppliers.map(
         (item) => AdminUserListEntry(
           id: item.ref,
           name: item.name,
@@ -67,7 +57,7 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
           blocked: item.blocked,
         ),
       ),
-      ...customers.map(
+      ...page.customers.map(
         (item) => AdminUserListEntry(
           id: item.ref,
           name: item.name,
@@ -76,7 +66,7 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
         ),
       ),
     ];
-    return _AdminSuppliersData(summary: summary, items: items);
+    return _AdminSuppliersData(summary: page.summary, items: items);
   }
 
   @override

@@ -965,6 +965,40 @@ class AdminSupplierSummary {
   }
 }
 
+class AdminSuppliersPage {
+  const AdminSuppliersPage({
+    required this.summary,
+    required this.suppliers,
+    required this.customers,
+    required this.settings,
+  });
+
+  final AdminSupplierSummary summary;
+  final List<AdminSupplier> suppliers;
+  final List<CustomerDirectoryEntry> customers;
+  final AdminSettings settings;
+
+  factory AdminSuppliersPage.fromJson(Map<String, dynamic> json) {
+    return AdminSuppliersPage(
+      summary: AdminSupplierSummary.fromJson(
+        json['summary'] as Map<String, dynamic>? ?? const {},
+      ),
+      suppliers: (json['suppliers'] as List<dynamic>? ?? const [])
+          .map((item) => AdminSupplier.fromJson(item as Map<String, dynamic>))
+          .toList(),
+      customers: (json['customers'] as List<dynamic>? ?? const [])
+          .map(
+            (item) =>
+                CustomerDirectoryEntry.fromJson(item as Map<String, dynamic>),
+          )
+          .toList(),
+      settings: AdminSettings.fromJson(
+        json['settings'] as Map<String, dynamic>? ?? const {},
+      ),
+    );
+  }
+}
+
 class AdminSupplierDetail {
   const AdminSupplierDetail({
     required this.ref,

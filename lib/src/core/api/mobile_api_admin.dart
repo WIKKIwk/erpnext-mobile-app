@@ -66,7 +66,7 @@ extension MobileApiAdmin on MobileApi {
         .toList();
   }
 
-  Future<List<AdminSupplier>> adminSuppliers() async {
+  Future<AdminSuppliersPage> adminSuppliersPage() async {
     final response = await _sendAuthorized(
       () => http.get(
         Uri.parse('$baseUrl/v1/mobile/admin/suppliers'),
@@ -74,12 +74,16 @@ extension MobileApiAdmin on MobileApi {
       ),
     );
     if (response.statusCode != 200) {
-      throw Exception('Admin suppliers failed');
+      throw Exception('Admin suppliers page failed');
     }
-    final List<dynamic> json = jsonDecode(response.body) as List<dynamic>;
-    return json
-        .map((item) => AdminSupplier.fromJson(item as Map<String, dynamic>))
-        .toList();
+    return AdminSuppliersPage.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  }
+
+  Future<List<AdminSupplier>> adminSuppliers() async {
+    final page = await adminSuppliersPage();
+    return page.suppliers;
   }
 
   Future<AdminSupplierSummary> adminSupplierSummary() async {
