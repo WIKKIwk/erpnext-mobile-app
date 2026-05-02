@@ -80,9 +80,6 @@ class AdminNavigationDrawer extends StatelessWidget {
               };
               closeDrawer();
               await Future<void>.delayed(const Duration(milliseconds: 220));
-              if (!context.mounted) {
-                return;
-              }
               onNavigate(route);
             },
             header: Padding(
