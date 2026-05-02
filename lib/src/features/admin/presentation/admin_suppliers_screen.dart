@@ -19,7 +19,8 @@ class AdminSuppliersScreen extends StatefulWidget {
 }
 
 class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
-  static const int _pageSize = 20;
+  static const int _initialPageSize = 100;
+  static const int _pageSize = 50;
   static const double _prefetchExtentAfterFactor = 2.5;
   static _AdminSuppliersCache? _cache;
 
@@ -83,7 +84,7 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
 
     final results = await Future.wait([
       _safeLoadAdminSettings(),
-      _safeLoadAdminSuppliers(limit: _pageSize, offset: 0),
+      _safeLoadAdminSuppliers(limit: _initialPageSize, offset: 0),
     ]);
 
     final settings = results[0] as AdminSettings;
@@ -93,17 +94,17 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
       ..._werkaItem(settings),
       ..._mapSuppliers(suppliers),
     ];
-    final supplierHasMore = suppliers.length == _pageSize;
+    final supplierHasMore = suppliers.length == _initialPageSize;
     final supplierOffset = suppliers.length;
     var customerHasMore = true;
     var customerOffset = 0;
 
     if (!supplierHasMore) {
       final customers =
-          await _safeLoadAdminCustomers(limit: _pageSize, offset: 0);
+          await _safeLoadAdminCustomers(limit: _initialPageSize, offset: 0);
       items.addAll(_mapCustomers(customers));
       customerOffset = customers.length;
-      customerHasMore = customers.length == _pageSize;
+      customerHasMore = customers.length == _initialPageSize;
     }
 
     if (!mounted) {
