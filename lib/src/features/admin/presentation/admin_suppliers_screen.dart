@@ -22,6 +22,7 @@ class AdminSuppliersScreen extends StatefulWidget {
 }
 
 class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
+  static const String _usersSummaryHeroTag = 'admin-users-summary-strip';
   static const int _pageSize = 20;
   static const double _prefetchExtentAfterFactor = 2.5;
   static _AdminSuppliersCache? _cache;
@@ -384,10 +385,14 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
                 padding: const EdgeInsets.fromLTRB(0, 0, 0, 116),
                 children: [
                   const SizedBox(height: 4),
-                  _AdminSuppliersSummarySection(
-                    summary: _summary,
-                    onTapBlocked: () => Navigator.of(context).pushNamed(
-                      AppRoutes.adminInactiveSuppliers,
+                  Hero(
+                    tag: _usersSummaryHeroTag,
+                    transitionOnUserGestures: true,
+                    child: _AdminSuppliersSummarySection(
+                      summary: _summary,
+                      onTapBlocked: () => Navigator.of(context).pushNamed(
+                        AppRoutes.adminInactiveSuppliers,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),

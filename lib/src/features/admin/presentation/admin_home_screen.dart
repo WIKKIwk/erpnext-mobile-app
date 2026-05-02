@@ -23,6 +23,7 @@ class AdminHomeScreen extends StatefulWidget {
 }
 
 class _AdminHomeScreenState extends State<AdminHomeScreen> {
+  static const String _usersSummaryHeroTag = 'admin-users-summary-strip';
   int _refreshVersion = 0;
 
   @override
@@ -107,14 +108,19 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               padding: EdgeInsets.only(bottom: bottomPadding),
               children: [
                 const SizedBox(height: 4),
-                SmoothAppear(
-                  delay: const Duration(milliseconds: 20),
-                  child: _AdminSummaryList(
-                    summary: summaryValue,
-                    onTapTotal: () => _openAndReload(AppRoutes.adminSuppliers),
-                    onTapActive: () => _openAndReload(AppRoutes.adminSuppliers),
-                    onTapBlocked: () =>
-                        _openAndReload(AppRoutes.adminInactiveSuppliers),
+                Hero(
+                  tag: _usersSummaryHeroTag,
+                  transitionOnUserGestures: true,
+                  child: SmoothAppear(
+                    delay: const Duration(milliseconds: 20),
+                    child: _AdminSummaryList(
+                      summary: summaryValue,
+                      onTapTotal: () => _openAndReload(AppRoutes.adminSuppliers),
+                      onTapActive: () =>
+                          _openAndReload(AppRoutes.adminSuppliers),
+                      onTapBlocked: () =>
+                          _openAndReload(AppRoutes.adminInactiveSuppliers),
+                    ),
                   ),
                 ),
                 if (summaryValue.blockedSuppliers > 0) ...[

@@ -417,26 +417,28 @@ class AppRouter {
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           final enter = CurvedAnimation(
             parent: animation,
-            curve: AppMotion.pageIn,
+            curve: const Interval(0.0, 1.0, curve: AppMotion.pageIn),
             reverseCurve: AppMotion.pageOut,
           );
-          final exit = CurvedAnimation(
-            parent: secondaryAnimation,
-            curve: AppMotion.pageOut,
+          final fadeIn = CurvedAnimation(
+            parent: animation,
+            curve: const Interval(0.08, 1.0, curve: AppMotion.emphasizedDecelerate),
+            reverseCurve: AppMotion.pageOut,
           );
-          final outgoingOpacity = Tween<double>(
-            begin: 1.0,
-            end: 0.0,
-          ).animate(exit);
+          final slideIn = Tween<Offset>(
+            begin: const Offset(0, 0.045),
+            end: Offset.zero,
+          ).animate(enter);
+          final scaleIn = Tween<double>(
+            begin: 0.985,
+            end: 1.0,
+          ).animate(enter);
           return FadeTransition(
-            opacity: enter,
+            opacity: fadeIn,
             child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0.035, 0),
-                end: Offset.zero,
-              ).animate(enter),
-              child: FadeTransition(
-                opacity: outgoingOpacity,
+              position: slideIn,
+              child: ScaleTransition(
+                scale: scaleIn,
                 child: child,
               ),
             ),
