@@ -3,7 +3,7 @@ import '../../../core/api/mobile_api.dart';
 import '../../../core/widgets/app_loading_indicator.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/app_retry_state.dart';
-import '../../../core/widgets/motion_widgets.dart';
+import '../../../core/widgets/m3_segmented_list.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/admin_dock.dart';
 import 'widgets/admin_supplier_list_module.dart';
@@ -118,7 +118,8 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
                   items: data.items,
                   onTapUser: (item) async {
                     if (item.kind == AdminUserKind.werka) {
-                      await Navigator.of(context).pushNamed(AppRoutes.adminWerka);
+                      await Navigator.of(context)
+                          .pushNamed(AppRoutes.adminWerka);
                     } else if (item.kind == AdminUserKind.customer) {
                       await Navigator.of(context).pushNamed(
                         AppRoutes.adminCustomerDetail,
@@ -163,43 +164,44 @@ class _AdminSuppliersSummarySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Card.filled(
-      margin: EdgeInsets.zero,
-      color: scheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
-      ),
-      child: Column(
-        children: [
-          _AdminSuppliersSummaryRow(
-            label: 'Aktiv supplierlar',
-            value: '${summary.activeSuppliers}',
-          ),
-          const _AdminSuppliersSectionDivider(),
-          _AdminSuppliersSummaryRow(
-            label: 'Jami supplierlar',
-            value: '${summary.totalSuppliers}',
-          ),
-          const _AdminSuppliersSectionDivider(),
-          _AdminSuppliersSummaryRow(
-            label: 'Bloklangan supplierlar',
-            value: '${summary.blockedSuppliers}',
-            onTap: onTapBlocked,
-          ),
-        ],
-      ),
+    return M3SegmentSpacedColumn(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      children: [
+        _AdminSummarySegmentCard(
+          slot: M3SegmentVerticalSlot.top,
+          cornerRadius: M3SegmentedListGeometry.cornerLarge,
+          label: 'Jami supplierlar',
+          value: summary.totalSuppliers.toString(),
+        ),
+        _AdminSummarySegmentCard(
+          slot: M3SegmentVerticalSlot.middle,
+          cornerRadius: M3SegmentedListGeometry.cornerMiddle,
+          label: 'Faol supplierlar',
+          value: summary.activeSuppliers.toString(),
+        ),
+        _AdminSummarySegmentCard(
+          slot: M3SegmentVerticalSlot.bottom,
+          cornerRadius: M3SegmentedListGeometry.cornerLarge,
+          label: 'Bloklangan supplierlar',
+          value: summary.blockedSuppliers.toString(),
+          onTap: onTapBlocked,
+        ),
+      ],
     );
   }
 }
 
-class _AdminSuppliersSummaryRow extends StatelessWidget {
-  const _AdminSuppliersSummaryRow({
+class _AdminSummarySegmentCard extends StatelessWidget {
+  const _AdminSummarySegmentCard({
+    required this.slot,
+    required this.cornerRadius,
     required this.label,
     required this.value,
     this.onTap,
   });
 
+  final M3SegmentVerticalSlot slot;
+  final double cornerRadius;
   final String label;
   final String value;
   final VoidCallback? onTap;
@@ -208,57 +210,69 @@ class _AdminSuppliersSummaryRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final row = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: theme.textTheme.titleLarge,
+    final BorderRadius radius =
+        M3SegmentedListGeometry.borderRadius(slot, cornerRadius);
+    final Color bg = switch (theme.brightness) {
+      Brightness.dark => scheme.surfaceContainerLow,
+      Brightness.light => scheme.surfaceContainerHighest,
+    };
+    final Color foreground = scheme.onSurface;
+    final Color accent = scheme.onSurfaceVariant;
+
+    return Material(
+      color: Colors.transparent,
+      elevation: 0,
+      shadowColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: radius),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Ink(
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: radius,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          color: foreground,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Supplierlar bo‘limi',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: accent,
+                          height: 1.25,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Text(
+                  value,
+                  style: theme.textTheme.displaySmall?.copyWith(
+                    color: foreground,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.6,
+                  ),
+                ),
+              ],
             ),
           ),
-          Container(
-            constraints: const BoxConstraints(minWidth: 44),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainerHigh,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Text(
-              value,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: scheme.onSurface,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
-    );
-    if (onTap == null) {
-      return row;
-    }
-    return PressableScale(
-      borderRadius: 24,
-      onTap: onTap,
-      child: row,
-    );
-  }
-}
-
-class _AdminSuppliersSectionDivider extends StatelessWidget {
-  const _AdminSuppliersSectionDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return Divider(
-      height: 1,
-      thickness: 1,
-      indent: 18,
-      endIndent: 18,
-      color: Theme.of(context).dividerColor.withValues(alpha: 0.55),
     );
   }
 }
