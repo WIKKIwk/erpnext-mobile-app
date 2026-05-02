@@ -66,8 +66,8 @@ class _AdminUserRow extends StatelessWidget {
       slot: slot,
       cornerRadius: M3SegmentedListGeometry.cornerRadiusForSlot(slot),
       onTap: onTap,
-      fixedHeight: 58,
-      padding: const EdgeInsets.fromLTRB(14, 7, 10, 7),
+      fixedHeight: 61,
+      padding: const EdgeInsets.fromLTRB(14, 8, 10, 8),
       value: '',
       showChevron: true,
       leading: SizedBox.square(
