@@ -101,7 +101,7 @@ class _AdminActivityScreenState extends State<AdminActivityScreen> {
       subtitle: '',
       nativeTopBar: true,
       nativeTitleTextStyle: AppTheme.werkaNativeAppBarTitleStyle(context),
-      contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
+      contentPadding: EdgeInsets.zero,
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 4),
