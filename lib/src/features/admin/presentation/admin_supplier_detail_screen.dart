@@ -31,6 +31,7 @@ class _AdminSupplierDetailScreenState extends State<AdminSupplierDetailScreen> {
   bool _savingPhone = false;
   bool _regeneratingCode = false;
   bool _removing = false;
+  bool _changed = false;
   int _retryAfterSec = 0;
   Timer? _retryTimer;
 
@@ -86,6 +87,7 @@ class _AdminSupplierDetailScreenState extends State<AdminSupplierDetailScreen> {
         ref: detail.ref,
         blocked: !detail.blocked,
       );
+      _changed = true;
       setState(() {
         _detailFuture = Future<AdminSupplierDetail>.value(updated);
       });
@@ -136,6 +138,7 @@ class _AdminSupplierDetailScreenState extends State<AdminSupplierDetailScreen> {
         ref: detail.ref,
         phone: phone,
       );
+      _changed = true;
       setState(() {
         _detailFuture = Future<AdminSupplierDetail>.value(updated);
       });
@@ -159,6 +162,7 @@ class _AdminSupplierDetailScreenState extends State<AdminSupplierDetailScreen> {
       final updated = await MobileApi.instance
           .adminRegenerateSupplierCode(widget.supplierRef);
       _setRetryAfter(updated.codeRetryAfterSec);
+      _changed = true;
       setState(() {
         _detailFuture = Future<AdminSupplierDetail>.value(updated);
       });
@@ -186,6 +190,7 @@ class _AdminSupplierDetailScreenState extends State<AdminSupplierDetailScreen> {
     setState(() => _removing = true);
     try {
       await MobileApi.instance.adminRemoveSupplier(widget.supplierRef);
+      _changed = true;
       if (mounted) {
         Navigator.of(context).pop(true);
       }
@@ -208,18 +213,26 @@ class _AdminSupplierDetailScreenState extends State<AdminSupplierDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AppShell(
-      leading: AppShellIconAction(
-        icon: Icons.arrow_back_rounded,
-        onTap: () => Navigator.of(context).maybePop(),
-      ),
-      title: 'Supplier',
-      subtitle: '',
-      contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
-      bottom: const AdminDock(activeTab: AdminDockTab.suppliers),
-      child: FutureBuilder<AdminSupplierDetail>(
-        future: _detailFuture,
-        builder: (context, snapshot) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) {
+          return;
+        }
+        Navigator.of(context).pop(_changed);
+      },
+      child: AppShell(
+        leading: AppShellIconAction(
+          icon: Icons.arrow_back_rounded,
+          onTap: () => Navigator.of(context).pop(_changed),
+        ),
+        title: 'Supplier',
+        subtitle: '',
+        contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
+        bottom: const AdminDock(activeTab: AdminDockTab.suppliers),
+        child: FutureBuilder<AdminSupplierDetail>(
+          future: _detailFuture,
+          builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
             return const Center(child: AppLoadingIndicator());
           }
@@ -454,7 +467,8 @@ class _AdminSupplierDetailScreenState extends State<AdminSupplierDetailScreen> {
               const SizedBox(height: 24),
             ],
           );
-        },
+          },
+        ),
       ),
     );
   }

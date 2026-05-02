@@ -33,6 +33,7 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
   bool _removing = false;
   bool _addingItem = false;
   String? _removingItemCode;
+  bool _changed = false;
   int _retryAfterSec = 0;
   Timer? _retryTimer;
 
@@ -144,6 +145,7 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
         ref: detail.ref,
         phone: phone,
       );
+      _changed = true;
       if (!mounted) {
         return;
       }
@@ -168,6 +170,7 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
     try {
       final updated = await MobileApi.instance
           .adminRegenerateCustomerCode(widget.customerRef);
+      _changed = true;
       if (!mounted) {
         return;
       }
@@ -214,6 +217,7 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
     setState(() => _removing = true);
     try {
       await MobileApi.instance.adminRemoveCustomer(widget.customerRef);
+      _changed = true;
       if (!mounted) {
         return;
       }
@@ -239,6 +243,7 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
         ref: widget.customerRef,
         itemCode: item.code,
       );
+      _changed = true;
       if (!mounted) {
         return false;
       }
@@ -304,6 +309,7 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
         ref: widget.customerRef,
         itemCode: item.code,
       );
+      _changed = true;
       if (!mounted) {
         return false;
       }
@@ -339,55 +345,64 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
           assignedItems: const [],
         );
 
-    return Scaffold(
-      backgroundColor: AppTheme.shellStart(context),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-          children: [
-            Row(
-              children: [
-                if (showFlutterBackButton) ...[
-                  NativeBackButtonSlot(
-                    onPressed: () => Navigator.of(context).maybePop(),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) {
+          return;
+        }
+        Navigator.of(context).pop(_changed);
+      },
+      child: Scaffold(
+        backgroundColor: AppTheme.shellStart(context),
+        body: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+            children: [
+              Row(
+                children: [
+                  if (showFlutterBackButton) ...[
+                    NativeBackButtonSlot(
+                      onPressed: () => Navigator.of(context).pop(_changed),
+                    ),
+                    const SizedBox(width: 14),
+                  ],
+                  Expanded(
+                    child: Text(
+                      'Customer',
+                      style: theme.textTheme.headlineMedium,
+                    ),
                   ),
-                  const SizedBox(width: 14),
                 ],
-                Expanded(
-                  child: Text(
-                    'Customer',
-                    style: theme.textTheme.headlineMedium,
-                  ),
-                ),
+              ),
+              const SizedBox(height: 20),
+              _AdminCustomerDetailCard(
+                detail: detail,
+                statusLabel: _loading
+                    ? 'Yuklanmoqda'
+                    : _loadError != null
+                        ? 'Xato'
+                        : _detail == null
+                            ? 'Bo‘sh'
+                            : 'Tayyor',
+                savingPhone: _savingPhone || _loading,
+                regeneratingCode: _regeneratingCode,
+                removing: _removing,
+                addingItem: _addingItem,
+                removingItemCode: _removingItemCode,
+                onAddPhone: _addPhone,
+                onAddItem: _addItem,
+                onRemoveItem: _removeItem,
+                onRegenerateCode: _regenerateCode,
+                onCopyCode: _copyCode,
+                onRemove: _removeCustomer,
+              ),
+              if (_loadError != null) ...[
+                const SizedBox(height: 12),
+                AppRetryState(onRetry: _reload, padding: EdgeInsets.zero),
               ],
-            ),
-            const SizedBox(height: 20),
-            _AdminCustomerDetailCard(
-              detail: detail,
-              statusLabel: _loading
-                  ? 'Yuklanmoqda'
-                  : _loadError != null
-                      ? 'Xato'
-                      : _detail == null
-                          ? 'Bo‘sh'
-                          : 'Tayyor',
-              savingPhone: _savingPhone || _loading,
-              regeneratingCode: _regeneratingCode,
-              removing: _removing,
-              addingItem: _addingItem,
-              removingItemCode: _removingItemCode,
-              onAddPhone: _addPhone,
-              onAddItem: _addItem,
-              onRemoveItem: _removeItem,
-              onRegenerateCode: _regenerateCode,
-              onCopyCode: _copyCode,
-              onRemove: _removeCustomer,
-            ),
-            if (_loadError != null) ...[
-              const SizedBox(height: 12),
-              AppRetryState(onRetry: _reload, padding: EdgeInsets.zero),
             ],
-          ],
+          ),
         ),
       ),
     );

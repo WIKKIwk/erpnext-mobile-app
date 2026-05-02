@@ -22,6 +22,7 @@ class AdminSuppliersScreen extends StatefulWidget {
 class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
   static const int _pageSize = 20;
   static const double _prefetchExtentAfterFactor = 2.5;
+  static _AdminSuppliersCache? _cache;
 
   final ScrollController _scrollController = ScrollController();
   final List<AdminUserListEntry> _items = [];
@@ -53,7 +54,7 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
   }
 
   Future<void> _reload() async {
-    await _bootstrap();
+    await _bootstrap(forceRefresh: true);
   }
 
   void _handleScroll() {
@@ -70,7 +71,11 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
     }
   }
 
-  Future<void> _bootstrap() async {
+  Future<void> _bootstrap({bool forceRefresh = false}) async {
+    if (!forceRefresh && _restoreCache()) {
+      return;
+    }
+
     if (mounted) {
       setState(() {
         _initialLoading = true;
@@ -125,6 +130,14 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
       _initialLoading = false;
       _loadingMore = false;
     });
+    _cache = _AdminSuppliersCache(
+      summary: summary,
+      items: List<AdminUserListEntry>.unmodifiable(items),
+      supplierHasMore: supplierHasMore,
+      customerHasMore: customerHasMore,
+      supplierOffset: supplierOffset,
+      customerOffset: customerOffset,
+    );
   }
 
   Future<void> _loadMore() async {
@@ -291,20 +304,48 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
   }
 
   Future<void> _openUser(AdminUserListEntry item) async {
+    bool changed = false;
     if (item.kind == AdminUserKind.werka) {
-      await Navigator.of(context).pushNamed(AppRoutes.adminWerka);
+      final result = await Navigator.of(context).pushNamed(AppRoutes.adminWerka);
+      changed = result == true;
     } else if (item.kind == AdminUserKind.customer) {
-      await Navigator.of(context).pushNamed(
+      final result = await Navigator.of(context).pushNamed(
         AppRoutes.adminCustomerDetail,
         arguments: item.id,
       );
+      changed = result == true;
     } else {
-      await Navigator.of(context).pushNamed(
+      final result = await Navigator.of(context).pushNamed(
         AppRoutes.adminSupplierDetail,
         arguments: item.id,
       );
+      changed = result == true;
     }
-    await _reload();
+    if (changed && mounted) {
+      await _bootstrap(forceRefresh: true);
+    }
+  }
+
+  bool _restoreCache() {
+    final cache = _cache;
+    if (cache == null) {
+      return false;
+    }
+    if (mounted) {
+      setState(() {
+        _summary = cache.summary;
+        _items
+          ..clear()
+          ..addAll(cache.items);
+        _supplierHasMore = cache.supplierHasMore;
+        _customerHasMore = cache.customerHasMore;
+        _supplierOffset = cache.supplierOffset;
+        _customerOffset = cache.customerOffset;
+        _initialLoading = false;
+        _loadingMore = false;
+      });
+    }
+    return true;
   }
 
   @override
@@ -345,6 +386,24 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
             ),
     );
   }
+}
+
+class _AdminSuppliersCache {
+  const _AdminSuppliersCache({
+    required this.summary,
+    required this.items,
+    required this.supplierHasMore,
+    required this.customerHasMore,
+    required this.supplierOffset,
+    required this.customerOffset,
+  });
+
+  final AdminSupplierSummary summary;
+  final List<AdminUserListEntry> items;
+  final bool supplierHasMore;
+  final bool customerHasMore;
+  final int supplierOffset;
+  final int customerOffset;
 }
 
 class _AdminSuppliersSummarySection extends StatelessWidget {

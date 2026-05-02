@@ -25,6 +25,7 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
   bool saving = false;
   bool regenerating = false;
   bool hydrated = false;
+  bool changed = false;
   Timer? _retryTimer;
 
   @override
@@ -107,6 +108,7 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
       setState(() {
         werkaCode = updated.werkaCode;
       });
+      changed = true;
     } finally {
       if (mounted) setState(() => saving = false);
     }
@@ -119,6 +121,7 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
       setState(() {
         werkaCode = updated.werkaCode;
       });
+      changed = true;
       _setRetryAfter(updated.werkaCodeRetryAfterSec);
     } finally {
       if (mounted) {
@@ -141,20 +144,28 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return AppShell(
-      leading: AppShellIconAction(
-        icon: Icons.arrow_back_rounded,
-        onTap: () => Navigator.of(context).maybePop(),
-      ),
-      title: 'Werka',
-      subtitle: '',
-      bottom: const AdminDock(activeTab: AdminDockTab.settings),
-      contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
-      child: SafeArea(
-        top: false,
-        child: FutureBuilder<AdminSettings>(
-          future: _future,
-          builder: (context, snapshot) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) {
+          return;
+        }
+        Navigator.of(context).pop(changed);
+      },
+      child: AppShell(
+        leading: AppShellIconAction(
+          icon: Icons.arrow_back_rounded,
+          onTap: () => Navigator.of(context).pop(changed),
+        ),
+        title: 'Werka',
+        subtitle: '',
+        bottom: const AdminDock(activeTab: AdminDockTab.settings),
+        contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
+        child: SafeArea(
+          top: false,
+          child: FutureBuilder<AdminSettings>(
+            future: _future,
+            builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
               return const Center(child: AppLoadingIndicator());
             }
@@ -278,7 +289,8 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
                 ),
               ],
             );
-          },
+            },
+          ),
         ),
       ),
     );

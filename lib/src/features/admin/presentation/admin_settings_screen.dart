@@ -25,6 +25,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   final werkaPhone = TextEditingController();
   final werkaName = TextEditingController();
   bool saving = false;
+  bool changed = false;
 
   @override
   void initState() {
@@ -75,6 +76,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
         ),
       );
       _fill(updated);
+      changed = true;
       if (!mounted) {
         return;
       }
@@ -90,18 +92,26 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AppShell(
-      leading: AppShellIconAction(
-        icon: Icons.arrow_back_rounded,
-        onTap: () => Navigator.of(context).maybePop(),
-      ),
-      title: context.l10n.adminSettingsTitle,
-      subtitle: '',
-      contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
-      bottom: const AdminDock(activeTab: AdminDockTab.settings),
-      child: FutureBuilder<AdminSettings>(
-        future: _future,
-        builder: (context, snapshot) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) {
+          return;
+        }
+        Navigator.of(context).pop(changed);
+      },
+      child: AppShell(
+        leading: AppShellIconAction(
+          icon: Icons.arrow_back_rounded,
+          onTap: () => Navigator.of(context).pop(changed),
+        ),
+        title: context.l10n.adminSettingsTitle,
+        subtitle: '',
+        contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
+        bottom: const AdminDock(activeTab: AdminDockTab.settings),
+        child: FutureBuilder<AdminSettings>(
+          future: _future,
+          builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
             return const Center(child: AppLoadingIndicator());
           }
@@ -201,7 +211,8 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
               ),
             ],
           );
-        },
+          },
+        ),
       ),
     );
   }
