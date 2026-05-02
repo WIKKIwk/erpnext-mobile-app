@@ -30,8 +30,8 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen>
 
   final ScrollController _scrollController = ScrollController();
   final List<AdminUserListEntry> _items = [];
-  late final AnimationController _contentRevealController;
-  late final Animation<double> _contentReveal;
+  AnimationController? _contentRevealController;
+  Animation<double>? _contentReveal;
 
   AdminSupplierSummary _summary = const AdminSupplierSummary(
     totalSuppliers: 0,
@@ -48,15 +48,17 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen>
   @override
   void initState() {
     super.initState();
-    _contentRevealController = AnimationController(
+    final controller = AnimationController(
       vsync: this,
       duration: AppMotion.pageEnter,
-    )..forward();
+    );
+    _contentRevealController = controller;
     _contentReveal = CurvedAnimation(
-      parent: _contentRevealController,
+      parent: controller,
       curve: AppMotion.pageIn,
       reverseCurve: AppMotion.pageOut,
     );
+    controller.forward();
     _scrollController.addListener(_handleScroll);
     _bootstrap();
   }
@@ -65,7 +67,7 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen>
   void dispose() {
     _scrollController.removeListener(_handleScroll);
     _scrollController.dispose();
-    _contentRevealController.dispose();
+    _contentRevealController?.dispose();
     super.dispose();
   }
 
@@ -394,9 +396,10 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen>
           : AppRefreshIndicator(
               onRefresh: _reload,
               child: AnimatedBuilder(
-                animation: _contentReveal,
+                animation: _contentReveal ?? const AlwaysStoppedAnimation(1),
                 builder: (context, _) {
-                  final contentValue = _contentReveal.value.clamp(0.0, 1.0);
+                  final contentValue =
+                      (_contentReveal?.value ?? 1.0).clamp(0.0, 1.0);
                   final summaryFactor = (1 - contentValue).clamp(0.0, 1.0);
                   final listFactor = contentValue;
                   return ListView(
