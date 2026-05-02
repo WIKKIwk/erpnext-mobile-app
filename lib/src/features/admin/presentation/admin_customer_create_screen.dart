@@ -51,7 +51,7 @@ class _AdminCustomerCreateScreenState extends State<AdminCustomerCreateScreen> {
       nativeTitleTextStyle: AppTheme.werkaNativeAppBarTitleStyle(context),
       bottom: const AdminDock(activeTab: AdminDockTab.settings),
       child: ListView(
-        padding: EdgeInsets.zero,
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
         children: [
           TextField(
             controller: name,
