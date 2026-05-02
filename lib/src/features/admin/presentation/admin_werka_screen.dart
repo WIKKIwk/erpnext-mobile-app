@@ -162,8 +162,6 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
               return ListView(
                 padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
                 children: [
-                  _AdminWerkaHeader(theme: theme),
-                  const SizedBox(height: 20),
                   AppRetryState(onRetry: _reload, padding: EdgeInsets.zero),
                 ],
               );
@@ -174,8 +172,6 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
             return ListView(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
               children: [
-                _AdminWerkaHeader(theme: theme),
-                const SizedBox(height: 20),
                 Card.filled(
                   margin: EdgeInsets.zero,
                   color: scheme.surfaceContainerLow,
@@ -193,13 +189,6 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              name.text.trim().isEmpty
-                                  ? 'Werka'
-                                  : name.text.trim(),
-                              style: theme.textTheme.headlineMedium,
-                            ),
-                            const SizedBox(height: 8),
                             Text(
                               phone.text.trim().isEmpty
                                   ? 'Telefon raqam berilmagan'
@@ -292,26 +281,6 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
           },
         ),
       ),
-    );
-  }
-}
-
-class _AdminWerkaHeader extends StatelessWidget {
-  const _AdminWerkaHeader({required this.theme});
-
-  final ThemeData theme;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            'Werka',
-            style: theme.textTheme.headlineMedium,
-          ),
-        ),
-      ],
     );
   }
 }
