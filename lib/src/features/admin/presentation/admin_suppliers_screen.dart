@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_loading_indicator.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/m3_segmented_list.dart';
@@ -370,6 +371,8 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
       ),
       title: 'Suppliers',
       subtitle: '',
+      nativeTopBar: true,
+      nativeTitleTextStyle: AppTheme.werkaNativeAppBarTitleStyle(context),
       contentPadding: EdgeInsets.zero,
       bottom: const AdminDock(activeTab: AdminDockTab.suppliers),
       child: _initialLoading
