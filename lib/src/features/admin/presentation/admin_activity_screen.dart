@@ -101,9 +101,12 @@ class _AdminActivityScreenState extends State<AdminActivityScreen> {
       nativeTitleTextStyle: AppTheme.werkaNativeAppBarTitleStyle(context),
       contentPadding: const EdgeInsets.fromLTRB(12, 0, 14, 0),
       actions: [
-        AppShellIconAction(
-          icon: Icons.clear_all_rounded,
-          onTap: _clearAll,
+        Padding(
+          padding: const EdgeInsets.only(right: 4),
+          child: IconButton(
+            onPressed: _clearAll,
+            icon: const Icon(Icons.clear_all_rounded),
+          ),
         ),
       ],
       bottom: const AdminDock(activeTab: AdminDockTab.activity),
