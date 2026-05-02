@@ -35,20 +35,52 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
   }
 
   Future<_AdminSuppliersData> _loadUsers() async {
-    final page = await MobileApi.instance.adminSuppliersPage();
+    try {
+      final page = await MobileApi.instance.adminSuppliersPage();
+      return _buildData(
+        summary: page.summary,
+        suppliers: page.suppliers,
+        customers: page.customers,
+        settings: page.settings,
+      );
+    } catch (_) {
+      return _loadUsersLegacy();
+    }
+  }
 
+  Future<_AdminSuppliersData> _loadUsersLegacy() async {
+    final results = await Future.wait<dynamic>([
+      MobileApi.instance.adminSupplierSummary(),
+      MobileApi.instance.adminSuppliers(),
+      MobileApi.instance.adminCustomers(),
+      MobileApi.instance.adminSettings(),
+    ]);
+    return _buildData(
+      summary: results[0] as AdminSupplierSummary,
+      suppliers: results[1] as List<AdminSupplier>,
+      customers: results[2] as List<CustomerDirectoryEntry>,
+      settings: results[3] as AdminSettings,
+    );
+  }
+
+  _AdminSuppliersData _buildData({
+    required AdminSupplierSummary summary,
+    required List<AdminSupplier> suppliers,
+    required List<CustomerDirectoryEntry> customers,
+    required AdminSettings settings,
+  }) {
     final items = <AdminUserListEntry>[
-      if (page.settings.werkaName.trim().isNotEmpty ||
-          page.settings.werkaPhone.trim().isNotEmpty)
+      if (settings.werkaName.trim().isNotEmpty ||
+          settings.werkaPhone.trim().isNotEmpty)
         AdminUserListEntry(
           id: 'werka',
-          name: page.settings.werkaName.trim().isEmpty
+          name: settings.werkaName.trim().isEmpty
               ? 'Werka'
-              : page.settings.werkaName.trim(),
-          phone: page.settings.werkaPhone.trim(),
+              : settings.werkaName.trim(),
+          phone: settings.werkaPhone.trim(),
           kind: AdminUserKind.werka,
         ),
-      ...page.suppliers.map(
+      ...suppliers.map(
         (item) => AdminUserListEntry(
           id: item.ref,
           name: item.name,
@@ -57,7 +89,7 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
           blocked: item.blocked,
         ),
       ),
-      ...page.customers.map(
+      ...customers.map(
         (item) => AdminUserListEntry(
           id: item.ref,
           name: item.name,
@@ -66,7 +98,7 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
         ),
       ),
     ];
-    return _AdminSuppliersData(summary: page.summary, items: items);
+    return _AdminSuppliersData(summary: summary, items: items);
   }
 
   @override
