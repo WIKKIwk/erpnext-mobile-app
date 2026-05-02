@@ -182,66 +182,46 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
             return ListView(
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
               children: [
-                Card.filled(
-                  margin: EdgeInsets.zero,
-                  color: scheme.surfaceContainerLow,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(28),
-                    side: BorderSide(
-                      color: scheme.outlineVariant.withValues(alpha: 0.7),
-                    ),
+                Text(
+                  phone.text.trim().isEmpty
+                      ? 'Telefon raqam berilmagan'
+                      : phone.text.trim(),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          phone.text.trim().isEmpty
-                              ? 'Telefon raqam berilmagan'
-                              : phone.text.trim(),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          ),
+                ),
+                const SizedBox(height: 16),
+                Text('Code', style: theme.textTheme.bodySmall),
+                const SizedBox(height: 6),
+                _AdminWerkaField(
+                  radius: 12,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: SelectableText(
+                          werkaCode,
+                          style: theme.textTheme.titleMedium,
                         ),
-                        const SizedBox(height: 16),
-                        Text('Code', style: theme.textTheme.bodySmall),
-                        const SizedBox(height: 6),
-                        _AdminWerkaField(
-                          radius: 12,
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: SelectableText(
-                                  werkaCode,
-                                  style: theme.textTheme.titleMedium,
+                      ),
+                      IconButton(
+                        onPressed: werkaCode.trim().isEmpty ? null : _copyCode,
+                        icon: const Icon(Icons.content_copy_outlined),
+                      ),
+                      IconButton(
+                        onPressed: regenerating || _retryAfterSec > 0
+                            ? null
+                            : _regenerate,
+                        icon: regenerating
+                            ? const SizedBox(
+                                height: 18,
+                                width: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
                                 ),
-                              ),
-                              IconButton(
-                                onPressed: werkaCode.trim().isEmpty
-                                    ? null
-                                    : _copyCode,
-                                icon: const Icon(Icons.content_copy_outlined),
-                              ),
-                              IconButton(
-                                onPressed: regenerating || _retryAfterSec > 0
-                                    ? null
-                                    : _regenerate,
-                                icon: regenerating
-                                    ? const SizedBox(
-                                        height: 18,
-                                        width: 18,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                        ),
-                                      )
-                                    : const Icon(Icons.refresh_rounded),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                              )
+                            : const Icon(Icons.refresh_rounded),
+                      ),
+                    ],
                   ),
                 ),
                 if (_retryAfterSec > 0) ...[
@@ -253,80 +233,62 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 12),
-                Card.filled(
-                  margin: EdgeInsets.zero,
-                  color: scheme.surfaceContainerLow,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(28),
-                    side: BorderSide(
-                      color: scheme.outlineVariant.withValues(alpha: 0.7),
+                const SizedBox(height: 14),
+                TextField(
+                  controller: name,
+                  decoration: InputDecoration(
+                    labelText: 'Werka name',
+                    hintText: 'Werka',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: scheme.outlineVariant,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: scheme.primary,
+                        width: 1.4,
+                      ),
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextField(
-                          controller: name,
-                          decoration: InputDecoration(
-                            labelText: 'Werka name',
-                            hintText: 'Werka',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: scheme.outlineVariant,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: scheme.primary,
-                                width: 1.4,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        TextField(
-                          controller: phone,
-                          keyboardType: TextInputType.phone,
-                          decoration: InputDecoration(
-                            labelText: 'Werka phone',
-                            hintText: '+998901234567',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: scheme.outlineVariant,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: scheme.primary,
-                                width: 1.4,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 18),
-                        SizedBox(
-                          width: double.infinity,
-                          child: FilledButton(
-                            onPressed: saving ? null : () => _save(current),
-                            child: Text(
-                              saving ? 'Saqlanmoqda...' : 'Saqlash',
-                            ),
-                          ),
-                        ),
-                      ],
+                ),
+                const SizedBox(height: 14),
+                TextField(
+                  controller: phone,
+                  keyboardType: TextInputType.phone,
+                  decoration: InputDecoration(
+                    labelText: 'Werka phone',
+                    hintText: '+998901234567',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: scheme.outlineVariant,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: scheme.primary,
+                        width: 1.4,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: saving ? null : () => _save(current),
+                    child: Text(
+                      saving ? 'Saqlanmoqda...' : 'Saqlash',
                     ),
                   ),
                 ),
