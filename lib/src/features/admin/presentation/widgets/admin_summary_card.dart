@@ -17,6 +17,10 @@ class AdminSummaryCard extends StatelessWidget {
     this.valueStyle,
     this.backgroundColor,
     this.borderRadiusOverride,
+    this.minHeight,
+    this.titleMaxLines = 2,
+    this.subtitleMaxLines = 2,
+    this.valueMaxLines = 1,
   });
 
   final M3SegmentVerticalSlot slot;
@@ -32,6 +36,10 @@ class AdminSummaryCard extends StatelessWidget {
   final TextStyle? valueStyle;
   final Color? backgroundColor;
   final BorderRadius? borderRadiusOverride;
+  final double? minHeight;
+  final int titleMaxLines;
+  final int subtitleMaxLines;
+  final int valueMaxLines;
 
   @override
   Widget build(BuildContext context) {
@@ -51,67 +59,74 @@ class AdminSummaryCard extends StatelessWidget {
         color: bg,
         borderRadius: radius,
       ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 12, 16),
-        child: Row(
-          children: [
-            if (leading != null) ...[
-              leading!,
-              const SizedBox(width: 14),
-            ],
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: titleStyle ??
-                        Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontSize: 18.5,
-                              fontWeight: FontWeight.w700,
-                              color: scheme.onSurface,
-                            ),
-                  ),
-                  if (subtitle != null && subtitle!.trim().isNotEmpty) ...[
-                    const SizedBox(height: 4),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: minHeight ?? 0,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 12, 16),
+          child: Row(
+            children: [
+              if (leading != null) ...[
+                leading!,
+                const SizedBox(width: 14),
+              ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
                     Text(
-                      subtitle!,
-                      maxLines: 2,
+                      title,
+                      maxLines: titleMaxLines,
                       overflow: TextOverflow.ellipsis,
-                      style: subtitleStyle ??
-                          Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: scheme.onSurfaceVariant,
-                                height: 1.25,
+                      style: titleStyle ??
+                          Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontSize: 18.5,
+                                fontWeight: FontWeight.w700,
+                                color: scheme.onSurface,
                               ),
                     ),
+                    if (subtitle != null && subtitle!.trim().isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle!,
+                        maxLines: subtitleMaxLines,
+                        overflow: TextOverflow.ellipsis,
+                        style: subtitleStyle ??
+                            Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: scheme.onSurfaceVariant,
+                                  height: 1.25,
+                                ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-            if (showValue) ...[
-              const SizedBox(width: 16),
-              Text(
-                value,
-                style: valueStyle ??
-                    Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontSize: 18.5,
-                          fontWeight: FontWeight.w700,
-                          color: scheme.onSurface,
-                        ),
-              ),
+              if (showValue) ...[
+                const SizedBox(width: 16),
+                Text(
+                  value,
+                  maxLines: valueMaxLines,
+                  overflow: TextOverflow.ellipsis,
+                  style: valueStyle ??
+                      Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontSize: 18.5,
+                            fontWeight: FontWeight.w700,
+                            color: scheme.onSurface,
+                          ),
+                ),
+              ],
+              if (showChevron) ...[
+                SizedBox(width: showValue ? 8 : 16),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 22,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ],
             ],
-            if (showChevron) ...[
-              SizedBox(width: showValue ? 8 : 16),
-              Icon(
-                Icons.chevron_right_rounded,
-                size: 22,
-                color: scheme.onSurfaceVariant,
-              ),
-            ],
-          ],
+          ),
         ),
       ),
     );
