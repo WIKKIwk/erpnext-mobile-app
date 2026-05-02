@@ -71,7 +71,7 @@ class _AdminUserRow extends StatelessWidget {
       value: '',
       showChevron: true,
       leading: CircleAvatar(
-        radius: 16,
+        radius: 17,
         backgroundColor: switch (item.kind) {
           AdminUserKind.werka => scheme.primaryContainer,
           AdminUserKind.customer => scheme.tertiaryContainer,
@@ -88,7 +88,7 @@ class _AdminUserRow extends StatelessWidget {
             AdminUserKind.customer => scheme.onTertiaryContainer,
             AdminUserKind.supplier => scheme.onSecondaryContainer,
           },
-          size: 16,
+          size: 17,
         ),
       ),
       title: item.name,
