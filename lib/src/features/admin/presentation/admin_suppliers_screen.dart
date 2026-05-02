@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
+import '../../../core/theme/app_motion.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_loading_indicator.dart';
 import '../../../core/widgets/app_shell.dart';
@@ -22,7 +23,6 @@ class AdminSuppliersScreen extends StatefulWidget {
 }
 
 class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
-  static const String _usersSummaryHeroTag = 'admin-users-summary-strip';
   static const int _pageSize = 20;
   static const double _prefetchExtentAfterFactor = 2.5;
   static _AdminSuppliersCache? _cache;
@@ -365,6 +365,8 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final route = ModalRoute.of(context);
+    final routeAnimation = route?.animation;
     return AppShell(
       drawer: AdminNavigationDrawer(
         selectedIndex: 1,
@@ -380,37 +382,68 @@ class _AdminSuppliersScreenState extends State<AdminSuppliersScreen> {
           ? const Center(child: AppLoadingIndicator())
           : AppRefreshIndicator(
               onRefresh: _reload,
-              child: ListView(
-                controller: _scrollController,
-                padding: const EdgeInsets.fromLTRB(0, 0, 0, 116),
-                children: [
-                  const SizedBox(height: 4),
-                  Hero(
-                    tag: _usersSummaryHeroTag,
-                    transitionOnUserGestures: true,
-                    child: _AdminSuppliersSummarySection(
-                      summary: _summary,
-                      onTapBlocked: () => Navigator.of(context).pushNamed(
-                        AppRoutes.adminInactiveSuppliers,
+              child: AnimatedBuilder(
+                animation: routeAnimation ?? const AlwaysStoppedAnimation(1),
+                builder: (context, _) {
+                  final routeValue = routeAnimation == null
+                      ? 1.0
+                      : CurvedAnimation(
+                          parent: routeAnimation,
+                          curve: AppMotion.pageIn,
+                          reverseCurve: AppMotion.pageOut,
+                        ).value;
+                  final summaryFactor = (1 - routeValue).clamp(0.0, 1.0);
+                  final listFactor = routeValue.clamp(0.0, 1.0);
+                  return ListView(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.fromLTRB(0, 0, 0, 116),
+                    children: [
+                      const SizedBox(height: 4),
+                      ClipRect(
+                        child: Align(
+                          alignment: Alignment.topCenter,
+                          heightFactor: summaryFactor,
+                          child: Opacity(
+                            opacity: summaryFactor,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _AdminSuppliersSummarySection(
+                                  summary: _summary,
+                                  onTapBlocked: () =>
+                                      Navigator.of(context).pushNamed(
+                                    AppRoutes.adminInactiveSuppliers,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: AdminSupplierListModule(
-                      items: _items,
-                      onTapUser: _openUser,
-                    ),
-                  ),
-                  if (_loadingMore)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 14),
-                      child: Center(child: AppLoadingIndicator()),
-                    )
-                  else if (_supplierHasMore || _customerHasMore)
-                    const SizedBox(height: 14),
-                ],
+                      Opacity(
+                        opacity: listFactor,
+                        child: Transform.translate(
+                          offset: Offset(0, 12 * (1 - listFactor)),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: AdminSupplierListModule(
+                              items: _items,
+                              onTapUser: _openUser,
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (_loadingMore)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 14),
+                          child: Center(child: AppLoadingIndicator()),
+                        )
+                      else if (_supplierHasMore || _customerHasMore)
+                        const SizedBox(height: 14),
+                    ],
+                  );
+                },
               ),
             ),
     );
