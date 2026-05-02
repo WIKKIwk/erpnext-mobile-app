@@ -18,6 +18,7 @@ class AdminSummaryCard extends StatelessWidget {
     this.backgroundColor,
     this.borderRadiusOverride,
     this.minHeight,
+    this.padding,
     this.titleMaxLines = 2,
     this.subtitleMaxLines = 2,
     this.valueMaxLines = 1,
@@ -37,6 +38,7 @@ class AdminSummaryCard extends StatelessWidget {
   final Color? backgroundColor;
   final BorderRadius? borderRadiusOverride;
   final double? minHeight;
+  final EdgeInsetsGeometry? padding;
   final int titleMaxLines;
   final int subtitleMaxLines;
   final int valueMaxLines;
@@ -64,7 +66,7 @@ class AdminSummaryCard extends StatelessWidget {
           minHeight: minHeight ?? 0,
         ),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 12, 16),
+          padding: padding ?? const EdgeInsets.fromLTRB(16, 16, 12, 16),
           child: Row(
             children: [
               if (leading != null) ...[

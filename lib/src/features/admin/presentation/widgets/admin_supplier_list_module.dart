@@ -66,11 +66,12 @@ class _AdminUserRow extends StatelessWidget {
       slot: slot,
       cornerRadius: M3SegmentedListGeometry.cornerRadiusForSlot(slot),
       onTap: onTap,
-      minHeight: 72,
+      minHeight: 66,
+      padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
       value: '',
       showChevron: true,
       leading: CircleAvatar(
-        radius: 17,
+        radius: 15,
         backgroundColor: switch (item.kind) {
           AdminUserKind.werka => scheme.primaryContainer,
           AdminUserKind.customer => scheme.tertiaryContainer,
@@ -87,7 +88,7 @@ class _AdminUserRow extends StatelessWidget {
             AdminUserKind.customer => scheme.onTertiaryContainer,
             AdminUserKind.supplier => scheme.onSecondaryContainer,
           },
-          size: 16.5,
+          size: 15,
         ),
       ),
       title: item.name,
@@ -95,11 +96,11 @@ class _AdminUserRow extends StatelessWidget {
       titleMaxLines: 1,
       subtitleMaxLines: 1,
       titleStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontSize: 16.5,
+            fontSize: 15.5,
             fontWeight: FontWeight.w700,
           ),
       subtitleStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
-            fontSize: 11.5,
+            fontSize: 10.5,
             color: scheme.onSurfaceVariant,
             height: 1.05,
           ),
