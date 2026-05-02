@@ -126,6 +126,8 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
 
           final settings = snapshot.data!;
           _fill(settings);
+          final theme = Theme.of(context);
+          final scheme = theme.colorScheme;
 
           return ListView(
             physics: const ClampingScrollPhysics(),
@@ -133,128 +135,98 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
             children: [
               SmoothAppear(
                 delay: const Duration(milliseconds: 20),
-                child: _SettingsSectionCard(
-                  title: context.l10n.erpConnectionTitle,
-                  subtitle: context.l10n.erpConnectionSubtitle,
-                  child: Column(
-                    children: [
-                      _SettingsField(
-                        label: 'ERP URL',
-                        controller: erpUrl,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(context.l10n.erpConnectionTitle,
+                        style: theme.textTheme.titleLarge),
+                    const SizedBox(height: 6),
+                    Text(
+                      context.l10n.erpConnectionSubtitle,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                        height: 1.45,
                       ),
-                      const SizedBox(height: 14),
-                      _SettingsField(
-                        label: 'API Key',
-                        controller: apiKey,
-                      ),
-                      const SizedBox(height: 14),
-                      _SettingsField(
-                        label: 'API Secret',
-                        controller: apiSecret,
-                      ),
-                      const SizedBox(height: 14),
-                      _SettingsField(
-                        label: 'Default Warehouse',
-                        controller: warehouse,
-                      ),
-                      const SizedBox(height: 14),
-                      _SettingsField(
-                        label: 'Default UOM',
-                        controller: uom,
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 18),
+                    _SettingsField(
+                      label: 'ERP URL',
+                      controller: erpUrl,
+                    ),
+                    const SizedBox(height: 14),
+                    _SettingsField(
+                      label: 'API Key',
+                      controller: apiKey,
+                    ),
+                    const SizedBox(height: 14),
+                    _SettingsField(
+                      label: 'API Secret',
+                      controller: apiSecret,
+                    ),
+                    const SizedBox(height: 14),
+                    _SettingsField(
+                      label: 'Default Warehouse',
+                      controller: warehouse,
+                    ),
+                    const SizedBox(height: 14),
+                    _SettingsField(
+                      label: 'Default UOM',
+                      controller: uom,
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),
               SmoothAppear(
                 delay: const Duration(milliseconds: 60),
-                child: _SettingsSectionCard(
-                  title: context.l10n.adminSettingsSectionTitle,
-                  subtitle: context.l10n.adminSettingsSectionSubtitle,
-                  child: Column(
-                    children: [
-                      _SettingsField(
-                        label: 'Werka Phone',
-                        controller: werkaPhone,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(context.l10n.adminSettingsSectionTitle,
+                        style: theme.textTheme.titleLarge),
+                    const SizedBox(height: 6),
+                    Text(
+                      context.l10n.adminSettingsSectionSubtitle,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                        height: 1.45,
                       ),
-                      const SizedBox(height: 12),
-                      _SettingsField(
-                        label: 'Werka Name',
-                        controller: werkaName,
-                      ),
-                      const SizedBox(height: 18),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton.icon(
-                          onPressed: saving ? null : _save,
-                          icon: saving
-                              ? const SizedBox(
-                                  height: 18,
-                                  width: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : const Icon(Icons.check_rounded),
-                          label: Text(
-                            saving
-                                ? context.l10n.pinSaving
-                                : context.l10n.save,
-                          ),
+                    ),
+                    const SizedBox(height: 18),
+                    _SettingsField(
+                      label: 'Werka Phone',
+                      controller: werkaPhone,
+                    ),
+                    const SizedBox(height: 12),
+                    _SettingsField(
+                      label: 'Werka Name',
+                      controller: werkaName,
+                    ),
+                    const SizedBox(height: 18),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: saving ? null : _save,
+                        icon: saving
+                            ? const SizedBox(
+                                height: 18,
+                                width: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.check_rounded),
+                        label: Text(
+                          saving ? context.l10n.pinSaving : context.l10n.save,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],
           );
           },
-        ),
-      ),
-    );
-  }
-}
-
-class _SettingsSectionCard extends StatelessWidget {
-  const _SettingsSectionCard({
-    required this.title,
-    required this.subtitle,
-    required this.child,
-  });
-
-  final String title;
-  final String subtitle;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    return Card.filled(
-      margin: EdgeInsets.zero,
-      color: scheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: theme.textTheme.titleLarge),
-            const SizedBox(height: 6),
-            Text(
-              subtitle,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: scheme.onSurfaceVariant,
-                height: 1.45,
-              ),
-            ),
-            const SizedBox(height: 18),
-            child,
-          ],
         ),
       ),
     );
