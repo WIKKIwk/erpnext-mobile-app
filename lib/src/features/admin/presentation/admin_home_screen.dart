@@ -1,7 +1,6 @@
 import '../../../app/app_router.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/notifications/refresh_hub.dart';
-import '../../../core/theme/app_motion.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_loading_indicator.dart';
 import '../../../core/widgets/app_retry_state.dart';
@@ -313,34 +312,23 @@ class _AdminQuickActionsSection extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 14),
-            Card.filled(
-              margin: EdgeInsets.zero,
-              color: scheme.surfaceContainer,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Column(
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: M3SegmentSpacedColumn(
                 children: [
-                  for (int index = 0;
-                      index < visibleActions.length;
-                      index++) ...[
-                    _AdminQuickActionRow(
+                  for (int index = 0; index < visibleActions.length; index++)
+                    AdminSummaryCard(
+                      slot: _slotForIndex(index, visibleActions.length),
+                      cornerRadius: M3SegmentedListGeometry.cornerLarge,
                       title: visibleActions[index].title,
                       subtitle: visibleActions[index].subtitle,
-                      onTap: () => onTapAction(visibleActions[index].routeName),
-                      highlighted: visibleActions[index].highlighted,
-                      isFirst: index == 0,
-                      isLast: index == visibleActions.length - 1,
-                    ),
-                    if (index != visibleActions.length - 1)
-                      Divider(
-                        height: 1,
-                        thickness: 1,
-                        indent: 16,
-                        endIndent: 16,
-                        color: scheme.outlineVariant.withValues(alpha: 0.55),
+                      value: '',
+                      leading: _QuickActionLeadingIcon(
+                        routeName: visibleActions[index].routeName,
+                        highlighted: visibleActions[index].highlighted,
                       ),
-                  ],
+                      onTap: () => onTapAction(visibleActions[index].routeName),
+                    ),
                 ],
               ),
             ),
@@ -349,95 +337,53 @@ class _AdminQuickActionsSection extends StatelessWidget {
       ),
     );
   }
+
+  M3SegmentVerticalSlot _slotForIndex(int index, int count) {
+    if (count <= 1) {
+      return M3SegmentVerticalSlot.top;
+    }
+    if (index == 0) {
+      return M3SegmentVerticalSlot.top;
+    }
+    if (index == count - 1) {
+      return M3SegmentVerticalSlot.bottom;
+    }
+    return M3SegmentVerticalSlot.middle;
+  }
 }
 
-class _AdminQuickActionRow extends StatelessWidget {
-  const _AdminQuickActionRow({
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-    this.highlighted = false,
-    this.isFirst = false,
-    this.isLast = false,
+class _QuickActionLeadingIcon extends StatelessWidget {
+  const _QuickActionLeadingIcon({
+    required this.routeName,
+    required this.highlighted,
   });
 
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
+  final String routeName;
   final bool highlighted;
-  final bool isFirst;
-  final bool isLast;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final borderRadius = BorderRadius.only(
-      topLeft: Radius.circular(isFirst ? 24 : 0),
-      topRight: Radius.circular(isFirst ? 24 : 0),
-      bottomLeft: Radius.circular(isLast ? 24 : 0),
-      bottomRight: Radius.circular(isLast ? 24 : 0),
-    );
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: borderRadius,
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: AppMotion.medium,
-          curve: AppMotion.smooth,
-          color: highlighted ? scheme.surfaceContainerHigh : Colors.transparent,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      if (highlighted) ...[
-                        Container(
-                          width: 4,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: scheme.primary,
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                      ],
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              title,
-                              style: theme.textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              subtitle,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: scheme.onSurfaceVariant,
-                                height: 1.45,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 22,
-                  color: scheme.onSurfaceVariant,
-                ),
-              ],
-            ),
-          ),
-        ),
+    final scheme = Theme.of(context).colorScheme;
+    final Color bg =
+        highlighted ? scheme.primaryContainer : scheme.secondaryContainer;
+    final Color fg =
+        highlighted ? scheme.onPrimaryContainer : scheme.onSecondaryContainer;
+    final IconData icon = switch (routeName) {
+      AppRoutes.adminSettings => Icons.settings_rounded,
+      AppRoutes.adminSuppliers => Icons.groups_rounded,
+      AppRoutes.adminWerka => Icons.storefront_rounded,
+      _ => Icons.arrow_forward_rounded,
+    };
+
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(14),
       ),
+      alignment: Alignment.center,
+      child: Icon(icon, color: fg, size: 22),
     );
   }
 }

@@ -38,6 +38,7 @@ class AdminSummaryCard extends StatelessWidget {
           Brightness.dark => scheme.surfaceContainerLow,
           Brightness.light => scheme.surfaceContainerHighest,
         };
+    final bool showValue = value.trim().isNotEmpty;
 
     final Widget ink = Ink(
       decoration: BoxDecoration(
@@ -82,17 +83,19 @@ class AdminSummaryCard extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 16),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontSize: 18.5,
-                    fontWeight: FontWeight.w700,
-                    color: scheme.onSurface,
-                  ),
-            ),
+            if (showValue) ...[
+              const SizedBox(width: 16),
+              Text(
+                value,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontSize: 18.5,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onSurface,
+                    ),
+              ),
+            ],
             if (showChevron) ...[
-              const SizedBox(width: 8),
+              SizedBox(width: showValue ? 8 : 16),
               Icon(
                 Icons.chevron_right_rounded,
                 size: 22,
