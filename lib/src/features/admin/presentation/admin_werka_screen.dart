@@ -182,6 +182,20 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
             return ListView(
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
               children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Text(
+                    phone.text.trim().isEmpty
+                        ? 'Telefon raqam berilmagan'
+                        : phone.text.trim(),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text('Code', style: theme.textTheme.bodySmall),
+                const SizedBox(height: 6),
                 Card.filled(
                   margin: EdgeInsets.zero,
                   color: scheme.surfaceContainerLow,
@@ -191,99 +205,114 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
                       color: scheme.outlineVariant.withValues(alpha: 0.7),
                     ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(18),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              phone.text.trim().isEmpty
-                                  ? 'Telefon raqam berilmagan'
-                                  : phone.text.trim(),
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: scheme.onSurfaceVariant,
-                              ),
-                            ),
-                            const SizedBox(height: 18),
-                            Text('Code', style: theme.textTheme.bodySmall),
-                            const SizedBox(height: 6),
-                            _AdminWerkaField(
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: SelectableText(
-                                      werkaCode,
-                                      style: theme.textTheme.titleMedium,
-                                    ),
-                                  ),
-                                  IconButton(
-                                    onPressed: werkaCode.trim().isEmpty
-                                        ? null
-                                        : _copyCode,
-                                    icon:
-                                        const Icon(Icons.content_copy_outlined),
-                                  ),
-                                  IconButton(
-                                    onPressed:
-                                        regenerating || _retryAfterSec > 0
-                                            ? null
-                                            : _regenerate,
-                                    icon: regenerating
-                                        ? const SizedBox(
-                                            height: 18,
-                                            width: 18,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                            ),
-                                          )
-                                        : const Icon(Icons.refresh_rounded),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (_retryAfterSec > 0) ...[
-                              const SizedBox(height: 12),
-                              Text(
-                                'Keyingi code uchun $_retryAfterSec soniya kuting.',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: scheme.onSurfaceVariant,
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _AdminWerkaField(
+                          radius: 14,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: SelectableText(
+                                  werkaCode,
+                                  style: theme.textTheme.titleMedium,
                                 ),
+                              ),
+                              IconButton(
+                                onPressed: werkaCode.trim().isEmpty
+                                    ? null
+                                    : _copyCode,
+                                icon: const Icon(Icons.content_copy_outlined),
+                              ),
+                              IconButton(
+                                onPressed: regenerating || _retryAfterSec > 0
+                                    ? null
+                                    : _regenerate,
+                                icon: regenerating
+                                    ? const SizedBox(
+                                        height: 18,
+                                        width: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Icon(Icons.refresh_rounded),
                               ),
                             ],
-                            const SizedBox(height: 18),
-                            TextField(
-                              controller: name,
-                              decoration: const InputDecoration(
-                                labelText: 'Werka name',
-                                hintText: 'Werka',
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                            TextField(
-                              controller: phone,
-                              keyboardType: TextInputType.phone,
-                              decoration: const InputDecoration(
-                                labelText: 'Werka phone',
-                                hintText: '+998901234567',
-                              ),
-                            ),
-                            const SizedBox(height: 18),
-                            SizedBox(
-                              width: double.infinity,
-                              child: FilledButton(
-                                onPressed: saving ? null : () => _save(current),
-                                child: Text(
-                                  saving ? 'Saqlanmoqda...' : 'Saqlash',
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ],
+                        if (_retryAfterSec > 0) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            'Keyingi code uchun $_retryAfterSec soniya kuting.',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 18),
+                        TextField(
+                          controller: name,
+                          decoration: InputDecoration(
+                            labelText: 'Werka name',
+                            hintText: 'Werka',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(
+                                color: scheme.outlineVariant,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(
+                                color: scheme.primary,
+                                width: 1.4,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        TextField(
+                          controller: phone,
+                          keyboardType: TextInputType.phone,
+                          decoration: InputDecoration(
+                            labelText: 'Werka phone',
+                            hintText: '+998901234567',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(
+                                color: scheme.outlineVariant,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(
+                                color: scheme.primary,
+                                width: 1.4,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton(
+                            onPressed: saving ? null : () => _save(current),
+                            child: Text(
+                              saving ? 'Saqlanmoqda...' : 'Saqlash',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -297,9 +326,10 @@ class _AdminWerkaScreenState extends State<AdminWerkaScreen> {
 }
 
 class _AdminWerkaField extends StatelessWidget {
-  const _AdminWerkaField({required this.child});
+  const _AdminWerkaField({required this.child, this.radius = 18});
 
   final Widget child;
+  final double radius;
 
   @override
   Widget build(BuildContext context) {
@@ -308,7 +338,7 @@ class _AdminWerkaField extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(radius),
       ),
       child: child,
     );
