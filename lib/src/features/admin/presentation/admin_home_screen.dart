@@ -158,21 +158,21 @@ class _AdminSummaryList extends StatelessWidget {
         AdminSummaryCard(
           slot: M3SegmentVerticalSlot.top,
           cornerRadius: M3SegmentedListGeometry.cornerLarge,
-          title: 'Jami supplierlar',
+          title: 'Jami users',
           value: summary.totalSuppliers.toString(),
           onTap: onTapTotal,
         ),
         AdminSummaryCard(
           slot: M3SegmentVerticalSlot.middle,
           cornerRadius: M3SegmentedListGeometry.cornerMiddle,
-          title: 'Faol supplierlar',
+          title: 'Faol users',
           value: summary.activeSuppliers.toString(),
           onTap: onTapActive,
         ),
         AdminSummaryCard(
           slot: M3SegmentVerticalSlot.bottom,
           cornerRadius: M3SegmentedListGeometry.cornerLarge,
-          title: 'Bloklangan supplierlar',
+          title: 'Bloklangan users',
           value: summary.blockedSuppliers.toString(),
           onTap: onTapBlocked,
         ),
@@ -233,7 +233,7 @@ class _AdminBlockedSuppliersSection extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      'Bloklangan supplierlar: $count ta',
+                      'Bloklangan users: $count ta',
                       style: theme.textTheme.titleMedium,
                     ),
                   ),
