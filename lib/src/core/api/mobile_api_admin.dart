@@ -50,6 +50,20 @@ extension MobileApiAdmin on MobileApi {
     );
   }
 
+  Future<List<String>> adminItemGroups() async {
+    final response = await _sendAuthorized(
+      () => http.get(
+        Uri.parse('$baseUrl/v1/mobile/admin/item-groups'),
+        headers: _headers(requireToken()),
+      ),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Admin item groups failed');
+    }
+    final List<dynamic> json = jsonDecode(response.body) as List<dynamic>;
+    return json.map((item) => item.toString()).toList();
+  }
+
   Future<List<DispatchRecord>> adminActivity() async {
     final response = await _sendAuthorized(
       () => http.get(

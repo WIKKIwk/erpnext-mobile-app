@@ -16,15 +16,16 @@ class AdminItemCreateScreen extends StatefulWidget {
 class _AdminItemCreateScreenState extends State<AdminItemCreateScreen> {
   final TextEditingController code = TextEditingController();
   final TextEditingController name = TextEditingController();
-  final TextEditingController itemGroup =
-      TextEditingController(text: 'All Item Groups');
+  final TextEditingController itemGroup = TextEditingController();
   final TextEditingController uom = TextEditingController(text: 'Kg');
+  late Future<List<String>> itemGroupsFuture;
   bool saving = false;
   SupplierItem? createdItem;
 
   @override
   void initState() {
     super.initState();
+    itemGroupsFuture = MobileApi.instance.adminItemGroups();
     _hydrateDefaultUom();
   }
 
@@ -49,6 +50,19 @@ class _AdminItemCreateScreenState extends State<AdminItemCreateScreen> {
         uom.text = defaultUom.isEmpty ? 'Kg' : defaultUom;
       }
     } catch (_) {}
+  }
+
+  void _syncItemGroupSelection(List<String> groups) {
+    final current = itemGroup.text.trim();
+    if (current.isNotEmpty && groups.contains(current)) {
+      return;
+    }
+    final fallback = groups.contains('All Item Groups')
+        ? 'All Item Groups'
+        : (groups.isNotEmpty ? groups.first : '');
+    if (fallback.isNotEmpty) {
+      itemGroup.text = fallback;
+    }
   }
 
   Future<void> _save() async {
@@ -127,9 +141,43 @@ class _AdminItemCreateScreenState extends State<AdminItemCreateScreen> {
             decoration: const InputDecoration(labelText: 'Item name'),
           ),
           const SizedBox(height: 12),
-          TextField(
-            controller: itemGroup,
-            decoration: const InputDecoration(labelText: 'Item group'),
+          FutureBuilder<List<String>>(
+            future: itemGroupsFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return TextField(
+                  controller: itemGroup,
+                  decoration: const InputDecoration(labelText: 'Item group'),
+                );
+              }
+              if (snapshot.hasError) {
+                return TextField(
+                  controller: itemGroup,
+                  decoration: const InputDecoration(labelText: 'Item group'),
+                );
+              }
+              final groups = snapshot.data ?? const <String>[];
+              _syncItemGroupSelection(groups);
+              return DropdownButtonFormField<String>(
+                initialValue:
+                    itemGroup.text.trim().isEmpty ? null : itemGroup.text.trim(),
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'Item group'),
+                items: groups
+                    .map(
+                      (group) => DropdownMenuItem<String>(
+                        value: group,
+                        child: Text(group, overflow: TextOverflow.ellipsis),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    itemGroup.text = value ?? '';
+                  });
+                },
+              );
+            },
           ),
           const SizedBox(height: 12),
           TextField(
