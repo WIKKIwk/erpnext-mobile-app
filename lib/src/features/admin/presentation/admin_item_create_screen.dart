@@ -80,7 +80,7 @@ class _AdminItemCreateScreenState extends State<AdminItemCreateScreen> {
       nativeTitleTextStyle: AppTheme.werkaNativeAppBarTitleStyle(context),
       bottom: const AdminDock(activeTab: AdminDockTab.settings),
       child: ListView(
-        padding: EdgeInsets.zero,
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
         children: [
           if (createdItem != null) ...[
             SoftCard(
