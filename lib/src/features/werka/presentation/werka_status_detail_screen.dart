@@ -1,12 +1,12 @@
 import '../../../app/app_router.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_loading_indicator.dart';
-import '../../../core/widgets/app_retry_state.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/m3_segmented_list.dart';
-import '../../../core/widgets/native_back_button.dart';
-import '../../../core/widgets/top_refresh_scroll_physics.dart';
+import '../../../core/widgets/shell/app_loading_indicator.dart';
+import '../../../core/widgets/shell/app_retry_state.dart';
+import '../../../core/widgets/shell/app_shell.dart';
+import '../../../core/widgets/lists/m3_segmented_list.dart';
+import '../../../core/widgets/navigation/native_back_button.dart';
+import '../../../core/widgets/scroll/top_refresh_scroll_physics.dart';
 import '../../shared/models/app_models.dart';
 import '../state/werka_store.dart';
 import 'werka_status_breakdown_screen.dart';
@@ -58,8 +58,7 @@ class _WerkaStatusDetailScreenState extends State<WerkaStatusDetailScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     useNativeNavigationTitle(context, _title);
-    final bottomListPadding =
-        MediaQuery.viewPaddingOf(context).bottom + 136.0;
+    final bottomListPadding = MediaQuery.viewPaddingOf(context).bottom + 136.0;
     return AppShell(
       title: _title,
       subtitle: '',
@@ -71,15 +70,14 @@ class _WerkaStatusDetailScreenState extends State<WerkaStatusDetailScreen> {
         animation: WerkaStore.instance,
         builder: (context, _) {
           final store = WerkaStore.instance;
-          if (store.loadingDetail(
-                  widget.args.kind, widget.args.supplierRef) &&
+          if (store.loadingDetail(widget.args.kind, widget.args.supplierRef) &&
               store
                   .detailItems(widget.args.kind, widget.args.supplierRef)
                   .isEmpty) {
             return const Center(child: AppLoadingIndicator());
           }
-          final error = store.detailError(
-              widget.args.kind, widget.args.supplierRef);
+          final error =
+              store.detailError(widget.args.kind, widget.args.supplierRef);
           if (error != null &&
               store
                   .detailItems(widget.args.kind, widget.args.supplierRef)
@@ -196,9 +194,8 @@ class _WerkaStatusDetailSegmentTile extends StatelessWidget {
       itemCount,
     );
     final r = M3SegmentedListGeometry.cornerRadiusForSlot(slot);
-    final title = record.itemName.trim().isEmpty
-        ? record.itemCode
-        : record.itemName;
+    final title =
+        record.itemName.trim().isEmpty ? record.itemCode : record.itemName;
 
     return M3SegmentFilledSurface(
       slot: slot,

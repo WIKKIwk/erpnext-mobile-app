@@ -1,11 +1,11 @@
 import '../../../app/app_router.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_loading_indicator.dart';
-import '../../../core/widgets/app_retry_state.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/m3_segmented_list.dart';
-import '../../../core/widgets/native_back_button.dart';
+import '../../../core/widgets/shell/app_loading_indicator.dart';
+import '../../../core/widgets/shell/app_retry_state.dart';
+import '../../../core/widgets/shell/app_shell.dart';
+import '../../../core/widgets/lists/m3_segmented_list.dart';
+import '../../../core/widgets/navigation/native_back_button.dart';
 import '../../shared/models/app_models.dart';
 import '../state/werka_store.dart';
 import 'widgets/werka_dock.dart';
@@ -76,8 +76,7 @@ class _WerkaStatusBreakdownScreenState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     useNativeNavigationTitle(context, _title);
-    final bottomListPadding =
-        MediaQuery.viewPaddingOf(context).bottom + 136.0;
+    final bottomListPadding = MediaQuery.viewPaddingOf(context).bottom + 136.0;
     return AppShell(
       title: _title,
       subtitle: '',
@@ -108,22 +107,22 @@ class _WerkaStatusBreakdownScreenState
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: M3SegmentFilledSurface(
-                  slot: M3SegmentVerticalSlot.top,
-                  cornerRadius: M3SegmentedListGeometry.cornerLarge,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                    child: Text(
-                      context.l10n.noStatusRecords,
-                      style: theme.textTheme.titleMedium,
-                      textAlign: TextAlign.center,
+                    slot: M3SegmentVerticalSlot.top,
+                    cornerRadius: M3SegmentedListGeometry.cornerLarge,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      child: Text(
+                        context.l10n.noStatusRecords,
+                        style: theme.textTheme.titleMedium,
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
             );
           }
 
@@ -215,60 +214,60 @@ class _WerkaBreakdownSegmentTile extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 12, 16),
           child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              flex: 11,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    entry.supplierName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      height: 1.2,
-                      color: scheme.onSurface,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 11,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      entry.supplierName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        height: 1.2,
+                        color: scheme.onSurface,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    AppLocalizations.of(context)
-                        .recordCountLabel(entry.receiptCount),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                      height: 1.1,
+                    const SizedBox(height: 3),
+                    Text(
+                      AppLocalizations.of(context)
+                          .recordCountLabel(entry.receiptCount),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                        height: 1.1,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              flex: 9,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    metricLabel,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.end,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      height: 1.22,
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 9,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      metricLabel,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.end,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        height: 1.22,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
       ),
     );

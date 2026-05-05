@@ -3,9 +3,9 @@ import 'dart:math' as math;
 
 import '../../../../app/app_router.dart';
 import '../../../../core/localization/app_localizations.dart';
-import '../../../../core/widgets/app_navigation_bar.dart';
-import '../../../../core/widgets/dock_gesture_overlay.dart';
-import '../../../../core/widgets/dock_system_bottom_inset.dart';
+import '../../../../core/widgets/navigation/app_navigation_bar.dart';
+import '../../../../core/widgets/navigation/dock_gesture_overlay.dart';
+import '../../../../core/widgets/navigation/dock_system_bottom_inset.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter/material.dart';
 

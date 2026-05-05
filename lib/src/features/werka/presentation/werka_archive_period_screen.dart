@@ -1,9 +1,9 @@
 import '../../../app/app_router.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/m3_segmented_list.dart';
-import '../../../core/widgets/native_back_button.dart';
+import '../../../core/widgets/shell/app_shell.dart';
+import '../../../core/widgets/lists/m3_segmented_list.dart';
+import '../../../core/widgets/navigation/native_back_button.dart';
 import '../../shared/models/app_models.dart';
 import 'werka_archive_list_screen.dart';
 import 'widgets/werka_dock.dart';
@@ -139,20 +139,20 @@ class _WerkaArchivePeriodSegmentTile extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
           child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                title,
-                style: theme.textTheme.titleLarge,
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: theme.textTheme.titleLarge,
+                ),
               ),
-            ),
-            Icon(
-              Icons.chevron_right_rounded,
-              size: 22,
-              color: scheme.onSurfaceVariant,
-            ),
-          ],
-        ),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 22,
+                color: scheme.onSurfaceVariant,
+              ),
+            ],
+          ),
         ),
       ),
     );

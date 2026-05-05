@@ -10,13 +10,15 @@ import 'package:flutter/services.dart';
 class SystemNavigationMode {
   SystemNavigationMode._();
 
-  static const MethodChannel _channel = MethodChannel('accord/system_navigation');
+  static const MethodChannel _channel =
+      MethodChannel('accord/system_navigation');
 
   /// `true` → Android tomonda gesture navigatsiyasiga yaqin deb hisoblangan.
   static Future<bool> isGestureNavigation() async {
     if (!Platform.isAndroid) return false;
     try {
-      final Object? v = await _channel.invokeMethod<Object?>('isGestureNavigation');
+      final Object? v =
+          await _channel.invokeMethod<Object?>('isGestureNavigation');
       return v == true;
     } on PlatformException catch (e, st) {
       debugPrint('SystemNavigationMode.isGestureNavigation: $e\n$st');

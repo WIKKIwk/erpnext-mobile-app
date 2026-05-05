@@ -1,4 +1,4 @@
-import '../core/widgets/dock_gesture_overlay.dart';
+import '../core/widgets/navigation/dock_gesture_overlay.dart';
 import '../core/theme/app_theme.dart';
 import '../core/app_preview.dart';
 import '../core/localization/app_localizations.dart';
@@ -7,8 +7,8 @@ import '../core/native_back_button_bridge.dart';
 import '../core/native_dock_bridge.dart';
 import '../core/navigation/profile_route_overlay_notifier.dart';
 import '../core/network/network_requirement_runtime.dart';
-import '../core/notifications/notification_runtime.dart';
-import '../core/security/app_lock_gate.dart';
+import '../core/notifications/runtime/notification_runtime.dart';
+import '../core/security/gate/app_lock_gate.dart';
 import '../core/theme/theme_controller.dart';
 import 'app_router.dart';
 import 'package:device_preview/device_preview.dart';

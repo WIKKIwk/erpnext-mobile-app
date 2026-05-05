@@ -1,6 +1,6 @@
 import '../../../../app/app_router.dart';
 import '../../../../core/localization/app_localizations.dart';
-import '../../../../core/widgets/logout_prompt.dart';
+import '../../../../core/widgets/feedback/logout_prompt.dart';
 import 'package:flutter/material.dart';
 
 class WerkaNavigationDrawer extends StatelessWidget {

@@ -2,9 +2,9 @@ import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_retry_state.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/native_back_button.dart';
+import '../../../core/widgets/shell/app_retry_state.dart';
+import '../../../core/widgets/shell/app_shell.dart';
+import '../../../core/widgets/navigation/native_back_button.dart';
 import '../../shared/models/app_models.dart';
 import 'werka_archive_list_screen.dart';
 import 'widgets/werka_dock.dart';
@@ -298,7 +298,8 @@ class _WerkaArchiveDailyCalendarScreenState
                               child: CalendarDatePicker(
                                 initialDate: _selectedDate ?? _displayMonth,
                                 firstDate: DateTime(DateTime.now().year - 5),
-                                lastDate: DateTime(DateTime.now().year + 1, 12, 31),
+                                lastDate:
+                                    DateTime(DateTime.now().year + 1, 12, 31),
                                 currentDate: DateTime.now(),
                                 onDisplayedMonthChanged: (value) {
                                   final nextMonth = DateTime(

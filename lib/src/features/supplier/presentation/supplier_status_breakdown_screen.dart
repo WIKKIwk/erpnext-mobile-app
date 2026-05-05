@@ -1,7 +1,7 @@
 import '../../../app/app_router.dart';
 import '../../../core/localization/app_localizations.dart';
-import '../../../core/widgets/app_loading_indicator.dart';
-import '../../../core/widgets/app_shell.dart';
+import '../../../core/widgets/shell/app_loading_indicator.dart';
+import '../../../core/widgets/shell/app_shell.dart';
 import '../../shared/models/app_models.dart';
 import '../state/supplier_store.dart';
 import 'supplier_submitted_category_detail_screen.dart';

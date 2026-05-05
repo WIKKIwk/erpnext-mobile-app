@@ -1,4 +1,4 @@
-import 'package:erpnext_stock_mobile/src/core/widgets/app_retry_state.dart';
+import 'package:erpnext_stock_mobile/src/core/widgets/shell/app_retry_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

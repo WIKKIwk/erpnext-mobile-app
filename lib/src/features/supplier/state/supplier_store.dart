@@ -1,5 +1,5 @@
 import '../../../core/api/mobile_api.dart';
-import '../../../core/notifications/supplier_runtime_store.dart';
+import '../../../core/notifications/store/supplier_runtime_store.dart';
 import '../../shared/models/app_models.dart';
 import 'package:flutter/foundation.dart';
 
@@ -69,10 +69,12 @@ class SupplierStore extends ChangeNotifier {
     }
     return SupplierRuntimeStore.instance.applySummary(_summary);
   }
+
   List<DispatchRecord> get historyItems => _historyItems;
   List<SupplierStatusBreakdownEntry> breakdownItems(SupplierStatusKind kind) =>
       _breakdownItems[kind] ?? const <SupplierStatusBreakdownEntry>[];
-  bool loadingBreakdown(SupplierStatusKind kind) => _loadingBreakdown[kind] == true;
+  bool loadingBreakdown(SupplierStatusKind kind) =>
+      _loadingBreakdown[kind] == true;
   Object? breakdownError(SupplierStatusKind kind) => _breakdownErrors[kind];
   List<DispatchRecord> detailItems(SupplierStatusKind kind, String itemCode) =>
       _detailItems[_detailKey(kind, itemCode)] ?? const <DispatchRecord>[];
@@ -132,7 +134,8 @@ class SupplierStore extends ChangeNotifier {
     ]);
   }
 
-  Future<void> bootstrapBreakdown(SupplierStatusKind kind, {bool force = false}) async {
+  Future<void> bootstrapBreakdown(SupplierStatusKind kind,
+      {bool force = false}) async {
     if (loadingBreakdown(kind)) return;
     if (_breakdownItems.containsKey(kind) && !force) return;
     await refreshBreakdown(kind);
@@ -143,7 +146,8 @@ class SupplierStore extends ChangeNotifier {
     _loadingBreakdown[kind] = true;
     _breakdownErrors[kind] = null;
     try {
-      _breakdownItems[kind] = await MobileApi.instance.supplierStatusBreakdown(kind);
+      _breakdownItems[kind] =
+          await MobileApi.instance.supplierStatusBreakdown(kind);
     } catch (error) {
       _breakdownErrors[kind] = error;
     } finally {

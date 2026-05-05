@@ -2,9 +2,9 @@ import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_retry_state.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/native_back_button.dart';
+import '../../../core/widgets/shell/app_retry_state.dart';
+import '../../../core/widgets/shell/app_shell.dart';
+import '../../../core/widgets/navigation/native_back_button.dart';
 import '../../shared/models/app_models.dart';
 import 'werka_archive_list_screen.dart';
 import 'widgets/werka_dock.dart';
@@ -165,7 +165,9 @@ class _WerkaArchiveYearlyCalendarScreenState
 
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final years = [for (int year = _startYear; year <= _startYear + 11; year++) year];
+    final years = [
+      for (int year = _startYear; year <= _startYear + 11; year++) year
+    ];
 
     final bottomPadding = MediaQuery.viewPaddingOf(context).bottom + 136.0;
     return RefreshIndicator(
@@ -218,7 +220,8 @@ class _WerkaArchiveYearlyCalendarScreenState
                   LayoutBuilder(
                     builder: (context, constraints) {
                       const spacing = 10.0;
-                      final cellWidth = (constraints.maxWidth - (spacing * 2)) / 3;
+                      final cellWidth =
+                          (constraints.maxWidth - (spacing * 2)) / 3;
                       return Wrap(
                         spacing: spacing,
                         runSpacing: spacing,
@@ -286,9 +289,8 @@ class _YearCell extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
-              border: active
-                  ? Border.all(color: scheme.primary, width: 1.2)
-                  : null,
+              border:
+                  active ? Border.all(color: scheme.primary, width: 1.2) : null,
             ),
             child: Text(
               '$year',

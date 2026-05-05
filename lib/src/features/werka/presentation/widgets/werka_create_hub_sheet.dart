@@ -3,9 +3,9 @@ import 'dart:math' as math;
 
 import '../../../../app/app_router.dart';
 import '../../../../core/localization/app_localizations.dart';
-import '../../../../core/widgets/app_navigation_bar.dart';
-import '../../../../core/widgets/dock_gesture_overlay.dart';
-import '../../../../core/widgets/dock_system_bottom_inset.dart';
+import '../../../../core/widgets/navigation/app_navigation_bar.dart';
+import '../../../../core/widgets/navigation/dock_gesture_overlay.dart';
+import '../../../../core/widgets/navigation/dock_system_bottom_inset.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter/material.dart';
 
@@ -116,6 +116,7 @@ class _WerkaCreateHubOverlayState extends State<_WerkaCreateHubOverlay>
     stiffness: 700.0,
     ratio: 1.0,
   );
+
   /// FAB circle ↔ rounded rect: slightly under-damped for settle bounce.
   static final SpringDescription _fabMorphSpring =
       SpringDescription.withDampingRatio(
@@ -142,6 +143,7 @@ class _WerkaCreateHubOverlayState extends State<_WerkaCreateHubOverlay>
     lowerBound: _spatialLower,
     upperBound: _spatialUpper,
   );
+
   /// Drives FAB shape/size/color independently from [_spatialController].
   late final AnimationController _fabMorphController = AnimationController(
     vsync: this,
@@ -352,7 +354,8 @@ class _WerkaCreateHubOverlayState extends State<_WerkaCreateHubOverlay>
                       actions[index],
                       _effectsController,
                     ),
-                    motionKey: ValueKey('werka-hub-reveal-${actions[index].row}'),
+                    motionKey:
+                        ValueKey('werka-hub-reveal-${actions[index].row}'),
                     onTap: () => widget.onOpenRoute(actions[index].routeName),
                   ),
                   if (index != actions.length - 1)
@@ -422,6 +425,7 @@ class _WerkaHubAction {
   final IconData icon;
   final String routeName;
   final int row;
+
   /// 0 = first in the reveal sequence (FAB-proximal / bottom in the column).
   final int staggerOrder;
 }

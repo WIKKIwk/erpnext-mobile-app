@@ -162,7 +162,18 @@ Core entry points:
 - `lib/src/app/app_router.dart`
 - `lib/src/core/api/mobile_api.dart`
 - `lib/src/core/network/network_requirement_runtime.dart`
-- `lib/src/core/notifications/push_messaging_service.dart`
+- `lib/src/core/notifications/service/push_messaging_service.dart`
+
+Operational helpers:
+
+- `docs/runbooks/ios_device_install_runbook.md`
+- `tools/bootstrap/setup_android_sdk.sh`
+- `tools/bootstrap/ensure_core.sh`
+- `tools/bootstrap/ensure_mobileapi.sh`
+- `tools/runtime/run_linux_preview.sh`
+- `tools/runtime/start_domain_core.sh`
+- `tools/runtime/start_remote_core.sh`
+- `tools/runtime/stop_remote_core.sh`
 
 ## Related Repositories
 
@@ -173,5 +184,5 @@ Core entry points:
 
 - Use the public backend for release builds, never `localhost` or `127.0.0.1`
 - Keep business logic in `accord_mobile_server` and ERPNext, not in the client
+- Generated logs, pid files, and tunnel state live in `garbage/`
 - If a field or endpoint changes, update this README together with the backend and ERP app README files
-

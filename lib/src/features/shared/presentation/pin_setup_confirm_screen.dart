@@ -1,4 +1,4 @@
-import '../../../core/security/security_controller.dart';
+import '../../../core/security/state/security_controller.dart';
 import 'widgets/pin_entry_scaffold.dart';
 import 'package:flutter/material.dart';
 

@@ -235,8 +235,7 @@ void main() {
     expect(find.byType(WerkaArchiveListScreen), findsOneWidget);
   });
 
-  testWidgets('yearly calendar opens list when year is tapped',
-      (tester) async {
+  testWidgets('yearly calendar opens list when year is tapped', (tester) async {
     Future<WerkaArchiveResponse> archiveLoader({
       required WerkaArchiveKind kind,
       required WerkaArchivePeriod period,

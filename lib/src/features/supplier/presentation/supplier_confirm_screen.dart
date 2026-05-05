@@ -1,6 +1,6 @@
 import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
-import '../../../core/widgets/app_shell.dart';
+import '../../../core/widgets/shell/app_shell.dart';
 import '../../shared/models/app_models.dart';
 import '../state/supplier_store.dart';
 import 'widgets/supplier_dock.dart';
@@ -24,7 +24,8 @@ class SupplierConfirmScreen extends StatefulWidget {
   });
 
   final SupplierConfirmArgs args;
-  final Future<DispatchRecord> Function(SupplierConfirmArgs args)? submitDispatch;
+  final Future<DispatchRecord> Function(SupplierConfirmArgs args)?
+      submitDispatch;
 
   @override
   State<SupplierConfirmScreen> createState() => _SupplierConfirmScreenState();
@@ -133,7 +134,9 @@ class _SupplierConfirmScreenState extends State<SupplierConfirmScreen> {
                     ),
                     child: Column(
                       children: [
-                        for (int index = 0; index < detailRows.length; index++) ...[
+                        for (int index = 0;
+                            index < detailRows.length;
+                            index++) ...[
                           _ConfirmDetailRow(
                             label: detailRows[index].label,
                             value: detailRows[index].value,
@@ -146,7 +149,8 @@ class _SupplierConfirmScreenState extends State<SupplierConfirmScreen> {
                               thickness: 1,
                               indent: 16,
                               endIndent: 16,
-                              color: scheme.outlineVariant.withValues(alpha: 0.55),
+                              color:
+                                  scheme.outlineVariant.withValues(alpha: 0.55),
                             ),
                         ],
                       ],
@@ -161,7 +165,8 @@ class _SupplierConfirmScreenState extends State<SupplierConfirmScreen> {
                           ? const SizedBox(
                               height: 18,
                               width: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2.2),
+                              child:
+                                  CircularProgressIndicator(strokeWidth: 2.2),
                             )
                           : const Text('Ha, jo‘natishni saqlash'),
                     ),
@@ -170,8 +175,9 @@ class _SupplierConfirmScreenState extends State<SupplierConfirmScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
-                      onPressed:
-                          _submitting ? null : () => Navigator.of(context).pop(),
+                      onPressed: _submitting
+                          ? null
+                          : () => Navigator.of(context).pop(),
                       child: const Text('Orqaga qaytish'),
                     ),
                   ),

@@ -1,5 +1,5 @@
-import '../../../../core/widgets/pin_pad.dart';
-import '../../../../core/widgets/app_shell.dart';
+import '../../../../core/widgets/forms/pin_pad.dart';
+import '../../../../core/widgets/shell/app_shell.dart';
 import 'package:flutter/material.dart';
 
 class PinEntryScaffold extends StatelessWidget {

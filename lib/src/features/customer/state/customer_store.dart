@@ -1,5 +1,5 @@
 import '../../../core/api/mobile_api.dart';
-import '../../../core/notifications/customer_delivery_runtime_store.dart';
+import '../../../core/notifications/store/customer_delivery_runtime_store.dart';
 import '../../shared/models/app_models.dart';
 import 'package:flutter/foundation.dart';
 

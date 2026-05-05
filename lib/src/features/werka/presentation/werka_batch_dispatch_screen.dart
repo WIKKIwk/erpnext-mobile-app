@@ -3,14 +3,14 @@ import '../../../core/api/mobile_api.dart';
 import '../../../core/app_preview.dart';
 import '../../../core/customer/customer_priority.dart';
 import '../../../core/localization/app_localizations.dart';
-import '../../../core/notifications/refresh_hub.dart';
-import '../../../core/notifications/werka_runtime_store.dart';
+import '../../../core/notifications/hub/refresh_hub.dart';
+import '../../../core/notifications/store/werka_runtime_store.dart';
 import '../../../core/search/search_activity_store.dart';
 import '../../../core/search/search_normalizer.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/m3_segmented_list.dart';
-import '../../../core/widgets/native_back_button.dart';
+import '../../../core/widgets/shell/app_shell.dart';
+import '../../../core/widgets/lists/m3_segmented_list.dart';
+import '../../../core/widgets/navigation/native_back_button.dart';
 import '../../shared/models/app_models.dart';
 import 'dart:math';
 import 'widgets/m3_picker_sheet.dart';
@@ -663,7 +663,8 @@ class _WerkaBatchDispatchScreenState extends State<WerkaBatchDispatchScreen> {
                             children: [
                               Expanded(
                                 child: Text(
-                                  _selectedCustomer?.name ?? l10n.selectCustomer,
+                                  _selectedCustomer?.name ??
+                                      l10n.selectCustomer,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -829,7 +830,8 @@ class _WerkaBatchDispatchReviewScreenState
             createdCount: _lines.length,
             failedCount: 0,
             returnRouteName: AppRoutes.werkaBatchDispatch,
-            returnLabel: context.l10n.backToFlow(context.l10n.batchDispatchTitle),
+            returnLabel:
+                context.l10n.backToFlow(context.l10n.batchDispatchTitle),
           ),
         ),
       );
@@ -891,7 +893,8 @@ class _WerkaBatchDispatchReviewScreenState
             createdCount: createdCount,
             failedCount: 0,
             returnRouteName: AppRoutes.werkaBatchDispatch,
-            returnLabel: context.l10n.backToFlow(context.l10n.batchDispatchTitle),
+            returnLabel:
+                context.l10n.backToFlow(context.l10n.batchDispatchTitle),
           ),
         ),
       );
@@ -1033,15 +1036,16 @@ class _WerkaBatchDispatchReviewScreenState
                               ),
                             ),
                             IconButton(
-                              tooltip:
-                                  MaterialLocalizations.of(context).deleteButtonTooltip,
+                              tooltip: MaterialLocalizations.of(context)
+                                  .deleteButtonTooltip,
                               onPressed: _submitting
                                   ? null
                                   : () {
                                       final localID = _lines[index].localID;
                                       setState(() {
                                         _lines = _lines
-                                            .where((item) => item.localID != localID)
+                                            .where((item) =>
+                                                item.localID != localID)
                                             .toList();
                                       });
                                     },

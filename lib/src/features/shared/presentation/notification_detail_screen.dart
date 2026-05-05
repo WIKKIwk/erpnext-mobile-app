@@ -1,11 +1,11 @@
 import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
-import '../../../core/notifications/notification_unread_store.dart';
-import '../../../core/session/app_session.dart';
-import '../../../core/widgets/app_loading_indicator.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/app_retry_state.dart';
-import '../../../core/widgets/native_back_button.dart';
+import '../../../core/notifications/store/notification_unread_store.dart';
+import '../../../core/session/session.dart';
+import '../../../core/widgets/shell/app_loading_indicator.dart';
+import '../../../core/widgets/shell/app_shell.dart';
+import '../../../core/widgets/shell/app_retry_state.dart';
+import '../../../core/widgets/navigation/native_back_button.dart';
 import '../../supplier/presentation/widgets/supplier_dock.dart';
 import '../../supplier/state/supplier_store.dart';
 import '../../werka/presentation/widgets/werka_dock.dart';
@@ -572,7 +572,8 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
                               children: [
                                 Text(
                                   item.authorLabel,
-                                  style: Theme.of(context).textTheme.titleMedium,
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium,
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
@@ -728,7 +729,8 @@ class _NotificationNoteCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Card.filled(
       margin: EdgeInsets.zero,
-      color: emphasized ? scheme.secondaryContainer : scheme.surfaceContainerLow,
+      color:
+          emphasized ? scheme.secondaryContainer : scheme.surfaceContainerLow,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
       ),

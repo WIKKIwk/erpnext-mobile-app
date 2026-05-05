@@ -1,14 +1,14 @@
 import '../../../app/app_router.dart';
 import '../../../core/localization/app_localizations.dart';
-import '../../../core/notifications/notification_unread_store.dart';
-import '../../../core/notifications/refresh_hub.dart';
+import '../../../core/notifications/store/notification_unread_store.dart';
+import '../../../core/notifications/hub/refresh_hub.dart';
 import '../../../core/theme/app_motion.dart';
-import '../../../core/session/app_session.dart';
-import '../../../core/widgets/app_loading_indicator.dart';
-import '../../../core/widgets/app_retry_state.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/motion_widgets.dart';
-import '../../../core/widgets/top_refresh_scroll_physics.dart';
+import '../../../core/session/session.dart';
+import '../../../core/widgets/shell/app_loading_indicator.dart';
+import '../../../core/widgets/shell/app_retry_state.dart';
+import '../../../core/widgets/shell/app_shell.dart';
+import '../../../core/widgets/display/motion_widgets.dart';
+import '../../../core/widgets/scroll/top_refresh_scroll_physics.dart';
 import '../../shared/models/app_models.dart';
 import '../state/supplier_store.dart';
 import 'widgets/supplier_dock.dart';
@@ -376,7 +376,8 @@ class _SupplierPendingSection extends StatelessWidget {
               const SizedBox(height: 14),
               Card.filled(
                 margin: EdgeInsets.zero,
-                color: isDark ? const Color(0xFF2A2931) : scheme.surfaceContainer,
+                color:
+                    isDark ? const Color(0xFF2A2931) : scheme.surfaceContainer,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
                 ),

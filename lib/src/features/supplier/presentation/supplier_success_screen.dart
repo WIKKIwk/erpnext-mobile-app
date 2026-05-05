@@ -1,6 +1,6 @@
 import '../../../app/app_router.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/common_widgets.dart';
+import '../../../core/widgets/shell/app_shell.dart';
+import '../../../core/widgets/display/common_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/supplier_dock.dart';
 import 'package:flutter/material.dart';
@@ -36,7 +36,8 @@ class SupplierSuccessScreen extends StatelessWidget {
                     const Icon(Icons.check_circle_rounded,
                         size: 72, color: Color(0xFFFFFFFF)),
                     const SizedBox(height: 16),
-                    Text(record.id, style: Theme.of(context).textTheme.titleLarge),
+                    Text(record.id,
+                        style: Theme.of(context).textTheme.titleLarge),
                     const SizedBox(height: 6),
                     Text(
                         '${record.itemCode} • ${record.sentQty.toStringAsFixed(2)} ${record.uom}'),

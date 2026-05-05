@@ -2,10 +2,10 @@ import 'dart:math' as math;
 
 import '../../../app/app_router.dart';
 import '../../../core/localization/app_localizations.dart';
-import '../../../core/notifications/refresh_hub.dart';
-import '../../../core/widgets/app_loading_indicator.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/app_retry_state.dart';
+import '../../../core/notifications/hub/refresh_hub.dart';
+import '../../../core/widgets/shell/app_loading_indicator.dart';
+import '../../../core/widgets/shell/app_shell.dart';
+import '../../../core/widgets/shell/app_retry_state.dart';
 import '../../shared/models/app_models.dart';
 import '../state/supplier_store.dart';
 import 'supplier_qty_screen.dart';
@@ -162,7 +162,9 @@ class _SupplierRecentScreenState extends State<SupplierRecentScreen>
                       ),
                       child: Column(
                         children: [
-                          for (int index = 0; index < items.length; index++) ...[
+                          for (int index = 0;
+                              index < items.length;
+                              index++) ...[
                             Builder(builder: (context) {
                               final record = items[index];
                               final item = SupplierItem(

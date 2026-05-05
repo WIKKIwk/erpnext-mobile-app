@@ -1,8 +1,8 @@
 import '../../../core/api/mobile_api.dart';
-import '../../../core/widgets/app_loading_indicator.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/app_retry_state.dart';
-import '../../../core/widgets/common_widgets.dart';
+import '../../../core/widgets/shell/app_loading_indicator.dart';
+import '../../../core/widgets/shell/app_shell.dart';
+import '../../../core/widgets/shell/app_retry_state.dart';
+import '../../../core/widgets/display/common_widgets.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/admin_dock.dart';

@@ -1,4 +1,4 @@
-import 'package:erpnext_stock_mobile/src/core/notifications/werka_runtime_store.dart';
+import 'package:erpnext_stock_mobile/src/core/notifications/store/werka_runtime_store.dart';
 import 'package:erpnext_stock_mobile/src/features/shared/models/app_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 

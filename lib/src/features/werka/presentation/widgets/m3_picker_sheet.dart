@@ -1,8 +1,8 @@
 import '../../../../core/theme/app_motion.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/search/search_normalizer.dart';
-import '../../../../core/widgets/app_loading_indicator.dart';
-import '../../../../core/widgets/m3_segmented_list.dart';
+import '../../../../core/widgets/shell/app_loading_indicator.dart';
+import '../../../../core/widgets/lists/m3_segmented_list.dart';
 import 'werka_ai_search_service.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -313,14 +313,16 @@ class _M3PickerSheetState<T> extends State<M3PickerSheet<T>> {
                               ),
                               itemBuilder: (context, index) {
                                 final item = visibleItems[index];
-                                final subtitle = widget.itemSubtitle(item).trim();
+                                final subtitle =
+                                    widget.itemSubtitle(item).trim();
                                 final slot = M3SegmentedListGeometry
                                     .standaloneListSlotForIndex(
                                   index,
                                   visibleItems.length,
                                 );
-                                final cornerRadius = M3SegmentedListGeometry
-                                    .cornerRadiusForSlot(slot);
+                                final cornerRadius =
+                                    M3SegmentedListGeometry.cornerRadiusForSlot(
+                                        slot);
 
                                 return M3SegmentFilledSurface(
                                   slot: slot,
@@ -848,61 +850,61 @@ class _M3AsyncPickerSheetState<T> extends State<M3AsyncPickerSheet<T>> {
     } else {
       final sortedItems = _sortedItems();
       body = ListView.separated(
-          controller: _scrollController,
-          shrinkWrap: true,
-          itemCount: sortedItems.length + (_loadingMore ? 1 : 0),
-          separatorBuilder: (context, index) => const SizedBox(
-            height: M3SegmentedListGeometry.gap,
-          ),
-          itemBuilder: (context, index) {
-            if (index >= sortedItems.length) {
-              return const Padding(
-                padding: EdgeInsets.symmetric(vertical: 18),
-                child: Center(child: AppLoadingIndicator()),
-              );
-            }
-            final item = sortedItems[index];
-            final subtitle = widget.itemSubtitle(item).trim();
-            final slot = M3SegmentedListGeometry.standaloneListSlotForIndex(
-              index,
-              sortedItems.length,
+        controller: _scrollController,
+        shrinkWrap: true,
+        itemCount: sortedItems.length + (_loadingMore ? 1 : 0),
+        separatorBuilder: (context, index) => const SizedBox(
+          height: M3SegmentedListGeometry.gap,
+        ),
+        itemBuilder: (context, index) {
+          if (index >= sortedItems.length) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 18),
+              child: Center(child: AppLoadingIndicator()),
             );
-            final cornerRadius =
-                M3SegmentedListGeometry.cornerRadiusForSlot(slot);
+          }
+          final item = sortedItems[index];
+          final subtitle = widget.itemSubtitle(item).trim();
+          final slot = M3SegmentedListGeometry.standaloneListSlotForIndex(
+            index,
+            sortedItems.length,
+          );
+          final cornerRadius =
+              M3SegmentedListGeometry.cornerRadiusForSlot(slot);
 
-            return M3SegmentFilledSurface(
-              slot: slot,
-              cornerRadius: cornerRadius,
-              onTap: () => widget.onSelected(item),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 16,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+          return M3SegmentFilledSurface(
+            slot: slot,
+            cornerRadius: cornerRadius,
+            onTap: () => widget.onSelected(item),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 18,
+                vertical: 16,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.itemTitle(item),
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  if (subtitle.isNotEmpty) ...[
+                    const SizedBox(height: 6),
                     Text(
-                      widget.itemTitle(item),
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
+                      subtitle,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
                       ),
                     ),
-                    if (subtitle.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        subtitle,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
                   ],
-                ),
+                ],
               ),
-            );
-          },
-        );
+            ),
+          );
+        },
+      );
     }
 
     return AnimatedPadding(

@@ -1,4 +1,4 @@
-import '../../../../core/widgets/m3_segmented_list.dart';
+import '../../../../core/widgets/lists/m3_segmented_list.dart';
 import 'package:flutter/material.dart';
 
 class AdminSummaryCard extends StatelessWidget {

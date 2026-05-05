@@ -2,16 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../../core/widgets/m3_segmented_list.dart';
+import '../../../core/widgets/lists/m3_segmented_list.dart';
 import '../../../core/api/mobile_api.dart';
 import '../../../core/search/search_normalizer.dart';
-import '../../../core/widgets/app_navigation_bar.dart';
-import '../../../core/widgets/app_primary_navigation_fab.dart';
+import '../../../core/widgets/navigation/app_navigation_bar.dart';
+import '../../../core/widgets/navigation/app_primary_navigation_fab.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_loading_indicator.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/dock_gesture_overlay.dart';
-import '../../../core/widgets/dock_system_bottom_inset.dart';
+import '../../../core/widgets/shell/app_loading_indicator.dart';
+import '../../../core/widgets/shell/app_shell.dart';
+import '../../../core/widgets/navigation/dock_gesture_overlay.dart';
+import '../../../core/widgets/navigation/dock_system_bottom_inset.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/admin_dock.dart';
 import 'widgets/admin_summary_card.dart';

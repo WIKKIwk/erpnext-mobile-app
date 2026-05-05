@@ -1,5 +1,5 @@
 import '../api/mobile_api.dart';
-import '../session/app_session.dart';
+import '../session/session.dart';
 import 'network_required_dialog.dart';
 import 'dart:async';
 

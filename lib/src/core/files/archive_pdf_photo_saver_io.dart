@@ -12,7 +12,8 @@ Future<String> saveArchivePdfFirstPageToPhotos({
     final page = await document.getPage(1);
     try {
       const targetWidth = 1536.0;
-      final targetHeight = (targetWidth * page.height / page.width).roundToDouble();
+      final targetHeight =
+          (targetWidth * page.height / page.width).roundToDouble();
       final image = await page.render(
         width: targetWidth,
         height: targetHeight,

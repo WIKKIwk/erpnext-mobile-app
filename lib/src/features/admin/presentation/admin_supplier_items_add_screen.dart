@@ -1,8 +1,8 @@
 import '../../../core/api/mobile_api.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_loading_indicator.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/m3_confirm_dialog.dart';
+import '../../../core/widgets/shell/app_loading_indicator.dart';
+import '../../../core/widgets/shell/app_shell.dart';
+import '../../../core/widgets/feedback/m3_confirm_dialog.dart';
 import '../../shared/models/app_models.dart';
 import 'admin_supplier_items_view_screen.dart';
 import 'widgets/admin_dock.dart';

@@ -1,8 +1,8 @@
 import '../../../app/app_router.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_motion.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/motion_widgets.dart';
+import '../../../core/widgets/shell/app_shell.dart';
+import '../../../core/widgets/display/motion_widgets.dart';
 import 'widgets/werka_dock.dart';
 import 'package:flutter/material.dart';
 

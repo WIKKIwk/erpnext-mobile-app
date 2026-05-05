@@ -1,8 +1,8 @@
 import '../../../core/api/mobile_api.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_retry_state.dart';
-import '../../../core/widgets/m3_confirm_dialog.dart';
-import '../../../core/widgets/native_back_button.dart';
+import '../../../core/widgets/shell/app_retry_state.dart';
+import '../../../core/widgets/feedback/m3_confirm_dialog.dart';
+import '../../../core/widgets/navigation/native_back_button.dart';
 import '../../shared/models/app_models.dart';
 import 'dart:async';
 
@@ -412,11 +412,9 @@ class _AdminCustomerDetailScreenState extends State<AdminCustomerDetailScreen> {
 Future<void> _showAvailableItemsSheet(
   BuildContext context,
   AdminCustomerDetail detail,
-  List<SupplierItem> availableItems,
-  {
+  List<SupplierItem> availableItems, {
   required Future<bool> Function(SupplierItem item) onAddItem,
-}
-) async {
+}) async {
   final visibleItems = availableItems.toList();
   final collapsingCodes = <String>{};
   String? activeAddingCode;
@@ -614,7 +612,8 @@ class _AdminCustomerDetailCard extends StatelessWidget {
               width: double.infinity,
               child: FilledButton.tonal(
                 onPressed: savingPhone ? null : () => onAddPhone(detail),
-                child: Text(savingPhone ? 'Saqlanmoqda...' : 'Telefonni yangilash'),
+                child: Text(
+                    savingPhone ? 'Saqlanmoqda...' : 'Telefonni yangilash'),
               ),
             ),
             const SizedBox(height: 14),
@@ -661,7 +660,8 @@ class _AdminCustomerDetailCard extends StatelessWidget {
               ),
             ],
             const SizedBox(height: 18),
-            Text('Biriktirilgan mahsulotlar', style: theme.textTheme.titleLarge),
+            Text('Biriktirilgan mahsulotlar',
+                style: theme.textTheme.titleLarge),
             const SizedBox(height: 10),
             Text(
               detail.assignedItems.isEmpty
@@ -701,7 +701,8 @@ class _AdminCustomerDetailCard extends StatelessWidget {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: removing ? null : onRemove,
-                child: Text(removing ? 'Chiqarilmoqda...' : 'Tizimdan chiqarish'),
+                child:
+                    Text(removing ? 'Chiqarilmoqda...' : 'Tizimdan chiqarish'),
               ),
             ),
           ],
@@ -713,12 +714,10 @@ class _AdminCustomerDetailCard extends StatelessWidget {
 
 Future<void> _showAssignedItemsSheet(
   BuildContext context,
-  AdminCustomerDetail detail,
-  {
+  AdminCustomerDetail detail, {
   required Future<bool> Function(SupplierItem item) onRemoveItem,
   required String? removingItemCode,
-}
-) async {
+}) async {
   final visibleItems = detail.assignedItems.toList();
   final collapsingCodes = <String>{};
   String? activeRemovingCode = removingItemCode;
@@ -763,7 +762,8 @@ Future<void> _showAssignedItemsSheet(
                   child: ListView.separated(
                     shrinkWrap: true,
                     itemCount: visibleItems.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 8),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final item = visibleItems[index];
                       final collapsing = collapsingCodes.contains(item.code);
@@ -786,7 +786,8 @@ Future<void> _showAssignedItemsSheet(
                                           children: [
                                             Text(
                                               item.name,
-                                              style: theme.textTheme.titleMedium,
+                                              style:
+                                                  theme.textTheme.titleMedium,
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
@@ -800,31 +801,39 @@ Future<void> _showAssignedItemsSheet(
                                         ),
                                       ),
                                       IconButton(
-                                        onPressed: activeRemovingCode == item.code
+                                        onPressed: activeRemovingCode ==
+                                                item.code
                                             ? null
                                             : () async {
                                                 setModalState(() {
-                                                  activeRemovingCode = item.code;
+                                                  activeRemovingCode =
+                                                      item.code;
                                                 });
-                                                final removed = await onRemoveItem(item);
+                                                final removed =
+                                                    await onRemoveItem(item);
                                                 if (!context.mounted) {
                                                   return;
                                                 }
                                                 if (removed) {
                                                   setModalState(() {
-                                                    collapsingCodes.add(item.code);
+                                                    collapsingCodes
+                                                        .add(item.code);
                                                   });
                                                   await Future<void>.delayed(
-                                                    const Duration(milliseconds: 180),
+                                                    const Duration(
+                                                        milliseconds: 180),
                                                   );
                                                   if (!context.mounted) {
                                                     return;
                                                   }
                                                   setModalState(() {
                                                     visibleItems.removeWhere(
-                                                      (current) => current.code == item.code,
+                                                      (current) =>
+                                                          current.code ==
+                                                          item.code,
                                                     );
-                                                    collapsingCodes.remove(item.code);
+                                                    collapsingCodes
+                                                        .remove(item.code);
                                                     activeRemovingCode = null;
                                                   });
                                                 } else {
@@ -837,7 +846,8 @@ Future<void> _showAssignedItemsSheet(
                                             ? const SizedBox(
                                                 height: 18,
                                                 width: 18,
-                                                child: CircularProgressIndicator(
+                                                child:
+                                                    CircularProgressIndicator(
                                                   strokeWidth: 2,
                                                 ),
                                               )

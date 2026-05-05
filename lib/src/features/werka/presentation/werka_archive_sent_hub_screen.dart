@@ -2,10 +2,10 @@ import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_loading_indicator.dart';
-import '../../../core/widgets/app_retry_state.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/native_back_button.dart';
+import '../../../core/widgets/shell/app_loading_indicator.dart';
+import '../../../core/widgets/shell/app_retry_state.dart';
+import '../../../core/widgets/shell/app_shell.dart';
+import '../../../core/widgets/navigation/native_back_button.dart';
 import '../../shared/models/app_models.dart';
 import 'werka_archive_list_screen.dart';
 import 'widgets/werka_dock.dart';
@@ -337,18 +337,18 @@ class _WerkaArchiveSentHubScreenState extends State<WerkaArchiveSentHubScreen> {
     final localizations = MaterialLocalizations.of(context);
     return Column(
       children: [
-                  Row(
-                    children: [
-                      IconButton(
-                        onPressed: () async {
-                          setState(() => _displayYear--);
-                          await _loadMonthly();
-                        },
-                        icon: Icon(
-                          Icons.chevron_left_rounded,
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
+        Row(
+          children: [
+            IconButton(
+              onPressed: () async {
+                setState(() => _displayYear--);
+                await _loadMonthly();
+              },
+              icon: Icon(
+                Icons.chevron_left_rounded,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
             Expanded(
               child: Text(
                 '$_displayYear',
@@ -356,16 +356,16 @@ class _WerkaArchiveSentHubScreenState extends State<WerkaArchiveSentHubScreen> {
                 style: theme.textTheme.titleLarge,
               ),
             ),
-                      IconButton(
-                        onPressed: () async {
-                          setState(() => _displayYear++);
-                          await _loadMonthly();
-                        },
-                        icon: Icon(
-                          Icons.chevron_right_rounded,
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
+            IconButton(
+              onPressed: () async {
+                setState(() => _displayYear++);
+                await _loadMonthly();
+              },
+              icon: Icon(
+                Icons.chevron_right_rounded,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -399,7 +399,9 @@ class _WerkaArchiveSentHubScreenState extends State<WerkaArchiveSentHubScreen> {
   Widget _buildYearlyPanel(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final years = [for (int year = _startYear; year <= _startYear + 11; year++) year];
+    final years = [
+      for (int year = _startYear; year <= _startYear + 11; year++) year
+    ];
     return Column(
       children: [
         Row(
@@ -655,9 +657,8 @@ class _SentHubMonthCell extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
-              border: active
-                  ? Border.all(color: scheme.primary, width: 1.2)
-                  : null,
+              border:
+                  active ? Border.all(color: scheme.primary, width: 1.2) : null,
             ),
             child: Text(
               label,
@@ -708,9 +709,8 @@ class _SentHubYearCell extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
-              border: active
-                  ? Border.all(color: scheme.primary, width: 1.2)
-                  : null,
+              border:
+                  active ? Border.all(color: scheme.primary, width: 1.2) : null,
             ),
             child: Text(
               '$year',

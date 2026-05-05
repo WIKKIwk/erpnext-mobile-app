@@ -456,8 +456,8 @@ class AppLocalizations {
   String get acceptedFromQtyPrefix => _t('Qabul', 'Accepted', 'Принято');
   String get createFlowBack =>
       _t('Qaydga qaytish', 'Back to create', 'Назад к созданию');
-  String backToFlow(String flowName) => _t(
-      '$flowName ga qaytish', 'Back to $flowName', 'Назад к $flowName');
+  String backToFlow(String flowName) =>
+      _t('$flowName ga qaytish', 'Back to $flowName', 'Назад к $flowName');
   String get pendingListBack => _t('Pending listga qaytish',
       'Back to pending list', 'Назад к списку ожидания');
   String get sentSuccess => _t('Jo‘natildi', 'Sent', 'Отправлено');

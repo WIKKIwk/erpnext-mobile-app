@@ -1,8 +1,8 @@
 import '../../../../app/app_router.dart';
 import '../../../../core/native_dock_bridge.dart';
-import '../../../../core/notifications/notification_unread_store.dart';
-import '../../../../core/session/app_session.dart';
-import '../../../../core/widgets/app_navigation_bar.dart';
+import '../../../../core/notifications/store/notification_unread_store.dart';
+import '../../../../core/session/session.dart';
+import '../../../../core/widgets/navigation/app_navigation_bar.dart';
 import 'package:flutter/material.dart';
 
 enum CustomerDockTab {

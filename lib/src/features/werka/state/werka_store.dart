@@ -1,6 +1,6 @@
 import '../../../core/api/mobile_api.dart';
-import '../../../core/notifications/werka_runtime_store.dart';
-import '../../../core/session/app_session.dart';
+import '../../../core/notifications/store/werka_runtime_store.dart';
+import '../../../core/session/session.dart';
 import '../../shared/models/app_models.dart';
 import 'package:flutter/foundation.dart';
 

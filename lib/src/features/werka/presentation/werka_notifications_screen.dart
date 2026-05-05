@@ -3,17 +3,17 @@ import 'dart:math' as math;
 import '../../../app/app_router.dart';
 import '../../../core/cache/json_cache_store.dart';
 import '../../../core/localization/app_localizations.dart';
-import '../../../core/notifications/notification_hidden_store.dart';
-import '../../../core/notifications/refresh_hub.dart';
-import '../../../core/notifications/notification_unread_store.dart';
-import '../../../core/session/app_session.dart';
+import '../../../core/notifications/store/notification_hidden_store.dart';
+import '../../../core/notifications/hub/refresh_hub.dart';
+import '../../../core/notifications/store/notification_unread_store.dart';
+import '../../../core/session/session.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/app_retry_state.dart';
-import '../../../core/widgets/m3_confirm_dialog.dart';
-import '../../../core/widgets/m3_segmented_list.dart';
-import '../../../core/widgets/native_back_button.dart';
-import '../../../core/widgets/top_refresh_scroll_physics.dart';
+import '../../../core/widgets/shell/app_shell.dart';
+import '../../../core/widgets/shell/app_retry_state.dart';
+import '../../../core/widgets/feedback/m3_confirm_dialog.dart';
+import '../../../core/widgets/lists/m3_segmented_list.dart';
+import '../../../core/widgets/navigation/native_back_button.dart';
+import '../../../core/widgets/scroll/top_refresh_scroll_physics.dart';
 import '../../shared/models/app_models.dart';
 import '../state/werka_notification_store.dart';
 import 'widgets/werka_dock.dart';
@@ -339,8 +339,8 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
             child: Builder(
               builder: (context) {
                 final orderedItems = [
-                  ...items.where(
-                      (item) => _highlightedUnreadIds.contains(item.id)),
+                  ...items
+                      .where((item) => _highlightedUnreadIds.contains(item.id)),
                   ...items.where(
                       (item) => !_highlightedUnreadIds.contains(item.id)),
                 ];
@@ -372,12 +372,10 @@ class _WerkaNotificationsScreenState extends State<WerkaNotificationsScreen>
                       children: [
                         Center(
                           child: Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
                             child: M3SegmentFilledSurface(
                               slot: M3SegmentVerticalSlot.top,
-                              cornerRadius:
-                                  M3SegmentedListGeometry.cornerLarge,
+                              cornerRadius: M3SegmentedListGeometry.cornerLarge,
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 16,
@@ -521,8 +519,7 @@ class _WerkaNotificationSegmentTile extends StatelessWidget {
       slot: slot,
       cornerRadius: r,
       onTap: onTap,
-      backgroundColor:
-          highlighted ? scheme.secondaryContainer : null,
+      backgroundColor: highlighted ? scheme.secondaryContainer : null,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
         child: Column(

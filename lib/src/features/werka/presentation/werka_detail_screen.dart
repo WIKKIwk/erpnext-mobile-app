@@ -1,9 +1,9 @@
 import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
-import '../../../core/notifications/refresh_hub.dart';
-import '../../../core/notifications/werka_runtime_store.dart';
-import '../../../core/widgets/m3_confirm_dialog.dart';
-import '../../../core/widgets/native_back_button.dart';
+import '../../../core/notifications/hub/refresh_hub.dart';
+import '../../../core/notifications/store/werka_runtime_store.dart';
+import '../../../core/widgets/feedback/m3_confirm_dialog.dart';
+import '../../../core/widgets/navigation/native_back_button.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/werka_dock.dart';
@@ -172,7 +172,8 @@ class _WerkaDetailScreenState extends State<WerkaDetailScreen> {
       ),
       (
         label: 'Jo‘natilgan',
-        value: '${widget.record.sentQty.toStringAsFixed(2)} ${widget.record.uom}',
+        value:
+            '${widget.record.sentQty.toStringAsFixed(2)} ${widget.record.uom}',
       ),
     ];
     return Scaffold(

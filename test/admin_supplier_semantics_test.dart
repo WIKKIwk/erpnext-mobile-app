@@ -1,7 +1,7 @@
 import 'package:erpnext_stock_mobile/src/features/admin/presentation/widgets/admin_dock.dart';
 import 'package:erpnext_stock_mobile/src/features/admin/presentation/widgets/admin_supplier_list_module.dart';
 import 'package:erpnext_stock_mobile/src/features/shared/models/app_models.dart';
-import 'package:erpnext_stock_mobile/src/core/widgets/app_shell.dart';
+import 'package:erpnext_stock_mobile/src/core/widgets/shell/app_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

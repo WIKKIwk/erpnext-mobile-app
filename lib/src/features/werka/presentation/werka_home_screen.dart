@@ -3,14 +3,14 @@ import 'dart:math' as math;
 import '../../../app/app_router.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/notifications/refresh_hub.dart';
-import '../../../core/widgets/app_loading_indicator.dart';
-import '../../../core/widgets/app_retry_state.dart';
+import '../../../core/notifications/hub/refresh_hub.dart';
+import '../../../core/widgets/shell/app_loading_indicator.dart';
+import '../../../core/widgets/shell/app_retry_state.dart';
 import '../../../core/theme/app_motion.dart';
-import '../../../core/widgets/m3_segmented_list.dart';
-import '../../../core/widgets/motion_widgets.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/top_refresh_scroll_physics.dart';
+import '../../../core/widgets/lists/m3_segmented_list.dart';
+import '../../../core/widgets/display/motion_widgets.dart';
+import '../../../core/widgets/shell/app_shell.dart';
+import '../../../core/widgets/scroll/top_refresh_scroll_physics.dart';
 import '../../shared/models/app_models.dart';
 import '../state/werka_store.dart';
 import 'widgets/werka_dock.dart';
@@ -302,34 +302,34 @@ class _WerkaSummarySegmentCard extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 12, 16),
               child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    label,
+                children: [
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontSize: 18.5,
+                        fontWeight: FontWeight.w700,
+                        color: foreground,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Text(
+                    value,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontSize: 18.5,
                       fontWeight: FontWeight.w700,
                       color: foreground,
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Text(
-                  value,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontSize: 18.5,
-                    fontWeight: FontWeight.w700,
-                    color: foreground,
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 22,
+                    color: accent,
                   ),
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 22,
-                  color: accent,
-                ),
-              ],
-            ),
+                ],
+              ),
             ),
           ),
         ),
@@ -453,8 +453,7 @@ class _WerkaPendingItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final slot =
-        M3SegmentedListGeometry.bodySlotForIndex(index, itemCount);
+    final slot = M3SegmentedListGeometry.bodySlotForIndex(index, itemCount);
     final r = M3SegmentedListGeometry.cornerRadiusForSlot(slot);
 
     void navigate() => Navigator.of(context).pushNamed(

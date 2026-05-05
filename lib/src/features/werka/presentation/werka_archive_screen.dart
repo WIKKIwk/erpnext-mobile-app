@@ -1,9 +1,9 @@
 import '../../../app/app_router.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/m3_segmented_list.dart';
-import '../../../core/widgets/native_back_button.dart';
+import '../../../core/widgets/shell/app_shell.dart';
+import '../../../core/widgets/lists/m3_segmented_list.dart';
+import '../../../core/widgets/navigation/native_back_button.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/werka_dock.dart';
 import 'package:flutter/material.dart';
@@ -102,26 +102,26 @@ class _WerkaArchiveSegmentTile extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
           child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 22,
-              color: scheme.onSurfaceVariant,
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Text(
-                title,
-                style: theme.textTheme.titleMedium,
+            children: [
+              Icon(
+                icon,
+                size: 22,
+                color: scheme.onSurfaceVariant,
               ),
-            ),
-            Icon(
-              Icons.chevron_right_rounded,
-              size: 22,
-              color: scheme.onSurfaceVariant,
-            ),
-          ],
-        ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  title,
+                  style: theme.textTheme.titleMedium,
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 22,
+                color: scheme.onSurfaceVariant,
+              ),
+            ],
+          ),
         ),
       ),
     );

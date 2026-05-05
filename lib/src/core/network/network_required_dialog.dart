@@ -35,16 +35,20 @@ Future<void> showNetworkRequiredDialog(
                       children: [
                         Text(
                           'Internet kerak',
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineMedium
+                              ?.copyWith(
                                 color: Colors.white,
                               ),
                         ),
                         const SizedBox(height: 10),
                         Text(
                           message,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: const Color(0xFFD0D0D0),
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: const Color(0xFFD0D0D0),
+                                  ),
                         ),
                         const SizedBox(height: 18),
                         SizedBox(

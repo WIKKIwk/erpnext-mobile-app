@@ -1,5 +1,5 @@
 import 'package:erpnext_stock_mobile/src/core/search/search_activity_store.dart';
-import 'package:erpnext_stock_mobile/src/core/session/app_session.dart';
+import 'package:erpnext_stock_mobile/src/core/session/session.dart';
 import 'package:erpnext_stock_mobile/src/features/shared/models/app_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';

@@ -1,8 +1,8 @@
 import '../../../core/api/mobile_api.dart';
 import '../../../core/app_preview.dart';
-import '../../../core/session/app_session.dart';
-import '../../../core/widgets/app_loading_indicator.dart';
-import '../../../core/widgets/app_shell.dart';
+import '../../../core/session/session.dart';
+import '../../../core/widgets/shell/app_loading_indicator.dart';
+import '../../../core/widgets/shell/app_shell.dart';
 import 'login_screen.dart';
 import 'welcome_screen.dart';
 import 'package:flutter/material.dart';

@@ -42,7 +42,7 @@ class ThemeController extends ChangeNotifier {
                         ? AppThemeVariant.slate
                         : savedVariant == 'ocean'
                             ? AppThemeVariant.ocean
-            : AppThemeVariant.earthy;
+                            : AppThemeVariant.earthy;
     notifyListeners();
   }
 
@@ -78,7 +78,7 @@ class ThemeController extends ChangeNotifier {
                           ? 'slate'
                           : nextVariant == AppThemeVariant.ocean
                               ? 'ocean'
-              : 'earthy',
+                              : 'earthy',
     );
   }
 }

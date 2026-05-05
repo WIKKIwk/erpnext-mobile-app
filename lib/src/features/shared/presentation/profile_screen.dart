@@ -1,17 +1,17 @@
 import '../../../core/api/mobile_api.dart';
-import '../../../core/security/security_controller.dart';
+import '../../../core/security/state/security_controller.dart';
 import '../../../app/app_router.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/localization/locale_controller.dart';
-import '../../../core/session/app_session.dart';
+import '../../../core/session/session.dart';
 import '../../../core/theme/app_motion.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_controller.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/m3_confirm_dialog.dart';
-import '../../../core/widgets/m3_segmented_list.dart';
-import '../../../core/widgets/motion_widgets.dart';
-import '../../../core/widgets/top_refresh_scroll_physics.dart';
+import '../../../core/widgets/shell/app_shell.dart';
+import '../../../core/widgets/feedback/m3_confirm_dialog.dart';
+import '../../../core/widgets/lists/m3_segmented_list.dart';
+import '../../../core/widgets/display/motion_widgets.dart';
+import '../../../core/widgets/scroll/top_refresh_scroll_physics.dart';
 import '../data/profile_avatar_cache.dart';
 import '../models/app_models.dart';
 import '../../admin/presentation/widgets/admin_dock.dart';
@@ -24,7 +24,6 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -386,225 +385,224 @@ class _ProfileScreenState extends State<ProfileScreen>
                   child: SmoothAppear(
                     delay: const Duration(milliseconds: 20),
                     child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Stack(
-                                children: [
-                                  _AvatarPreview(
-                                    displayName: displayName,
-                                    cachedAvatar: cachedAvatar,
-                                    pendingAvatarBytes: pendingAvatarBytes,
-                                  ),
-                                  Positioned(
-                                    right: 0,
-                                    bottom: 0,
-                                    child: GestureDetector(
-                                      onTap: savingAvatar ? null : _pickAvatar,
-                                      child: Container(
-                                        height: 32,
-                                        width: 32,
-                                        decoration: BoxDecoration(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Stack(
+                              children: [
+                                _AvatarPreview(
+                                  displayName: displayName,
+                                  cachedAvatar: cachedAvatar,
+                                  pendingAvatarBytes: pendingAvatarBytes,
+                                ),
+                                Positioned(
+                                  right: 0,
+                                  bottom: 0,
+                                  child: GestureDetector(
+                                    onTap: savingAvatar ? null : _pickAvatar,
+                                    child: Container(
+                                      height: 32,
+                                      width: 32,
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
                                           color: Theme.of(context)
                                               .colorScheme
-                                              .primary,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .surfaceContainerLow,
-                                            width: 2,
-                                          ),
+                                              .surfaceContainerLow,
+                                          width: 2,
                                         ),
-                                        child: Icon(
-                                          Icons.camera_alt_rounded,
+                                      ),
+                                      child: Icon(
+                                        Icons.camera_alt_rounded,
+                                        size: 16,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    displayName,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineSmall
+                                        ?.copyWith(fontWeight: FontWeight.w700),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    subtitle,
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                  if (current.phone.trim().isNotEmpty) ...[
+                                    const SizedBox(height: 10),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.phone_rounded,
                                           size: 16,
                                           color: Theme.of(context)
                                               .colorScheme
-                                              .onPrimary,
+                                              .onSurfaceVariant,
                                         ),
-                                      ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            current.phone,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.copyWith(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
+                                                ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
+                                  ],
+                                  if (effectiveLegalName.isNotEmpty) ...[
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.badge_rounded,
+                                          size: 16,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            effectiveLegalName,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.copyWith(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
+                                                ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ],
                               ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      displayName,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headlineSmall
-                                          ?.copyWith(
-                                              fontWeight: FontWeight.w700),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      subtitle,
-                                      style:
-                                          Theme.of(context).textTheme.bodySmall,
-                                    ),
-                                    if (current.phone.trim().isNotEmpty) ...[
-                                      const SizedBox(height: 10),
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons.phone_rounded,
-                                            size: 16,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSurfaceVariant,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Text(
-                                              current.phone,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium
-                                                  ?.copyWith(
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .onSurfaceVariant,
-                                                  ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                    if (effectiveLegalName.isNotEmpty) ...[
-                                      const SizedBox(height: 8),
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons.badge_rounded,
-                                            size: 16,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSurfaceVariant,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Text(
-                                              effectiveLegalName,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium
-                                                  ?.copyWith(
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .onSurfaceVariant,
-                                                  ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              _ThemeIconToggle(
-                                isDark: ThemeController.instance.isDark,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: nicknameController,
-                            onChanged: (_) => setState(() {}),
-                            style:
-                                Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurfaceVariant,
-                                    ),
-                            cursorColor: Theme.of(context).colorScheme.primary,
-                            decoration: InputDecoration(
-                              labelText: l10n.nicknameLabel,
-                              hintText: l10n.nicknameHint,
                             ),
-                          ),
-                          if (_hasProfileChanges) ...[
-                            const SizedBox(height: 14),
-                            SizedBox(
-                              width: double.infinity,
-                              child: FilledButton.icon(
-                                onPressed: savingProfileChanges
-                                    ? null
-                                    : _saveProfileChanges,
-                                icon: savingProfileChanges
-                                    ? const SizedBox(
-                                        height: 18,
-                                        width: 18,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                        ),
-                                      )
-                                    : const Icon(Icons.check_rounded),
-                                label: Text(l10n.save),
-                              ),
+                            const SizedBox(width: 12),
+                            _ThemeIconToggle(
+                              isDark: ThemeController.instance.isDark,
                             ),
                           ],
-                          if (pendingAvatarBytes != null) ...[
-                            const SizedBox(height: 10),
-                            Text(
-                              l10n.selectedImageNotice,
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ],
-                          const SizedBox(height: 18),
-                          _LanguagePreferenceRow(
-                            currentLocale: LocaleController.instance.locale,
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: nicknameController,
+                          onChanged: (_) => setState(() {}),
+                          style:
+                              Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                          cursorColor: Theme.of(context).colorScheme.primary,
+                          decoration: InputDecoration(
+                            labelText: l10n.nicknameLabel,
+                            hintText: l10n.nicknameHint,
                           ),
-                          const SizedBox(height: 16),
-                          _ThemePreferenceRow(
-                            variant: ThemeController.instance.variant,
-                          ),
-                          const SizedBox(height: 24),
-                          Divider(
-                            height: 1,
-                            thickness: 1,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .outlineVariant
-                                .withValues(alpha: 0.55),
-                          ),
-                          const SizedBox(height: 24),
-                          Text(
-                            l10n.securityTitle,
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
+                        ),
+                        if (_hasProfileChanges) ...[
                           const SizedBox(height: 14),
-                          _ProfileActionButton(
-                            primary: true,
-                            onPressed: savingPin ? null : _showPinFlow,
-                            label: savingPin
-                                ? l10n.pinSaving
-                                : hasPin
-                                    ? l10n.pinChange
-                                    : l10n.pinSet,
-                          ),
-                          if (hasPin) ...[
-                            const SizedBox(height: 10),
-                            _ProfileActionButton(
-                              primary: false,
-                              onPressed: savingPin ? null : _removePin,
-                              label: l10n.pinRemove,
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton.icon(
+                              onPressed: savingProfileChanges
+                                  ? null
+                                  : _saveProfileChanges,
+                              icon: savingProfileChanges
+                                  ? const SizedBox(
+                                      height: 18,
+                                      width: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.check_rounded),
+                              label: Text(l10n.save),
                             ),
-                          ],
-                          const SizedBox(height: 16),
-                          _BiometricPreferenceRow(
-                            enabled: biometricEnabled,
-                            interactive: hasPin && !savingBiometric,
-                            onChanged: (value) => _toggleBiometric(value),
                           ),
                         ],
+                        if (pendingAvatarBytes != null) ...[
+                          const SizedBox(height: 10),
+                          Text(
+                            l10n.selectedImageNotice,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                        const SizedBox(height: 18),
+                        _LanguagePreferenceRow(
+                          currentLocale: LocaleController.instance.locale,
+                        ),
+                        const SizedBox(height: 16),
+                        _ThemePreferenceRow(
+                          variant: ThemeController.instance.variant,
+                        ),
+                        const SizedBox(height: 24),
+                        Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .outlineVariant
+                              .withValues(alpha: 0.55),
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          l10n.securityTitle,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 14),
+                        _ProfileActionButton(
+                          primary: true,
+                          onPressed: savingPin ? null : _showPinFlow,
+                          label: savingPin
+                              ? l10n.pinSaving
+                              : hasPin
+                                  ? l10n.pinChange
+                                  : l10n.pinSet,
+                        ),
+                        if (hasPin) ...[
+                          const SizedBox(height: 10),
+                          _ProfileActionButton(
+                            primary: false,
+                            onPressed: savingPin ? null : _removePin,
+                            label: l10n.pinRemove,
+                          ),
+                        ],
+                        const SizedBox(height: 16),
+                        _BiometricPreferenceRow(
+                          enabled: biometricEnabled,
+                          interactive: hasPin && !savingBiometric,
+                          onChanged: (value) => _toggleBiometric(value),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -1102,8 +1100,9 @@ class _ProfileSelectionOption extends StatelessWidget {
                   Text(
                     title,
                     style: theme.textTheme.titleMedium?.copyWith(
-                      color:
-                          active ? scheme.onSecondaryContainer : scheme.onSurface,
+                      color: active
+                          ? scheme.onSecondaryContainer
+                          : scheme.onSurface,
                     ),
                   ),
                   if ((subtitle ?? '').trim().isNotEmpty) ...[
@@ -1112,7 +1111,8 @@ class _ProfileSelectionOption extends StatelessWidget {
                       subtitle!,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: active
-                            ? scheme.onSecondaryContainer.withValues(alpha: 0.74)
+                            ? scheme.onSecondaryContainer
+                                .withValues(alpha: 0.74)
                             : scheme.onSurfaceVariant,
                       ),
                     ),
@@ -1129,7 +1129,8 @@ class _ProfileSelectionOption extends StatelessWidget {
               decoration: BoxDecoration(
                 color: active ? scheme.primary : Colors.transparent,
                 shape: BoxShape.circle,
-                border: active ? null : Border.all(color: scheme.outlineVariant),
+                border:
+                    active ? null : Border.all(color: scheme.outlineVariant),
               ),
               child: active
                   ? Icon(
@@ -1187,7 +1188,8 @@ class _ThemeSelectionOption extends StatelessWidget {
               child: Text(
                 title,
                 style: theme.textTheme.titleMedium?.copyWith(
-                  color: active ? scheme.onSecondaryContainer : scheme.onSurface,
+                  color:
+                      active ? scheme.onSecondaryContainer : scheme.onSurface,
                 ),
               ),
             ),
@@ -1216,7 +1218,8 @@ class _ThemeSelectionOption extends StatelessWidget {
               decoration: BoxDecoration(
                 color: active ? scheme.primary : Colors.transparent,
                 shape: BoxShape.circle,
-                border: active ? null : Border.all(color: scheme.outlineVariant),
+                border:
+                    active ? null : Border.all(color: scheme.outlineVariant),
               ),
               child: active
                   ? Icon(
@@ -1244,6 +1247,9 @@ class _ThemeIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool darkModeIcon = asset.contains('contrast-2-fill');
+    final IconData icon =
+        darkModeIcon ? Icons.dark_mode_rounded : Icons.light_mode_rounded;
     return InkWell(
       borderRadius: BorderRadius.circular(999),
       onTap: onTap,
@@ -1262,14 +1268,8 @@ class _ThemeIconButton extends StatelessWidget {
           switchInCurve: Curves.easeInOutCubic,
           switchOutCurve: Curves.easeInOutCubic,
           transitionBuilder: (child, animation) {
-            if (animation.status == AnimationStatus.reverse) {
-              return FadeTransition(
-                opacity: animation,
-                child: child,
-              );
-            }
             final turns = Tween<double>(
-              begin: 0.15,
+              begin: darkModeIcon ? -0.15 : 0.15,
               end: 0,
             ).animate(animation);
             return RotationTransition(
@@ -1280,15 +1280,11 @@ class _ThemeIconButton extends StatelessWidget {
               ),
             );
           },
-          child: SvgPicture.asset(
-            asset,
+          child: Icon(
+            icon,
             key: ValueKey<String>(asset),
-            width: 22,
-            height: 22,
-            colorFilter: ColorFilter.mode(
-              Theme.of(context).colorScheme.onSurface,
-              BlendMode.srcIn,
-            ),
+            size: 22,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
       ),

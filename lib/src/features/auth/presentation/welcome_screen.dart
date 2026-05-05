@@ -5,7 +5,7 @@ import 'dart:ui' as ui;
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/localization/locale_controller.dart';
 import '../../../core/theme/theme_controller.dart';
-import '../../../core/widgets/motion_widgets.dart';
+import '../../../core/widgets/display/motion_widgets.dart';
 import 'package:androidx_graphics_shapes/material_shapes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';

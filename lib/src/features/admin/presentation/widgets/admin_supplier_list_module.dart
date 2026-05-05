@@ -1,4 +1,4 @@
-import '../../../../core/widgets/m3_segmented_list.dart';
+import '../../../../core/widgets/lists/m3_segmented_list.dart';
 import '../../../shared/models/app_models.dart';
 import 'admin_summary_card.dart';
 import 'package:flutter/material.dart';

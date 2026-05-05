@@ -1,4 +1,4 @@
-import '../../../../core/widgets/common_widgets.dart';
+import '../../../../core/widgets/display/common_widgets.dart';
 import 'package:flutter/material.dart';
 
 class AdminModuleCard extends StatefulWidget {

@@ -1,5 +1,5 @@
 import '../../../app/app_router.dart';
-import '../../../core/widgets/app_shell.dart';
+import '../../../core/widgets/shell/app_shell.dart';
 import '../../shared/models/app_models.dart';
 import 'supplier_confirm_screen.dart';
 import 'widgets/supplier_dock.dart';

@@ -1,4 +1,4 @@
-import 'package:erpnext_stock_mobile/src/core/widgets/m3_confirm_dialog.dart';
+import 'package:erpnext_stock_mobile/src/core/widgets/feedback/m3_confirm_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

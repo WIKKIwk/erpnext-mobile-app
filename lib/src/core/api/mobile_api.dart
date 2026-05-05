@@ -1,20 +1,20 @@
 import '../../features/shared/models/app_models.dart';
 import '../customer/customer_priority.dart';
-import '../notifications/push_messaging_service.dart';
+import '../notifications/service/push_messaging_service.dart';
 import '../search/search_activity_store.dart';
 import '../search/search_normalizer.dart';
-import '../session/app_session.dart';
+import '../session/session.dart';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-part 'mobile_api_admin.dart';
-part 'mobile_api_auth_profile.dart';
-part 'mobile_api_customer.dart';
-part 'mobile_api_supplier_notifications.dart';
-part 'mobile_api_werka.dart';
+part 'admin/mobile_api_admin.dart';
+part 'auth/mobile_api_auth_profile.dart';
+part 'customer/mobile_api_customer.dart';
+part 'supplier/mobile_api_supplier_notifications.dart';
+part 'werka/mobile_api_werka.dart';
 
 class MobileApiException implements Exception {
   const MobileApiException({

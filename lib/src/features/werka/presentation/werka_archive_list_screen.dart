@@ -2,10 +2,10 @@ import '../../../core/api/mobile_api.dart';
 import '../../../core/files/archive_pdf_photo_saver.dart';
 import '../../../core/files/archive_pdf_saver.dart';
 import '../../../core/localization/app_localizations.dart';
-import '../../../core/widgets/app_loading_indicator.dart';
-import '../../../core/widgets/app_retry_state.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/native_back_button.dart';
+import '../../../core/widgets/shell/app_loading_indicator.dart';
+import '../../../core/widgets/shell/app_retry_state.dart';
+import '../../../core/widgets/shell/app_shell.dart';
+import '../../../core/widgets/navigation/native_back_button.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/werka_dock.dart';
 import 'package:file_picker/file_picker.dart';
@@ -320,9 +320,8 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
           ),
         ],
         fileNameOverrides: [file.filename],
-        sharePositionOrigin: box == null
-            ? null
-            : box.localToGlobal(Offset.zero) & box.size,
+        sharePositionOrigin:
+            box == null ? null : box.localToGlobal(Offset.zero) & box.size,
       ),
     );
   }
@@ -548,6 +547,7 @@ class _WerkaArchiveListScreenState extends State<WerkaArchiveListScreen> {
     });
     await _load();
   }
+
   DateTime _lastDayOfMonth(int year, int month) {
     return DateTime(year, month + 1, 1).subtract(const Duration(days: 1));
   }

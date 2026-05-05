@@ -1,6 +1,6 @@
 import '../../../core/api/mobile_api.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_shell.dart';
+import '../../../core/widgets/shell/app_shell.dart';
 import 'widgets/admin_dock.dart';
 import 'package:flutter/material.dart';
 

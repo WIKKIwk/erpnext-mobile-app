@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:erpnext_stock_mobile/src/core/api/mobile_api.dart';
-import 'package:erpnext_stock_mobile/src/core/session/app_session.dart';
+import 'package:erpnext_stock_mobile/src/core/session/session.dart';
 import 'package:erpnext_stock_mobile/src/features/admin/presentation/admin_item_group_bulk_move_screen.dart';
 import 'package:erpnext_stock_mobile/src/features/shared/models/app_models.dart';
 import 'package:flutter/material.dart';

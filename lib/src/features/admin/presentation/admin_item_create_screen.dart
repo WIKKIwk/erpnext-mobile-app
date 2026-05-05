@@ -1,7 +1,7 @@
 import '../../../core/api/mobile_api.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/common_widgets.dart';
+import '../../../core/widgets/shell/app_shell.dart';
+import '../../../core/widgets/display/common_widgets.dart';
 import '../../shared/models/app_models.dart';
 import 'widgets/admin_dock.dart';
 import 'package:flutter/material.dart';
@@ -168,9 +168,8 @@ class _AdminItemCreateScreenState extends State<AdminItemCreateScreen> {
                   !snapshot.hasError) {
                 _syncItemGroupSelection(groups);
               }
-              final selectedGroup = itemGroup.text.trim().isEmpty
-                  ? null
-                  : itemGroup.text.trim();
+              final selectedGroup =
+                  itemGroup.text.trim().isEmpty ? null : itemGroup.text.trim();
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -178,8 +177,7 @@ class _AdminItemCreateScreenState extends State<AdminItemCreateScreen> {
                     'Item group',
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
                           fontWeight: FontWeight.w700,
-                          color:
-                              Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                   ),
                   const SizedBox(height: 6),
@@ -228,7 +226,8 @@ class _AdminItemCreateScreenState extends State<AdminItemCreateScreen> {
                           const SizedBox(width: 10),
                           Icon(
                             Icons.expand_more_rounded,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ],
                       ),
@@ -272,7 +271,9 @@ class _AdminItemCreateScreenState extends State<AdminItemCreateScreen> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                for (int index = 0; index < groups.length; index++) ...[
+                                for (int index = 0;
+                                    index < groups.length;
+                                    index++) ...[
                                   if (index > 0)
                                     Divider(
                                       height: 1,
@@ -309,11 +310,12 @@ class _AdminItemCreateScreenState extends State<AdminItemCreateScreen> {
                                                     .textTheme
                                                     .bodyMedium
                                                     ?.copyWith(
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .onSurface,
-                                                ),
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurface,
+                                                    ),
                                               ),
                                             ),
                                             if (groups[index] == selectedGroup)
