@@ -291,7 +291,7 @@ List<_AdminHomeAction> _adminHomeActions(BuildContext context) {
       routeName: AppRoutes.adminRoles,
     ),
     const _AdminHomeAction(
-      title: 'Zakazlar',
+      title: 'Tezkor zakazlar',
       icon: Icons.list_alt_rounded,
       routeName: AppRoutes.adminCalculateOrders,
     ),

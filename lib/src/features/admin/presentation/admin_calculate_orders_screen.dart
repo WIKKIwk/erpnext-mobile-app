@@ -117,7 +117,7 @@ class _AdminCalculateOrdersScreenState
         selectedRouteName: AppRoutes.adminCalculateOrders,
         onNavigate: _openDrawerRoute,
       ),
-      title: 'Zakazlar',
+      title: 'Tezkor zakazlar',
       subtitle: '',
       nativeTopBar: true,
       nativeTitleTextStyle: AppTheme.werkaNativeAppBarTitleStyle(context),

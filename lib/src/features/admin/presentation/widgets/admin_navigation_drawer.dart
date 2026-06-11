@@ -170,7 +170,7 @@ List<_AdminDrawerDestination> _visibleAdminDrawerDestinations(
     const _AdminDrawerDestination(
       icon: Icons.list_alt_outlined,
       selectedIcon: Icons.list_alt_rounded,
-      label: 'Zakazlar',
+      label: 'Tezkor zakazlar',
       routeName: AppRoutes.adminCalculateOrders,
     ),
     _AdminDrawerDestination(
