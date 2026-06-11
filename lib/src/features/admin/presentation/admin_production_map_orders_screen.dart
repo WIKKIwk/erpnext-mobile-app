@@ -121,6 +121,8 @@ class _AdminProductionMapOrdersScreenState
   late TabController _tabController;
   bool _openingRoute = false;
   bool _loading = true;
+  bool _liveRefreshInFlight = false;
+  bool _liveRefreshQueued = false;
   bool _mapsRefreshInFlight = false;
   int _liveStreamGeneration = 0;
   StreamSubscription<String>? _liveStreamSubscription;
@@ -314,15 +316,32 @@ class _AdminProductionMapOrdersScreenState
   }
 
   Future<void> _refreshLive({bool initial = false}) async {
-    if (widget.workerMode) {
-      await _refreshMapsAndApparatus(initial: initial);
-      await _refreshQueueSnapshot();
+    if (_liveRefreshInFlight) {
+      _liveRefreshQueued = true;
       return;
     }
-    await Future.wait([
-      _refreshMapsAndApparatus(initial: initial),
-      _refreshQueueSnapshot(),
-    ]);
+    _liveRefreshInFlight = true;
+    var runInitial = initial;
+    try {
+      while (mounted) {
+        _liveRefreshQueued = false;
+        if (widget.workerMode) {
+          await _refreshMapsAndApparatus(initial: runInitial);
+          await _refreshQueueSnapshot();
+        } else {
+          await Future.wait([
+            _refreshMapsAndApparatus(initial: runInitial),
+            _refreshQueueSnapshot(),
+          ]);
+        }
+        if (!_liveRefreshQueued) {
+          return;
+        }
+        runInitial = false;
+      }
+    } finally {
+      _liveRefreshInFlight = false;
+    }
   }
 
   Future<void> _refreshQueueSnapshot() async {
