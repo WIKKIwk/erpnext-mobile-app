@@ -245,6 +245,7 @@ class _AdminProductionMapTestScreenState
   bool _mapToolsMenuOpen = false;
   bool _savingMap = false;
   late String _orderNumber;
+  CalculateOrderTemplate? _templateDraft;
   CalculateOrderTemplate? _lastSavedTemplate;
   List<AdminApparatusGroup> _apparatusGroups = const [];
 
@@ -265,6 +266,7 @@ class _AdminProductionMapTestScreenState
             ? _orderFlowEdges()
             : _defaultTestEdges();
     _orderNumber = savedMap?.orderNumber.trim() ?? '';
+    _templateDraft = widget.orderContext?.templateDraft;
     unawaited(_loadApparatusGroups());
   }
 
@@ -378,7 +380,7 @@ class _AdminProductionMapTestScreenState
     setState(() => _savingMap = true);
     try {
       final definition = _currentMapDefinition(orderNumber: orderNumber);
-      final draft = widget.orderContext?.templateDraft;
+      final draft = _templateDraft;
       if (draft != null) {
         // Single server-side operation: map + zakaz saved together.
         final result = await MobileApi.instance.adminSaveProductionMapWithOrder(
@@ -389,6 +391,7 @@ class _AdminProductionMapTestScreenState
           return;
         }
         _lastSavedTemplate = result.template;
+        _templateDraft = result.template ?? draft;
         await CalculateOrderTemplateStore.instance.load(force: true);
         if (!mounted) {
           return;

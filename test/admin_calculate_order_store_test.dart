@@ -15,8 +15,10 @@ void main() {
     expect(client.listCalls, 1);
     expect(store.templates, isEmpty);
 
-    await store.upsert(_template(code: 'Z-CPP-1', name: 'CPP 600', widthMm: 530));
-    await store.upsert(_template(code: 'Z-CPP-1', name: 'CPP 600', widthMm: 630));
+    await store
+        .upsert(_template(code: 'Z-CPP-1', name: 'CPP 600', widthMm: 530));
+    await store
+        .upsert(_template(code: 'Z-CPP-1', name: 'CPP 600', widthMm: 630));
 
     expect(client.upsertCalls, 2);
     expect(client.listCalls, 3);
@@ -25,7 +27,8 @@ void main() {
     expect(store.templates.single.name, 'CPP 600');
     expect(store.templates.single.widthMm, 630);
 
-    await store.upsert(_template(code: 'Z-CPP-2', name: 'CPP 600', widthMm: 700));
+    await store
+        .upsert(_template(code: 'Z-CPP-2', name: 'CPP 600', widthMm: 700));
     expect(store.templates, hasLength(2));
     final first = store.templates.firstWhere(
       (template) => template.code == 'Z-CPP-1',
@@ -44,6 +47,29 @@ void main() {
     expect(client.deleteCalls, 2);
     expect(store.templates, isEmpty);
   });
+
+  test('load hides duplicate calculate orders with the same code', () async {
+    final client = _FakeCalculateOrderTemplateClient();
+    client.seed([
+      _copyWithServerFields(
+        _template(code: 'Z-DUP-1', name: 'New copy', widthMm: 640),
+        id: 'new-id',
+        code: 'Z-DUP-1',
+      ),
+      _copyWithServerFields(
+        _template(code: 'z-dup-1', name: 'Old copy', widthMm: 530),
+        id: 'old-id',
+        code: 'z-dup-1',
+      ),
+    ]);
+    final store = CalculateOrderTemplateStore(client: client);
+
+    await store.load();
+
+    expect(store.templates, hasLength(1));
+    expect(store.templates.single.id, 'new-id');
+    expect(store.templates.single.widthMm, 640);
+  });
 }
 
 class _FakeCalculateOrderTemplateClient
@@ -52,6 +78,12 @@ class _FakeCalculateOrderTemplateClient
   int listCalls = 0;
   int upsertCalls = 0;
   int deleteCalls = 0;
+
+  void seed(List<CalculateOrderTemplate> templates) {
+    _templates
+      ..clear()
+      ..addAll(templates);
+  }
 
   @override
   Future<List<CalculateOrderTemplate>> listTemplates() async {

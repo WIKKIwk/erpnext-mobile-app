@@ -53,7 +53,7 @@ class CalculateOrderTemplateStore extends ChangeNotifier {
     if (_loaded && !force) {
       return;
     }
-    _templates = await _client.listTemplates();
+    _templates = _dedupeTemplates(await _client.listTemplates());
     _loaded = true;
     notifyListeners();
   }
@@ -62,7 +62,7 @@ class CalculateOrderTemplateStore extends ChangeNotifier {
     final saved = await _client.upsertTemplate(template);
     await load(force: true);
     if (!_templates.any((item) => item.id == saved.id)) {
-      _templates = [saved, ..._templates];
+      _templates = _dedupeTemplates([saved, ..._templates]);
       notifyListeners();
     }
     return saved;
@@ -80,4 +80,23 @@ class CalculateOrderTemplateStore extends ChangeNotifier {
     _loaded = false;
     notifyListeners();
   }
+}
+
+List<CalculateOrderTemplate> _dedupeTemplates(
+  List<CalculateOrderTemplate> templates,
+) {
+  final seen = <String>{};
+  final result = <CalculateOrderTemplate>[];
+  for (final template in templates) {
+    final code = template.code.trim().toLowerCase();
+    final key = code.isNotEmpty ? 'code:$code' : 'id:${template.id.trim()}';
+    if (key == 'id:') {
+      result.add(template);
+      continue;
+    }
+    if (seen.add(key)) {
+      result.add(template);
+    }
+  }
+  return result;
 }
