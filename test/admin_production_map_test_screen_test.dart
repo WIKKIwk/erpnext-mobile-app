@@ -553,6 +553,54 @@ void main() {
     ]);
   });
 
+  test('production map batch move keeps laminatsiya alternatives in group',
+      () async {
+    await TestModeController.instance.setEnabled(true);
+    final map = _alternativeProductionOrderMap(
+      id: 'zakaz-lamin-alt-move',
+      title: 'Laminatsiya alternative move',
+      productCode: 'LAMIN-ALT',
+      product: 'laminatsiya product',
+      apparatus: const ['Laminatsiya 1', 'Laminatsiya 2'],
+      rollCount: 7,
+      widthMm: 900,
+    );
+    await MobileApi.instance.adminSaveProductionMap(
+      map.copyWith(
+        nodes: [
+          for (final node in map.nodes)
+            node.kind == 'apparatus'
+                ? node.copyWith(alternativeAssignedTitle: 'Laminatsiya 1')
+                : node,
+        ],
+      ),
+    );
+
+    final moved = await MobileApi.instance.adminMoveProductionMapOrdersBatch(
+      mapIds: const ['zakaz-lamin-alt-move'],
+      fromApparatus: 'Laminatsiya 1',
+      toApparatus: 'Laminatsiya 2',
+    );
+    expect(_alternativeAssignedTitles(moved, 'zakaz-lamin-alt-move'), [
+      'Laminatsiya 2',
+      'Laminatsiya 2',
+    ]);
+
+    expect(
+      () => MobileApi.instance.adminMoveProductionMapOrdersBatch(
+        mapIds: const ['zakaz-lamin-alt-move'],
+        fromApparatus: 'Laminatsiya 2',
+        toApparatus: 'Paket aparat',
+      ),
+      throwsA(isA<MobileApiException>()),
+    );
+    final maps = await MobileApi.instance.adminProductionMaps();
+    expect(_alternativeAssignedTitles(maps, 'zakaz-lamin-alt-move'), [
+      'Laminatsiya 2',
+      'Laminatsiya 2',
+    ]);
+  });
+
   testWidgets('production map order flow requires four digit order number',
       (tester) async {
     await TestModeController.instance.setEnabled(true);

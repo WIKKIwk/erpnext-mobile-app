@@ -42,7 +42,7 @@ bool productionMapApparatusMatchesOrder(
   AdminWarehouse apparatus,
   ProductionMapOrderContext? orderContext,
 ) {
-  if (_isProductionMapLaminatsiya(apparatus.warehouse) &&
+  if (productionMapIsLaminatsiyaApparatus(apparatus.warehouse) &&
       !_productionMapLaminatsiyaMatchesOrder(orderContext)) {
     return false;
   }
@@ -67,10 +67,6 @@ bool productionMapApparatusMatchesOrder(
     rollCount: context.rollCount,
     widthMm: context.widthMm,
   );
-}
-
-bool _isProductionMapLaminatsiya(String title) {
-  return title.trim().toLowerCase().contains('laminatsiya');
 }
 
 bool _productionMapLaminatsiyaMatchesOrder(

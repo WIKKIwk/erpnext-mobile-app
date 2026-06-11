@@ -423,20 +423,17 @@ extension MobileApiAdmin on MobileApi {
       }
       final updated = <ProductionMapSaved>[];
       for (final current in originals) {
-        final targetColor = productionMapPechatColorCount(toApparatus);
-        if (targetColor != null) {
-          final sourceColor = productionMapPechatColorCount(fromApparatus);
-          if (!productionMapPechatCanMoveOrder(
-            apparatusColorCount: targetColor,
-            rollCount: current.map.rollCount,
-            widthMm: current.map.widthMm,
-            sourceApparatusColorCount: sourceColor,
-          )) {
-            throw const MobileApiException(
-              code: 'move_not_allowed',
-              message: 'Zakaz bu aparatga tushmaydi',
-            );
-          }
+        if (!productionMapCanMoveOrderToApparatus(
+          nodes: current.map.nodes,
+          fromApparatus: fromApparatus,
+          toApparatus: toApparatus,
+          rollCount: current.map.rollCount,
+          widthMm: current.map.widthMm,
+        )) {
+          throw const MobileApiException(
+            code: 'move_not_allowed',
+            message: 'Zakaz bu aparatga tushmaydi',
+          );
         }
         final nodes = productionMapReassignAlternativeApparatusAssignment(
               nodes: current.map.nodes,
@@ -514,20 +511,17 @@ extension MobileApiAdmin on MobileApi {
         );
       }
       final current = _testModeProductionMaps[index];
-      final targetColor = productionMapPechatColorCount(toApparatus);
-      if (targetColor != null) {
-        final sourceColor = productionMapPechatColorCount(fromApparatus);
-        if (!productionMapPechatCanMoveOrder(
-          apparatusColorCount: targetColor,
-          rollCount: current.map.rollCount,
-          widthMm: current.map.widthMm,
-          sourceApparatusColorCount: sourceColor,
-        )) {
-          throw const MobileApiException(
-            code: 'move_not_allowed',
-            message: 'Zakaz bu aparatga tushmaydi',
-          );
-        }
+      if (!productionMapCanMoveOrderToApparatus(
+        nodes: current.map.nodes,
+        fromApparatus: fromApparatus,
+        toApparatus: toApparatus,
+        rollCount: current.map.rollCount,
+        widthMm: current.map.widthMm,
+      )) {
+        throw const MobileApiException(
+          code: 'move_not_allowed',
+          message: 'Zakaz bu aparatga tushmaydi',
+        );
       }
       final nodes = productionMapReassignAlternativeApparatusAssignment(
             nodes: current.map.nodes,

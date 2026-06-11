@@ -185,6 +185,12 @@ String productionMapWarehouseBaseTitle(String title) {
   return match?.group(1)?.trim() ?? trimmed;
 }
 
+bool productionMapIsLaminatsiyaApparatus(String title) {
+  return productionMapWarehouseBaseTitle(title)
+      .toLowerCase()
+      .contains('laminatsiya');
+}
+
 bool productionMapWarehouseTitlesMatch(String left, String right) {
   final normalizedLeft = left.trim();
   final normalizedRight = right.trim();
@@ -208,6 +214,70 @@ bool productionMapWarehouseTitlesMatch(String left, String right) {
       productionMapWarehouseBaseTitle(normalizedRight).toLowerCase();
 }
 
+bool productionMapAlternativeAssignedGroupContainsTarget({
+  required List<ProductionMapNode> nodes,
+  required String fromApparatus,
+  required String toApparatus,
+}) {
+  final candidateGroups = <String>{};
+  for (final node in nodes) {
+    final groupId = node.alternativeGroupId.trim();
+    if (node.kind == 'apparatus' &&
+        groupId.isNotEmpty &&
+        productionMapWarehouseTitlesMatch(
+          node.alternativeAssignedTitle,
+          fromApparatus,
+        )) {
+      candidateGroups.add(groupId);
+    }
+  }
+  if (candidateGroups.isEmpty) {
+    return true;
+  }
+  return nodes.any(
+    (node) =>
+        node.kind == 'apparatus' &&
+        candidateGroups.contains(node.alternativeGroupId.trim()) &&
+        productionMapWarehouseTitlesMatch(node.title, toApparatus),
+  );
+}
+
+bool productionMapCanMoveOrderToApparatus({
+  required List<ProductionMapNode> nodes,
+  required String fromApparatus,
+  required String toApparatus,
+  required double? rollCount,
+  required double? widthMm,
+}) {
+  final fromIsLaminatsiya = productionMapIsLaminatsiyaApparatus(fromApparatus);
+  final toIsLaminatsiya = productionMapIsLaminatsiyaApparatus(toApparatus);
+  if (fromIsLaminatsiya || toIsLaminatsiya) {
+    return fromIsLaminatsiya &&
+        toIsLaminatsiya &&
+        productionMapAlternativeAssignedGroupContainsTarget(
+          nodes: nodes,
+          fromApparatus: fromApparatus,
+          toApparatus: toApparatus,
+        );
+  }
+  final targetColorCount = productionMapPechatColorCount(toApparatus);
+  if (targetColorCount == null) {
+    return true;
+  }
+  final sourceColorCount = productionMapPechatColorCount(fromApparatus) ??
+      productionMapOrderPechatColorCount(
+        nodes
+            .where((node) => node.kind == 'apparatus')
+            .map((node) => node.title),
+      );
+  return productionMapPechatCanMoveOrder(
+    apparatusColorCount: targetColorCount,
+    rollCount: rollCount,
+    widthMm: widthMm,
+    sourceApparatusColorCount: sourceColorCount,
+  );
+}
+
 /// Whether an apparatus node belongs to the source warehouse/pechat being moved
 /// from. Pechat nodes match by color count so minor title suffixes still work.
 bool productionMapApparatusNodeMatchesFrom({
@@ -215,7 +285,10 @@ bool productionMapApparatusNodeMatchesFrom({
   required String fromApparatus,
 }) {
   final from = fromApparatus.trim();
-  if (nodeTitle.trim() == from) {
+  final title = nodeTitle.trim();
+  if (title == from ||
+      productionMapWarehouseBaseTitle(title).toLowerCase() ==
+          productionMapWarehouseBaseTitle(from).toLowerCase()) {
     return true;
   }
   final fromColor = productionMapPechatColorCount(from);

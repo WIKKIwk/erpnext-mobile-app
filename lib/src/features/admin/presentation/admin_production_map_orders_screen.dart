@@ -1186,14 +1186,6 @@ class _AdminProductionMapOrdersScreenState
     );
   }
 
-  int? _orderPechatColorCount(ProductionMapSaved order) {
-    return productionMapOrderPechatColorCount(
-      order.map.nodes
-          .where((node) => node.kind == 'apparatus')
-          .map((node) => node.title),
-    );
-  }
-
   bool _canMoveOrderToApparatus(
     ProductionMapSaved order,
     AdminWarehouse target, {
@@ -1206,17 +1198,12 @@ class _AdminProductionMapOrdersScreenState
     if (_isMoveUnassignedApparatus(target)) {
       return _returnAssignedMapToAlternatives(order.map, source) != null;
     }
-    final colorCount = productionMapPechatColorCount(target.warehouse);
-    if (colorCount == null) {
-      return true;
-    }
-    final sourceColorCount = productionMapPechatColorCount(source.warehouse) ??
-        _orderPechatColorCount(order);
-    return productionMapPechatCanMoveOrder(
-      apparatusColorCount: colorCount,
+    return productionMapCanMoveOrderToApparatus(
+      nodes: order.map.nodes,
+      fromApparatus: source.warehouse,
+      toApparatus: target.warehouse,
       rollCount: order.map.rollCount,
       widthMm: order.map.widthMm,
-      sourceApparatusColorCount: sourceColorCount,
     );
   }
 
