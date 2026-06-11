@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import '../../../app/app_router.dart';
@@ -6,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shell/app_shell.dart';
 import '../../shared/models/app_models.dart';
 import '../../werka/presentation/widgets/m3_picker_sheet.dart';
+import '../state/calculate_order_store.dart';
 import 'calculate_product_picker_loader.dart';
 import '../logic/production_map_pechat_rules.dart';
 import 'admin_production_map_test_screen.dart';
@@ -73,6 +75,7 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
     for (final controller in _calculationInputControllers) {
       controller.addListener(_handleCalculationInputChanged);
     }
+    unawaited(_warmQuickOrderTemplates());
   }
 
   @override
@@ -159,6 +162,14 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
     }
   }
 
+  Future<void> _warmQuickOrderTemplates() async {
+    try {
+      await CalculateOrderTemplateStore.instance.load();
+    } catch (_) {
+      return;
+    }
+  }
+
   void _openDrawerRoute(String routeName) {
     if (_openingRoute) {
       return;
@@ -213,7 +224,7 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
     });
   }
 
-  Future<bool> _hasExistingQuickOrderForProduct(SupplierItem product) async {
+  bool _hasExistingQuickOrderForProduct(SupplierItem product) {
     final productKeys = {
       product.code,
       product.name,
@@ -222,7 +233,7 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
       return false;
     }
     final currentTemplateId = _templateId.trim();
-    final templates = await MobileApi.instance.calculateOrderTemplates();
+    final templates = CalculateOrderTemplateStore.instance.templates;
     return templates.any((template) {
       if (currentTemplateId.isNotEmpty &&
           template.id.trim() == currentTemplateId) {
@@ -375,7 +386,7 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
     if (picked == null || !mounted) {
       return;
     }
-    if (await _hasExistingQuickOrderForProduct(picked)) {
+    if (_hasExistingQuickOrderForProduct(picked)) {
       if (!mounted) {
         return;
       }

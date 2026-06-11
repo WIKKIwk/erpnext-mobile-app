@@ -68,6 +68,12 @@ class CalculateOrderTemplateStore extends ChangeNotifier {
     return saved;
   }
 
+  void remember(CalculateOrderTemplate template) {
+    _templates = _dedupeTemplates([template, ..._templates]);
+    _loaded = true;
+    notifyListeners();
+  }
+
   Future<void> delete(String id) async {
     await _client.deleteTemplate(id);
     _templates = _templates.where((template) => template.id != id).toList();

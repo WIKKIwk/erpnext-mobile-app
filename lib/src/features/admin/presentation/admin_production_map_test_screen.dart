@@ -409,9 +409,9 @@ class _AdminProductionMapTestScreenState
         }
         _lastSavedTemplate = result.template;
         _templateDraft = result.template ?? draft;
-        await CalculateOrderTemplateStore.instance.load(force: true);
-        if (!mounted) {
-          return;
+        final savedTemplate = result.template;
+        if (savedTemplate != null) {
+          CalculateOrderTemplateStore.instance.remember(savedTemplate);
         }
         if (orderNumber != null) {
           _orderNumber = orderNumber;
