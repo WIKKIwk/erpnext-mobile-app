@@ -909,28 +909,21 @@ class _AdminProductionMapOrdersScreenState
         orders.isEmpty) {
       return;
     }
-    final movable = orders
-        .where((order) => _canMoveOrderToApparatus(order, to, source: from))
-        .toList(growable: false);
-    if (movable.isEmpty) {
+    final blocked = orders.any(
+      (order) => !_canMoveOrderToApparatus(order, to, source: from),
+    );
+    if (blocked) {
       showAdminTopNotice(context, 'Tanlangan zakazlar bu aparatga tushmaydi');
       return;
     }
-    if (movable.length < orders.length) {
-      showAdminTopNotice(
-        context,
-        '${orders.length - movable.length} ta zakaz cheklov tufayli o‘tkazilmadi',
-      );
-    }
-    final movableIds = movable.map((order) => order.map.id.trim()).toSet();
+    final orderIds = orders.map((order) => order.map.id.trim()).toSet();
     setState(() {
       _draggingMoveOrders = const [];
       _draggingMoveSource = null;
-      _selectedMoveOrderIds.removeAll(movableIds);
     });
     try {
       final saved = await MobileApi.instance.adminMoveProductionMapOrdersBatch(
-        mapIds: movable.map((order) => order.map.id).toList(growable: false),
+        mapIds: orders.map((order) => order.map.id).toList(growable: false),
         fromApparatus: from.warehouse,
         toApparatus: to.warehouse,
       );
@@ -940,7 +933,15 @@ class _AdminProductionMapOrdersScreenState
       final savedById = {
         for (final item in saved) item.map.id.trim(): item,
       };
+      if (savedById.length != orderIds.length ||
+          !orderIds.every(savedById.containsKey)) {
+        throw const MobileApiException(
+          code: 'move_incomplete',
+          message: 'Zakazlar to‘liq ko‘chirilmadi',
+        );
+      }
       setState(() {
+        _selectedMoveOrderIds.removeAll(orderIds);
         _orders = [
           for (final item in _orders)
             if (savedById.containsKey(item.map.id.trim()))
@@ -951,9 +952,9 @@ class _AdminProductionMapOrdersScreenState
       });
       showAdminTopNotice(
         context,
-        movable.length == 1
+        orders.length == 1
             ? 'Zakaz ko‘chirildi'
-            : '${movable.length} ta zakaz ko‘chirildi',
+            : '${orders.length} ta zakaz ko‘chirildi',
       );
     } catch (error) {
       if (!mounted) {
@@ -976,31 +977,25 @@ class _AdminProductionMapOrdersScreenState
     if (widget.readOnly || orders.isEmpty) {
       return;
     }
-    final convertible = orders
-        .map(
-          (order) => MapEntry(
-            order,
-            _returnAssignedMapToAlternatives(order.map, source),
-          ),
-        )
-        .where((entry) => entry.value != null)
-        .toList(growable: false);
-    if (convertible.isEmpty) {
-      showAdminTopNotice(context, 'Bu zakaz tanlanmagan holatga qaytmaydi');
-      return;
+    final converted = <MapEntry<ProductionMapSaved, ProductionMapDefinition>>[];
+    for (final order in orders) {
+      final map = _returnAssignedMapToAlternatives(order.map, source);
+      if (map == null) {
+        showAdminTopNotice(context, 'Bu zakaz tanlanmagan holatga qaytmaydi');
+        return;
+      }
+      converted.add(MapEntry(order, map));
     }
-    final convertibleIds =
-        convertible.map((entry) => entry.key.map.id.trim()).toSet();
+    final orderIds = orders.map((order) => order.map.id.trim()).toSet();
     setState(() {
       _draggingMoveOrders = const [];
       _draggingMoveSource = null;
-      _selectedMoveOrderIds.removeAll(convertibleIds);
     });
     try {
       final saved = <ProductionMapSaved>[];
-      for (final entry in convertible) {
+      for (final entry in converted) {
         saved.add(
-          await MobileApi.instance.adminSaveProductionMap(entry.value!),
+          await MobileApi.instance.adminSaveProductionMap(entry.value),
         );
       }
       if (!mounted) {
@@ -1009,7 +1004,15 @@ class _AdminProductionMapOrdersScreenState
       final savedById = {
         for (final item in saved) item.map.id.trim(): item,
       };
+      if (savedById.length != orderIds.length ||
+          !orderIds.every(savedById.containsKey)) {
+        throw const MobileApiException(
+          code: 'move_incomplete',
+          message: 'Zakazlar to‘liq tanlanmagan holatga qaytmadi',
+        );
+      }
       setState(() {
+        _selectedMoveOrderIds.removeAll(orderIds);
         _orders = [
           for (final item in _orders)
             if (savedById.containsKey(item.map.id.trim()))
@@ -1020,9 +1023,9 @@ class _AdminProductionMapOrdersScreenState
       });
       showAdminTopNotice(
         context,
-        convertible.length == 1
+        orders.length == 1
             ? 'Zakaz tanlanmagan holatga qaytarildi'
-            : '${convertible.length} ta zakaz tanlanmagan holatga qaytarildi',
+            : '${orders.length} ta zakaz tanlanmagan holatga qaytarildi',
       );
     } catch (error) {
       if (!mounted) {
@@ -1067,23 +1070,21 @@ class _AdminProductionMapOrdersScreenState
     if (widget.readOnly || orders.isEmpty) {
       return;
     }
-    final assignable = orders
-        .where((order) => _isAlternativeOrderForApparatus(order, apparatus))
-        .toList(growable: false);
-    if (assignable.isEmpty) {
+    final blocked = orders.any(
+      (order) => !_isAlternativeOrderForApparatus(order, apparatus),
+    );
+    if (blocked) {
       showAdminTopNotice(context, 'Tanlangan zakazlar bu aparatga tushmaydi');
       return;
     }
-    final assignableIds =
-        assignable.map((order) => order.map.id.trim()).toSet();
+    final orderIds = orders.map((order) => order.map.id.trim()).toSet();
     setState(() {
       _draggingMoveOrders = const [];
       _draggingMoveSource = null;
-      _selectedMoveOrderIds.removeAll(assignableIds);
     });
     try {
       final saved = <ProductionMapSaved>[];
-      for (final order in assignable) {
+      for (final order in orders) {
         final assignedMap = _assignAlternativeMapToApparatus(
           order.map,
           apparatus,
@@ -1096,7 +1097,15 @@ class _AdminProductionMapOrdersScreenState
       final savedById = {
         for (final item in saved) item.map.id.trim(): item,
       };
+      if (savedById.length != orderIds.length ||
+          !orderIds.every(savedById.containsKey)) {
+        throw const MobileApiException(
+          code: 'move_incomplete',
+          message: 'Zakazlar to‘liq biriktirilmadi',
+        );
+      }
       setState(() {
+        _selectedMoveOrderIds.removeAll(orderIds);
         _orders = [
           for (final item in _orders)
             if (savedById.containsKey(item.map.id.trim()))
@@ -1107,9 +1116,9 @@ class _AdminProductionMapOrdersScreenState
       });
       showAdminTopNotice(
         context,
-        assignable.length == 1
+        orders.length == 1
             ? 'Zakaz aparatga biriktirildi'
-            : '${assignable.length} ta zakaz aparatga biriktirildi',
+            : '${orders.length} ta zakaz aparatga biriktirildi',
       );
     } catch (error) {
       if (!mounted) {

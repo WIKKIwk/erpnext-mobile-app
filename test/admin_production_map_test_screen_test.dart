@@ -852,6 +852,77 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
   });
 
+  testWidgets('opened orders move module moves every selected pechat order',
+      (tester) async {
+    await TestModeController.instance.setEnabled(true);
+    for (var index = 0; index < 4; index++) {
+      await MobileApi.instance.adminSaveProductionMap(
+        _productionOrderMap(
+          id: 'zakaz-batch-move-$index',
+          title: 'Batch move order ${index + 1}',
+          productCode: 'BATCH-$index',
+          apparatus: '7 ta rangli pechat',
+          product: 'batch move product ${index + 1}',
+          rollCount: 7,
+          widthMm: 650,
+        ),
+      );
+    }
+    await MobileApi.instance.adminSaveProductionMap(
+      _productionOrderMap(
+        id: 'zakaz-batch-move-target',
+        title: 'Batch move target order',
+        productCode: 'BATCH-TARGET',
+        apparatus: '8 ta rangli pechat',
+        product: 'batch move target product',
+        rollCount: 7,
+        widthMm: 650,
+      ),
+    );
+    await _usePhoneViewport(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(useMaterial3: true),
+        locale: const Locale('uz'),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const AdminProductionMapOrdersScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Ko‘chirish'));
+    await tester.pumpAndSettle();
+    for (var index = 0; index < 4; index++) {
+      await _tapMoveOrderBadge(
+        tester,
+        key: ValueKey(
+          'move-order-7 ta rangli pechat-zakaz-batch-move-$index',
+        ),
+      );
+    }
+
+    await _dragOrderHandleToBottomZone(
+      tester,
+      orderTitle: 'Batch move order 1',
+      targetText: 'Batch move target order',
+    );
+
+    final maps = await MobileApi.instance.adminProductionMaps();
+    for (var index = 0; index < 4; index++) {
+      expect(
+        _apparatusTitle(maps, 'zakaz-batch-move-$index'),
+        '8 ta rangli pechat',
+      );
+    }
+    await tester.pump(const Duration(seconds: 3));
+  });
+
   testWidgets(
       'opened orders move module blocks 9-color rubber orders on 7-color pechat',
       (tester) async {
@@ -1044,6 +1115,28 @@ void main() {
         widthMm: 900,
       ),
     );
+    await MobileApi.instance.adminSaveProductionMap(
+      _productionOrderMap(
+        id: 'zakaz-skip-target-7',
+        title: 'Skip target seven order',
+        productCode: 'SKIP-TARGET-7',
+        apparatus: '7 ta rangli pechat',
+        product: 'skip target seven product',
+        rollCount: 7,
+        widthMm: 650,
+      ),
+    );
+    await MobileApi.instance.adminSaveProductionMap(
+      _productionOrderMap(
+        id: 'zakaz-skip-target-8',
+        title: 'Skip target eight order',
+        productCode: 'SKIP-TARGET-8',
+        apparatus: '8 ta rangli pechat',
+        product: 'skip target product',
+        rollCount: 7,
+        widthMm: 650,
+      ),
+    );
     await _usePhoneViewport(tester);
     await tester.pumpWidget(
       MaterialApp(
@@ -1093,7 +1186,7 @@ void main() {
     await _dragOrderHandleToTopZone(
       tester,
       orderTitle: 'Skipped pechat order',
-      targetText: '7 ta rangli pechat uchun zakaz yo‘q',
+      targetText: 'Skip target seven order',
     );
 
     expect(
@@ -1152,7 +1245,7 @@ void main() {
     await _dragOrderHandleToTopZone(
       tester,
       orderTitle: 'Skipped pechat order',
-      targetText: '8 ta rangli pechat uchun zakaz yo‘q',
+      targetText: 'Skip target eight order',
     );
 
     expect(
@@ -1571,6 +1664,19 @@ Future<void> _dragOrderTitleToTopZone(
   await gesture.moveTo(tester.getCenter(find.textContaining(targetText).first));
   await tester.pump();
   await gesture.up();
+  await tester.pumpAndSettle();
+}
+
+Future<void> _tapMoveOrderBadge(
+  WidgetTester tester, {
+  required ValueKey<String> key,
+}) async {
+  final order = find.byKey(key);
+  await tester.ensureVisible(order);
+  await tester.pumpAndSettle();
+  final topLeft = tester.getTopLeft(order);
+  final height = tester.getSize(order).height;
+  await tester.tapAt(topLeft + Offset(28, height / 2));
   await tester.pumpAndSettle();
 }
 
