@@ -306,6 +306,81 @@ void main() {
     }
   });
 
+  test('batch move handles assigned alternatives without target title node',
+      () async {
+    await MobileApi.instance.adminSaveProductionMap(
+      _alternativeProductionOrderMap(
+        id: 'zakaz-real-8768',
+        title: 'tanlov lavash paket',
+        productCode: 'tanlov lavash paket',
+        product: 'tanlov lavash paket',
+        orderNumber: '8768',
+        rollCount: 7,
+        widthMm: 640,
+        assigned: '8 ta rangli pechat - A',
+        apparatusTitles: const [
+          '7 ta rangli pechat - A',
+          '7 ta rangli pechat - A',
+        ],
+      ),
+    );
+    await MobileApi.instance.adminSaveProductionMap(
+      _alternativeProductionOrderMap(
+        id: 'zakaz-real-9875',
+        title: 'standart lavash 20 sht paket',
+        productCode: 'standart lavash 20 sht paket',
+        product: 'standart lavash 20 sht paket',
+        orderNumber: '9875',
+        rollCount: 7,
+        widthMm: 630,
+        assigned: '8 ta rangli pechat - A',
+        apparatusTitles: const [
+          '7 ta rangli pechat - A',
+          '7 ta rangli pechat - A',
+        ],
+      ),
+    );
+    await MobileApi.instance.adminSaveProductionMap(
+      _alternativeProductionOrderMap(
+        id: 'zakaz-real-6564',
+        title: 'akhmedov since 2020',
+        productCode: 'akhmedov since 2020',
+        product: 'akhmedov since 2020',
+        orderNumber: '6564',
+        rollCount: 7,
+        widthMm: 630,
+        assigned: '8 ta rangli pechat - A',
+        apparatusTitles: const [
+          '7 ta rangli pechat - A',
+          '7 ta rangli pechat - A',
+        ],
+      ),
+    );
+
+    const ids = [
+      'zakaz-real-8768',
+      'zakaz-real-9875',
+      'zakaz-real-6564',
+    ];
+    final moved = await MobileApi.instance.adminMoveProductionMapOrdersBatch(
+      mapIds: ids,
+      fromApparatus: '8 ta rangli pechat - A',
+      toApparatus: '7 ta rangli pechat - A',
+    );
+    expect(moved, hasLength(3));
+
+    final maps = await MobileApi.instance.adminProductionMaps();
+    for (final id in ids) {
+      final map = maps.firstWhere((item) => item.map.id == id);
+      final assigned = map.map.nodes
+          .where((node) => node.kind == 'apparatus')
+          .map((node) => node.alternativeAssignedTitle)
+          .where((title) => title.trim().isNotEmpty)
+          .toSet();
+      expect(assigned, {'7 ta rangli pechat - A'});
+    }
+  });
+
   test('with-order rolls back map when template upsert fails in test mode',
       () async {
     setMobileApiTestModeForceCalculateTemplateSaveFailure(true);
@@ -422,6 +497,10 @@ ProductionMapDefinition _alternativeProductionOrderMap({
   required double rollCount,
   required double widthMm,
   required String assigned,
+  List<String> apparatusTitles = const [
+    '7 ta rangli pechat',
+    '8 ta rangli pechat',
+  ],
 }) {
   return ProductionMapDefinition(
     id: id,
@@ -436,22 +515,15 @@ ProductionMapDefinition _alternativeProductionOrderMap({
         kind: 'start',
         title: 'Start',
       ),
-      ProductionMapNode(
-        id: 'apparatus-7',
-        kind: 'apparatus',
-        title: '7 ta rangli pechat',
-        alternativeGroupId: 'alt-$id',
-        alternativeGroupLabel: 'pechat',
-        alternativeAssignedTitle: assigned,
-      ),
-      ProductionMapNode(
-        id: 'apparatus-8',
-        kind: 'apparatus',
-        title: '8 ta rangli pechat',
-        alternativeGroupId: 'alt-$id',
-        alternativeGroupLabel: 'pechat',
-        alternativeAssignedTitle: assigned,
-      ),
+      for (var index = 0; index < apparatusTitles.length; index++)
+        ProductionMapNode(
+          id: 'apparatus-$index',
+          kind: 'apparatus',
+          title: apparatusTitles[index],
+          alternativeGroupId: 'alt-$id',
+          alternativeGroupLabel: 'pechat',
+          alternativeAssignedTitle: assigned,
+        ),
       ProductionMapNode(
         id: 'end',
         kind: 'end',
@@ -459,11 +531,11 @@ ProductionMapDefinition _alternativeProductionOrderMap({
         itemCode: productCode,
       ),
     ],
-    edges: const [
-      ProductionMapEdge(from: 'start', to: 'apparatus-7'),
-      ProductionMapEdge(from: 'apparatus-7', to: 'end'),
-      ProductionMapEdge(from: 'start', to: 'apparatus-8'),
-      ProductionMapEdge(from: 'apparatus-8', to: 'end'),
+    edges: [
+      for (var index = 0; index < apparatusTitles.length; index++) ...[
+        ProductionMapEdge(from: 'start', to: 'apparatus-$index'),
+        ProductionMapEdge(from: 'apparatus-$index', to: 'end'),
+      ],
     ],
   );
 }
