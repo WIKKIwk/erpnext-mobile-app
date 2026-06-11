@@ -2410,6 +2410,7 @@ class _MoveOrderCard extends StatelessWidget {
     return _OpenedOrderCardRow(
       slot: slot,
       order: order,
+      onTap: onToggleSelect,
       borderRadiusOverride: borderRadiusOverride,
       leading: _OpenedOrderIndexBadge(
         index: index,
