@@ -301,7 +301,12 @@ List<_AdminHomeAction> _adminHomeActions(BuildContext context) {
       routeName: AppRoutes.adminProductionMapTest,
     ),
     const _AdminHomeAction(
-      title: 'Ochilgan zakazlar',
+      title: 'Aparat guruhlari',
+      icon: Icons.precision_manufacturing_rounded,
+      routeName: AppRoutes.adminApparatusGroups,
+    ),
+    const _AdminHomeAction(
+      title: 'reja menu',
       icon: Icons.account_tree_outlined,
       routeName: AppRoutes.adminProductionMapOrders,
     ),

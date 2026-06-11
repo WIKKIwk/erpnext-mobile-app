@@ -246,6 +246,7 @@ class _AdminProductionMapTestScreenState
   bool _savingMap = false;
   late String _orderNumber;
   CalculateOrderTemplate? _lastSavedTemplate;
+  List<AdminApparatusGroup> _apparatusGroups = const [];
 
   @override
   void initState() {
@@ -264,6 +265,18 @@ class _AdminProductionMapTestScreenState
             ? _orderFlowEdges()
             : _defaultTestEdges();
     _orderNumber = savedMap?.orderNumber.trim() ?? '';
+    unawaited(_loadApparatusGroups());
+  }
+
+  Future<void> _loadApparatusGroups() async {
+    try {
+      final groups = await MobileApi.instance.adminApparatusGroups();
+      if (mounted) {
+        setState(() => _apparatusGroups = groups);
+      }
+    } catch (_) {
+      return;
+    }
   }
 
   List<ProductionMapNode> _defaultTestNodes() {
@@ -556,6 +569,95 @@ class _AdminProductionMapTestScreenState
         });
       }
     }
+  }
+
+  Future<void> _addApparatusGroup(AdminApparatusGroup group) async {
+    final groupNames =
+        group.apparatus.map((item) => item.trim().toLowerCase()).toSet();
+    final warehouses = await MobileApi.instance.adminWarehouses(
+      parent: 'aparat - A',
+      limit: 200,
+    );
+    final compatible = warehouses
+        .where((warehouse) =>
+            groupNames.contains(warehouse.warehouse.trim().toLowerCase()))
+        .where((warehouse) => productionMapApparatusMatchesOrder(
+              warehouse,
+              widget.orderContext,
+            ))
+        .toList(growable: false);
+    if (!mounted) {
+      return;
+    }
+    if (compatible.isEmpty) {
+      showAdminTopNotice(context, 'Mos aparat topilmadi');
+      return;
+    }
+    final picked = await showModalBottomSheet<_ApparatusGroupPickResult>(
+      context: context,
+      isDismissible: true,
+      enableDrag: true,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.32),
+      sheetAnimationStyle: kM3PickerSheetAnimation,
+      builder: (context) => _ApparatusGroupPickerSheet(
+        group: group,
+        apparatus: compatible,
+      ),
+    );
+    if (picked == null || !mounted) {
+      return;
+    }
+    setState(() {
+      if (picked.skip) {
+        _insertAlternativeApparatusNodes(group, compatible);
+      } else if (picked.apparatus != null) {
+        final id = 'apparatus_${_nextNodeIndex++}';
+        _insertBeforeEnd(
+          _newNode(id, 'apparatus')
+              .copyWith(title: picked.apparatus!.warehouse),
+        );
+      }
+    });
+  }
+
+  void _insertAlternativeApparatusNodes(
+    AdminApparatusGroup group,
+    List<AdminWarehouse> apparatus,
+  ) {
+    final endIndex = nodes.indexWhere((item) => item.kind == 'end');
+    if (endIndex <= 0 || apparatus.isEmpty) {
+      return;
+    }
+    final previous = nodes[endIndex - 1];
+    final end = nodes[endIndex];
+    final groupId = 'alt_${group.name.trim().toLowerCase()}_$_nextNodeIndex';
+    final y = previous.y + _nodeStepY;
+    final created = <ProductionMapNode>[];
+    for (var index = 0; index < apparatus.length; index++) {
+      final id = 'apparatus_${_nextNodeIndex++}';
+      created.add(
+        ProductionMapNode(
+          id: id,
+          kind: 'apparatus',
+          title: apparatus[index].warehouse,
+          alternativeGroupId: groupId,
+          alternativeGroupLabel: group.name,
+          x: previous.x + index * _ProductionMapCanvas._nodeSize.width,
+          y: y,
+        ),
+      );
+    }
+    nodes.insertAll(endIndex, created);
+    edges.removeWhere((edge) => edge.from == previous.id && edge.to == end.id);
+    for (final node in created) {
+      edges
+        ..add(ProductionMapEdge(from: previous.id, to: node.id))
+        ..add(ProductionMapEdge(from: node.id, to: end.id));
+    }
+    _pushEndDown();
   }
 
   ProductionMapNode _newNode(String id, String kind) {
@@ -1137,12 +1239,25 @@ class _AdminProductionMapTestScreenState
 
   List<AdminFabMenuAction> _mapToolActions() {
     if (_orderMode) {
+      final groupActions = [
+        for (final group in _apparatusGroups)
+          AdminFabMenuAction(
+            title: group.name,
+            icon: Icons.precision_manufacturing_rounded,
+            onTap: () => _runMapToolAction(() {
+              unawaited(_addApparatusGroup(group));
+            }),
+          ),
+      ];
       return [
-        AdminFabMenuAction(
-          title: 'Aparat',
-          icon: Icons.precision_manufacturing_rounded,
-          onTap: () => _runMapToolAction(() => _addNode('apparatus')),
-        ),
+        if (groupActions.isEmpty)
+          AdminFabMenuAction(
+            title: 'Aparat',
+            icon: Icons.precision_manufacturing_rounded,
+            onTap: () => _runMapToolAction(() => _addNode('apparatus')),
+          )
+        else
+          ...groupActions,
         AdminFabMenuAction(
           title: 'Ishlov',
           icon: Icons.engineering_rounded,
@@ -1204,7 +1319,8 @@ class _AdminProductionMapTestScreenState
     );
   }
 
-  Widget _buildShell(BuildContext context, ColorScheme scheme, double fabBottom) {
+  Widget _buildShell(
+      BuildContext context, ColorScheme scheme, double fabBottom) {
     return AppShell(
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_rounded),
@@ -1419,6 +1535,81 @@ class _ProductionMapOrderNumberDialog extends StatefulWidget {
   @override
   State<_ProductionMapOrderNumberDialog> createState() =>
       _ProductionMapOrderNumberDialogState();
+}
+
+class _ApparatusGroupPickResult {
+  const _ApparatusGroupPickResult({
+    this.apparatus,
+    this.skip = false,
+  });
+
+  final AdminWarehouse? apparatus;
+  final bool skip;
+}
+
+class _ApparatusGroupPickerSheet extends StatelessWidget {
+  const _ApparatusGroupPickerSheet({
+    required this.group,
+    required this.apparatus,
+  });
+
+  final AdminApparatusGroup group;
+  final List<AdminWarehouse> apparatus;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return SafeArea(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: scheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          shrinkWrap: true,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    group.name,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(
+                    const _ApparatusGroupPickResult(skip: true),
+                  ),
+                  child: const Text('Skip'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            for (final item in apparatus)
+              Card(
+                margin: const EdgeInsets.only(bottom: 6),
+                elevation: 0,
+                color: scheme.surfaceContainerHighest,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ListTile(
+                  leading: const Icon(Icons.precision_manufacturing_rounded),
+                  title: Text(item.warehouse),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => Navigator.of(context).pop(
+                    _ApparatusGroupPickResult(apparatus: item),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _ProductionMapOrderNumberDialogState
@@ -1668,6 +1859,7 @@ class _ProductionMapCanvasState extends State<_ProductionMapCanvas> {
                             width: _ProductionMapCanvas._nodeSize.width,
                             child: _MapNodeVisual(
                               node: node,
+                              borderRadius: _nodeBorderRadius(node),
                               onTap: () => widget.onNodeTap(node),
                               onDragUpdate: (details) {
                                 final scale = _transformController.value
@@ -1930,6 +2122,30 @@ class _ProductionMapCanvasState extends State<_ProductionMapCanvas> {
       _ProductionMapCanvas._nodeSize.width,
       _ProductionMapCanvas._nodeSize.height,
     );
+  }
+
+  BorderRadius _nodeBorderRadius(ProductionMapNode node) {
+    final groupId = node.alternativeGroupId.trim();
+    if (groupId.isEmpty) {
+      return BorderRadius.circular(28);
+    }
+    final group = widget.nodes
+        .where((item) => item.alternativeGroupId.trim() == groupId)
+        .toList()
+      ..sort((left, right) => left.x.compareTo(right.x));
+    if (group.length <= 1) {
+      return BorderRadius.circular(28);
+    }
+    final index = group.indexWhere((item) => item.id == node.id);
+    const outer = Radius.circular(28);
+    const inner = Radius.circular(2);
+    if (index <= 0) {
+      return const BorderRadius.horizontal(left: outer, right: inner);
+    }
+    if (index == group.length - 1) {
+      return const BorderRadius.horizontal(left: inner, right: outer);
+    }
+    return BorderRadius.circular(2);
   }
 
   Offset _startAnchor(
@@ -2396,6 +2612,7 @@ class _MapCanvasPainter extends CustomPainter {
 class _MapNodeVisual extends StatelessWidget {
   const _MapNodeVisual({
     required this.node,
+    required this.borderRadius,
     required this.onTap,
     required this.onDragUpdate,
     required this.onDelete,
@@ -2408,6 +2625,7 @@ class _MapNodeVisual extends StatelessWidget {
   });
 
   final ProductionMapNode node;
+  final BorderRadius borderRadius;
   final VoidCallback onTap;
   final GestureDragUpdateCallback onDragUpdate;
   final VoidCallback? onDelete;
@@ -2432,8 +2650,8 @@ class _MapNodeVisual extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           decoration: BoxDecoration(
-            color: _colorFor(node.kind, scheme),
-            borderRadius: BorderRadius.circular(28),
+            color: _backgroundFor(node, scheme),
+            borderRadius: borderRadius,
             border: highlighted
                 ? Border.all(color: scheme.primary, width: 2)
                 : null,
@@ -2541,6 +2759,18 @@ class _MapNodeVisual extends StatelessWidget {
       'end' => Icons.flag_rounded,
       _ => Icons.play_arrow_rounded,
     };
+  }
+
+  Color _backgroundFor(ProductionMapNode node, ColorScheme scheme) {
+    if (node.kind == 'apparatus' &&
+        node.alternativeAssignedTitle.trim().isNotEmpty &&
+        productionMapWarehouseTitlesMatch(
+          node.title,
+          node.alternativeAssignedTitle,
+        )) {
+      return Colors.green.shade100;
+    }
+    return _colorFor(node.kind, scheme);
   }
 
   String _labelFor(String kind) {

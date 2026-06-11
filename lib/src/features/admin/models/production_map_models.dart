@@ -91,6 +91,9 @@ class ProductionMapNode {
     this.qtyFormula = '',
     this.fromLocation = '',
     this.toLocation = '',
+    this.alternativeGroupId = '',
+    this.alternativeGroupLabel = '',
+    this.alternativeAssignedTitle = '',
     this.x = 0,
     this.y = 0,
   });
@@ -104,6 +107,9 @@ class ProductionMapNode {
   final String qtyFormula;
   final String fromLocation;
   final String toLocation;
+  final String alternativeGroupId;
+  final String alternativeGroupLabel;
+  final String alternativeAssignedTitle;
   final double x;
   final double y;
 
@@ -117,6 +123,9 @@ class ProductionMapNode {
     String? qtyFormula,
     String? fromLocation,
     String? toLocation,
+    String? alternativeGroupId,
+    String? alternativeGroupLabel,
+    String? alternativeAssignedTitle,
     double? x,
     double? y,
   }) {
@@ -130,6 +139,11 @@ class ProductionMapNode {
       qtyFormula: qtyFormula ?? this.qtyFormula,
       fromLocation: fromLocation ?? this.fromLocation,
       toLocation: toLocation ?? this.toLocation,
+      alternativeGroupId: alternativeGroupId ?? this.alternativeGroupId,
+      alternativeGroupLabel:
+          alternativeGroupLabel ?? this.alternativeGroupLabel,
+      alternativeAssignedTitle:
+          alternativeAssignedTitle ?? this.alternativeAssignedTitle,
       x: x ?? this.x,
       y: y ?? this.y,
     );
@@ -148,6 +162,10 @@ class ProductionMapNode {
       qtyFormula: json['qty_formula'] as String? ?? '',
       fromLocation: json['from_location'] as String? ?? '',
       toLocation: json['to_location'] as String? ?? '',
+      alternativeGroupId: json['alternative_group_id'] as String? ?? '',
+      alternativeGroupLabel: json['alternative_group_label'] as String? ?? '',
+      alternativeAssignedTitle:
+          json['alternative_assigned_title'] as String? ?? '',
       x: (json['x'] as num?)?.toDouble() ?? 0,
       y: (json['y'] as num?)?.toDouble() ?? 0,
     );
@@ -164,6 +182,12 @@ class ProductionMapNode {
       if (qtyFormula.trim().isNotEmpty) 'qty_formula': qtyFormula.trim(),
       if (fromLocation.trim().isNotEmpty) 'from_location': fromLocation.trim(),
       if (toLocation.trim().isNotEmpty) 'to_location': toLocation.trim(),
+      if (alternativeGroupId.trim().isNotEmpty)
+        'alternative_group_id': alternativeGroupId.trim(),
+      if (alternativeGroupLabel.trim().isNotEmpty)
+        'alternative_group_label': alternativeGroupLabel.trim(),
+      if (alternativeAssignedTitle.trim().isNotEmpty)
+        'alternative_assigned_title': alternativeAssignedTitle.trim(),
       'x': x,
       'y': y,
     };

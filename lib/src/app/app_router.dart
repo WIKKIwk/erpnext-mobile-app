@@ -5,6 +5,7 @@ import '../features/customer/presentation/customer_home_screen.dart';
 import '../features/customer/presentation/customer_notifications_screen.dart';
 import '../features/customer/presentation/customer_status_detail_screen.dart';
 import '../features/admin/presentation/admin_activity_screen.dart';
+import '../features/admin/presentation/admin_apparatus_groups_screen.dart';
 import '../features/admin/presentation/admin_calculate_screen.dart';
 import '../features/admin/presentation/admin_calculate_orders_screen.dart';
 import '../features/admin/presentation/admin_create_hub_screen.dart';
@@ -130,6 +131,7 @@ class AppRoutes {
   static const String adminRoles = '/admin-roles';
   static const String adminProductionMapTest = '/admin-production-map-test';
   static const String adminProductionMapOrders = '/admin-production-map-orders';
+  static const String adminApparatusGroups = '/admin-apparatus-groups';
   static const String apparatusQueue = '/apparatus-queue';
   static const String adminSuppliers = '/admin-suppliers';
   static const String adminUserCreate = '/admin-user-create';
@@ -165,6 +167,7 @@ class AppRouter {
     AppRoutes.adminRoles,
     AppRoutes.adminProductionMapTest,
     AppRoutes.adminProductionMapOrders,
+    AppRoutes.adminApparatusGroups,
     AppRoutes.apparatusQueue,
     AppRoutes.adminSuppliers,
     AppRoutes.adminUserCreate,
@@ -204,6 +207,7 @@ class AppRouter {
     AppRoutes.adminRoles,
     AppRoutes.adminProductionMapTest,
     AppRoutes.adminProductionMapOrders,
+    AppRoutes.adminApparatusGroups,
     AppRoutes.apparatusQueue,
     AppRoutes.adminCalculate,
     AppRoutes.adminCalculateOrders,
@@ -465,6 +469,8 @@ class AppRouter {
         );
       case AppRoutes.adminProductionMapOrders:
         return _buildRoute(settings, const AdminProductionMapOrdersScreen());
+      case AppRoutes.adminApparatusGroups:
+        return _buildRoute(settings, const AdminApparatusGroupsScreen());
       case AppRoutes.apparatusQueue:
         return _buildRoute(
           settings,
@@ -490,9 +496,8 @@ class AppRouter {
       case AppRoutes.adminInactiveSuppliers:
         return _buildRoute(settings, const AdminInactiveSuppliersScreen());
       case AppRoutes.adminItemCreate:
-        final int initialTabIndex = settings.arguments is int
-            ? settings.arguments as int
-            : 0;
+        final int initialTabIndex =
+            settings.arguments is int ? settings.arguments as int : 0;
         return _buildRoute(
           settings,
           AdminItemCreateScreen(initialTabIndex: initialTabIndex),
@@ -647,6 +652,10 @@ class AppRouter {
       'production.map.manage',
     },
     AppRoutes.adminProductionMapOrders: {
+      'admin.access',
+      'production.map.manage',
+    },
+    AppRoutes.adminApparatusGroups: {
       'admin.access',
       'production.map.manage',
     },

@@ -154,6 +154,35 @@ class AdminWarehouse {
   }
 }
 
+class AdminApparatusGroup {
+  const AdminApparatusGroup({
+    required this.name,
+    required this.apparatus,
+  });
+
+  final String name;
+  final List<String> apparatus;
+
+  factory AdminApparatusGroup.fromJson(Map<String, dynamic> json) {
+    return AdminApparatusGroup(
+      name: json['name'] as String? ?? '',
+      apparatus: (json['apparatus'] as List<dynamic>? ?? const [])
+          .map((item) => item.toString())
+          .toList(growable: false),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name.trim(),
+      'apparatus': apparatus
+          .map((item) => item.trim())
+          .where((item) => item.isNotEmpty)
+          .toList(growable: false),
+    };
+  }
+}
+
 class SupplierDirectoryEntry {
   const SupplierDirectoryEntry({
     required this.ref,

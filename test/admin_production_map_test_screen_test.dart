@@ -107,7 +107,7 @@ void main() {
     await tester.tap(find.bySemanticsLabel('Element qo‘shish'));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const ValueKey('admin-fab-menu-Aparat')), findsOneWidget);
+    expect(find.byKey(const ValueKey('admin-fab-menu-pechat')), findsOneWidget);
     expect(
       find.byKey(const ValueKey('admin-fab-menu-kk li mahsulot')),
       findsOneWidget,
@@ -115,7 +115,53 @@ void main() {
     expect(find.byKey(const ValueKey('admin-fab-menu-Formula')), findsNothing);
     expect(
         find.byKey(const ValueKey('admin-fab-menu-Condition')), findsNothing);
-    expect(find.byKey(const ValueKey('admin-fab-menu-Ishlov')), findsNothing);
+    expect(find.byKey(const ValueKey('admin-fab-menu-Ishlov')), findsOneWidget);
+  });
+
+  testWidgets(
+      'production map pechat group skip adds alternative apparatus nodes',
+      (tester) async {
+    await TestModeController.instance.setEnabled(true);
+    await _usePhoneViewport(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(useMaterial3: true),
+        locale: const Locale('uz'),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const AdminProductionMapTestScreen(
+          orderContext: ProductionMapOrderContext(
+            orderName: 'Zenit order',
+            productName: 'zenit frutto ninja 70gr',
+            itemCode: 'ITEM-001',
+            rollCount: 7,
+            widthMm: 650,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.bySemanticsLabel('Element qo‘shish'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('admin-fab-menu-pechat')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Skip'), findsOneWidget);
+    expect(find.text('7 ta rangli pechat'), findsOneWidget);
+    expect(find.text('8 ta rangli pechat'), findsOneWidget);
+    expect(find.text('9 ta rangli pechat'), findsNothing);
+
+    await tester.tap(find.text('Skip'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('7 ta rangli pechat'), findsOneWidget);
+    expect(find.text('8 ta rangli pechat'), findsOneWidget);
   });
 
   testWidgets('production map can add kk product and pick item',
@@ -227,7 +273,8 @@ void main() {
     expect(productionMapCanCreateEdge(task, apparatus), isTrue);
   });
 
-  test('production map pechat compatibility summary uses product constraints', () {
+  test('production map pechat compatibility summary uses product constraints',
+      () {
     expect(
       productionMapPechatCompatibilitySummary(rollCount: 7, widthMm: 650),
       'Minimal 7 ta rangli pechat • Mos: 7 ta rangli pechat, 8 ta rangli pechat',
@@ -599,7 +646,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Ochilgan zakazlar'), findsOneWidget);
+    expect(find.text('reja menu'), findsOneWidget);
     expect(find.textContaining('Zenit opened'), findsOneWidget);
     expect(
       find.textContaining('zenit frutto ninja 70gr • ITEM-002'),
@@ -712,6 +759,20 @@ void main() {
     await tester.tap(find.text('Ko‘chirish'));
     await tester.pumpAndSettle();
     expect(find.byIcon(Icons.add_rounded), findsNothing);
+    expect(find.textContaining('Move ok order'), findsOneWidget);
+    expect(find.textContaining('Move blocked order'), findsNothing);
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('move-boundary-apparatus-picker')),
+        matching: find.textContaining('8 ta rangli pechat'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Aparat tanlang'), findsOneWidget);
+    expect(find.text('Tanlangan'), findsNothing);
+    expect(find.text('Tanlanmagan'), findsOneWidget);
+    await tester.tapAt(const Offset(20, 20));
+    await tester.pumpAndSettle();
 
     await _dragOrderTitleToTopZone(
       tester,
@@ -740,12 +801,6 @@ void main() {
     expect(
       _apparatusTitles(maps, 'zakaz-move-ok'),
       isNot(contains('8 ta rangli pechat')),
-    );
-
-    await _dragOrderHandleToTopZone(
-      tester,
-      orderTitle: 'Move blocked order',
-      targetText: 'Move ok order',
     );
     maps = await MobileApi.instance.adminProductionMaps();
     expect(
@@ -789,15 +844,240 @@ void main() {
 
     await tester.tap(find.text('Ko‘chirish'));
     await tester.pumpAndSettle();
+    expect(find.textContaining('Nine color rubber order'), findsNothing);
+
+    final maps = await MobileApi.instance.adminProductionMaps();
+    expect(_apparatusTitle(maps, 'zakaz-move-9-only'), '8 ta rangli pechat');
+  });
+
+  testWidgets('opened orders move module keeps direct orders out of unassigned',
+      (tester) async {
+    await TestModeController.instance.setEnabled(true);
+    await MobileApi.instance.adminSaveProductionMap(
+      _productionOrderMap(
+        id: 'zakaz-direct-pechat',
+        title: 'Direct pechat order',
+        productCode: 'DIRECT-7',
+        apparatus: '7 ta rangli pechat',
+        product: 'direct product',
+        rollCount: 7,
+        widthMm: 650,
+      ),
+    );
+    await _usePhoneViewport(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(useMaterial3: true),
+        locale: const Locale('uz'),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const AdminProductionMapOrdersScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Ko‘chirish'));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(
+        const ValueKey('move-order-7 ta rangli pechat-zakaz-direct-pechat'),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('move-boundary-apparatus-picker')),
+        matching: find.textContaining('8 ta rangli pechat'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tanlanmagan'));
+    await tester.pumpAndSettle();
+    expect(find.text('Tanlanmagan zakaz yo‘q'), findsOneWidget);
+
+    await _dragOrderHandleToBottomZone(
+      tester,
+      orderTitle: 'Direct pechat order',
+      targetText: 'Tanlanmagan zakaz yo‘q',
+    );
+
+    expect(
+      find.byKey(
+        const ValueKey('move-order-7 ta rangli pechat-zakaz-direct-pechat'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(
+        const ValueKey('move-order-Tanlanmagan-zakaz-direct-pechat'),
+      ),
+      findsNothing,
+    );
+    final maps = await MobileApi.instance.adminProductionMaps();
+    expect(_apparatusTitles(maps, 'zakaz-direct-pechat'), [
+      '7 ta rangli pechat',
+    ]);
+  });
+
+  testWidgets(
+      'opened orders picker unassigned card shows skipped alternatives in move zone',
+      (tester) async {
+    await TestModeController.instance.setEnabled(true);
+    await MobileApi.instance.adminSaveProductionMap(
+      _alternativeProductionOrderMap(
+        id: 'zakaz-skip-7-8',
+        title: 'Skipped pechat order',
+        productCode: 'SKIP-78',
+        product: 'skipped product',
+        apparatus: const ['7 ta rangli pechat', '8 ta rangli pechat'],
+        rollCount: 7,
+        widthMm: 650,
+      ),
+    );
+    await MobileApi.instance.adminSaveProductionMap(
+      _alternativeProductionOrderMap(
+        id: 'zakaz-skip-9',
+        title: 'Skipped nine order',
+        productCode: 'SKIP-9',
+        product: 'skipped nine product',
+        apparatus: const ['9 ta rangli pechat'],
+        rollCount: 9,
+        widthMm: 900,
+      ),
+    );
+    await _usePhoneViewport(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(useMaterial3: true),
+        locale: const Locale('uz'),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const AdminProductionMapOrdersScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Ko‘chirish'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('move-boundary-apparatus-picker')),
+        matching: find.textContaining('8 ta rangli pechat'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Tanlangan'), findsNothing);
+    expect(find.text('Tanlanmagan'), findsOneWidget);
+    await tester.tap(find.text('Tanlanmagan'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(
+        const ValueKey('move-order-Tanlanmagan-zakaz-skip-7-8'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(
+        const ValueKey('move-order-Tanlanmagan-zakaz-skip-9'),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.byKey(
+        const ValueKey('move-order-7 ta rangli pechat-zakaz-skip-7-8'),
+      ),
+      findsNothing,
+    );
 
     await _dragOrderHandleToTopZone(
       tester,
-      orderTitle: 'Nine color rubber order',
-      targetText: '7 ta rangli pechat',
+      orderTitle: 'Skipped pechat order',
+      targetText: '7 ta rangli pechat uchun zakaz yo‘q',
+    );
+
+    expect(
+      find.byKey(
+        const ValueKey('move-order-Tanlanmagan-zakaz-skip-7-8'),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.byKey(
+        const ValueKey('move-order-7 ta rangli pechat-zakaz-skip-7-8'),
+      ),
+      findsOneWidget,
     );
     final maps = await MobileApi.instance.adminProductionMaps();
-    expect(_apparatusTitle(maps, 'zakaz-move-9-only'), '8 ta rangli pechat');
-    expect(find.textContaining('Nine color rubber order'), findsOneWidget);
+    expect(_apparatusTitles(maps, 'zakaz-skip-7-8'), [
+      '7 ta rangli pechat',
+      '8 ta rangli pechat',
+    ]);
+    expect(_alternativeGroupIds(maps, 'zakaz-skip-7-8'), isNotEmpty);
+    expect(_alternativeAssignedTitles(maps, 'zakaz-skip-7-8'), [
+      '7 ta rangli pechat',
+      '7 ta rangli pechat',
+    ]);
+
+    await _dragOrderHandleToBottomZone(
+      tester,
+      orderTitle: 'Skipped pechat order',
+      targetText: 'Tanlanmagan zakaz yo‘q',
+    );
+
+    expect(
+      find.byKey(
+        const ValueKey('move-order-Tanlanmagan-zakaz-skip-7-8'),
+      ),
+      findsOneWidget,
+    );
+    final returnedMaps = await MobileApi.instance.adminProductionMaps();
+    expect(_apparatusTitles(returnedMaps, 'zakaz-skip-7-8'), [
+      '7 ta rangli pechat',
+      '8 ta rangli pechat',
+    ]);
+    expect(_alternativeGroupIds(returnedMaps, 'zakaz-skip-7-8'), isNotEmpty);
+    expect(_alternativeAssignedTitles(returnedMaps, 'zakaz-skip-7-8'), isEmpty);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('move-top-apparatus-picker')),
+        matching: find.textContaining('7 ta rangli pechat'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('8 ta rangli pechat').first);
+    await tester.pumpAndSettle();
+
+    await _dragOrderHandleToTopZone(
+      tester,
+      orderTitle: 'Skipped pechat order',
+      targetText: '8 ta rangli pechat uchun zakaz yo‘q',
+    );
+
+    expect(
+      find.byKey(
+        const ValueKey('move-order-8 ta rangli pechat-zakaz-skip-7-8'),
+      ),
+      findsOneWidget,
+    );
+    final assignedToEightMaps = await MobileApi.instance.adminProductionMaps();
+    expect(
+      _alternativeAssignedTitles(assignedToEightMaps, 'zakaz-skip-7-8'),
+      ['8 ta rangli pechat', '8 ta rangli pechat'],
+    );
+    await tester.pump(const Duration(seconds: 3));
   });
 
   testWidgets('apparatus queue worker view is read only', (tester) async {
@@ -1076,6 +1356,54 @@ void main() {
   });
 }
 
+ProductionMapDefinition _alternativeProductionOrderMap({
+  required String id,
+  required String title,
+  required String productCode,
+  required String product,
+  required List<String> apparatus,
+  double? rollCount,
+  double? widthMm,
+}) {
+  final apparatusNodes = [
+    for (var index = 0; index < apparatus.length; index++)
+      ProductionMapNode(
+        id: 'apparatus-$index',
+        kind: 'apparatus',
+        title: apparatus[index],
+        alternativeGroupId: 'alt-$id',
+        alternativeGroupLabel: 'pechat',
+      ),
+  ];
+  return ProductionMapDefinition(
+    id: id,
+    productCode: productCode,
+    title: title,
+    rollCount: rollCount,
+    widthMm: widthMm,
+    nodes: [
+      const ProductionMapNode(
+        id: 'start',
+        kind: 'start',
+        title: 'Start',
+      ),
+      ...apparatusNodes,
+      ProductionMapNode(
+        id: 'end',
+        kind: 'end',
+        title: product,
+        itemCode: productCode,
+      ),
+    ],
+    edges: [
+      for (final node in apparatusNodes) ...[
+        ProductionMapEdge(from: 'start', to: node.id),
+        ProductionMapEdge(from: node.id, to: 'end'),
+      ],
+    ],
+  );
+}
+
 ProductionMapDefinition _productionOrderMap({
   required String id,
   required String title,
@@ -1191,6 +1519,52 @@ Future<void> _dragOrderHandleToTopZone(
   await tester.pumpAndSettle();
 }
 
+Future<void> _dragOrderHandleToBottomZone(
+  WidgetTester tester, {
+  required String orderTitle,
+  required String targetText,
+}) async {
+  await _dragOrderHandleToZone(
+    tester,
+    orderTitle: orderTitle,
+    targetText: targetText,
+  );
+}
+
+Future<void> _dragOrderHandleToZone(
+  WidgetTester tester, {
+  required String orderTitle,
+  required String targetText,
+}) async {
+  final order = find.textContaining(orderTitle);
+  await tester.ensureVisible(order);
+  await tester.pumpAndSettle();
+  final orderCenter = tester.getCenter(order);
+  final handles = tester
+      .widgetList<Icon>(find.byIcon(Icons.drag_handle_rounded))
+      .toList(growable: false);
+  final handleFinders = [
+    for (var index = 0; index < handles.length; index++)
+      find.byIcon(Icons.drag_handle_rounded).at(index),
+  ];
+  Finder? matchingHandle;
+  var minDistance = double.infinity;
+  for (final handle in handleFinders) {
+    final center = tester.getCenter(handle);
+    final distance = (center.dy - orderCenter.dy).abs();
+    if (distance < minDistance) {
+      minDistance = distance;
+      matchingHandle = handle;
+    }
+  }
+  final gesture = await tester.startGesture(tester.getCenter(matchingHandle!));
+  await tester.pump(kLongPressTimeout + const Duration(milliseconds: 120));
+  await gesture.moveTo(tester.getCenter(find.textContaining(targetText).first));
+  await tester.pump();
+  await gesture.up();
+  await tester.pumpAndSettle();
+}
+
 String _apparatusTitle(List<ProductionMapSaved> maps, String id) {
   final map = maps.singleWhere((item) => item.map.id == id).map;
   return map.nodes.firstWhere((node) => node.kind == 'apparatus').title.trim();
@@ -1201,5 +1575,26 @@ List<String> _apparatusTitles(List<ProductionMapSaved> maps, String id) {
   return map.nodes
       .where((node) => node.kind == 'apparatus')
       .map((node) => node.title.trim())
+      .toList(growable: false);
+}
+
+List<String> _alternativeGroupIds(List<ProductionMapSaved> maps, String id) {
+  final map = maps.singleWhere((item) => item.map.id == id).map;
+  return map.nodes
+      .where((node) => node.kind == 'apparatus')
+      .map((node) => node.alternativeGroupId.trim())
+      .where((value) => value.isNotEmpty)
+      .toList(growable: false);
+}
+
+List<String> _alternativeAssignedTitles(
+  List<ProductionMapSaved> maps,
+  String id,
+) {
+  final map = maps.singleWhere((item) => item.map.id == id).map;
+  return map.nodes
+      .where((node) => node.kind == 'apparatus')
+      .map((node) => node.alternativeAssignedTitle.trim())
+      .where((value) => value.isNotEmpty)
       .toList(growable: false);
 }

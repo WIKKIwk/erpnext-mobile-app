@@ -115,6 +115,43 @@ void main() {
     expect(find.text('Rollar'), findsNothing);
   });
 
+  testWidgets('admin drawer shows apparatus groups route', (tester) async {
+    AppSession.instance.token = 'token';
+    AppSession.instance.profile = const SessionProfile(
+      role: UserRole.admin,
+      displayName: 'Admin',
+      legalName: '',
+      ref: 'admin',
+      phone: '',
+      avatarUrl: '',
+      capabilities: ['admin.access', 'production.map.manage'],
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(AppThemeVariant.earthy),
+        locale: const Locale('uz'),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: AdminNavigationDrawer(
+            selectedIndex: 0,
+            onNavigate: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('reja menu'), findsOneWidget);
+    expect(find.text('Aparat guruhlari'), findsOneWidget);
+  });
+
   testWidgets('custom catalog profile home returns to capability home route',
       (tester) async {
     SharedPreferences.setMockInitialValues(<String, Object>{});

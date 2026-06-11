@@ -72,6 +72,17 @@ class TestModeDemoData {
     ),
   ];
 
+  static const List<AdminApparatusGroup> apparatusGroups = [
+    AdminApparatusGroup(
+      name: 'pechat',
+      apparatus: [
+        '7 ta rangli pechat',
+        '8 ta rangli pechat',
+        '9 ta rangli pechat',
+      ],
+    ),
+  ];
+
   static const List<AdminSupplier> suppliers = [
     AdminSupplier(
       ref: 'demo-supplier-1',

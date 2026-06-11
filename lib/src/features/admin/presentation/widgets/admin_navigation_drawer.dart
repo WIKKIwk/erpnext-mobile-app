@@ -76,7 +76,14 @@ class AdminNavigationDrawer extends StatelessWidget {
                 NavigationDrawerDestination(
                   icon: Icon(destination.icon),
                   selectedIcon: Icon(destination.selectedIcon),
-                  label: Text(destination.label),
+                  label: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 168),
+                    child: Text(
+                      destination.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ),
               const SizedBox(height: 80),
             ],
@@ -175,8 +182,14 @@ List<_AdminDrawerDestination> _visibleAdminDrawerDestinations(
     const _AdminDrawerDestination(
       icon: Icons.account_tree_outlined,
       selectedIcon: Icons.account_tree_rounded,
-      label: 'Ochilgan zakazlar',
+      label: 'reja menu',
       routeName: AppRoutes.adminProductionMapOrders,
+    ),
+    const _AdminDrawerDestination(
+      icon: Icons.precision_manufacturing_outlined,
+      selectedIcon: Icons.precision_manufacturing_rounded,
+      label: 'Aparat guruhlari',
+      routeName: AppRoutes.adminApparatusGroups,
     ),
     _AdminDrawerDestination(
       icon: Icons.person_outline_rounded,

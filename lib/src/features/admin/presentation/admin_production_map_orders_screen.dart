@@ -33,6 +33,15 @@ enum _OpenedOrderModule {
   orders,
 }
 
+const _moveUnassignedWarehouse = AdminWarehouse(
+  warehouse: 'Tanlanmagan',
+  parentWarehouse: 'production-map-unassigned',
+);
+
+bool _isMoveUnassignedApparatus(AdminWarehouse? apparatus) {
+  return apparatus?.parentWarehouse == _moveUnassignedWarehouse.parentWarehouse;
+}
+
 String _openedOrderDisplayCode(ProductionMapDefinition map) {
   final code = map.code.trim();
   if (code.isNotEmpty) {
@@ -195,7 +204,8 @@ class _AdminProductionMapOrdersScreenState
   }
 
   Future<void> _runWorkerLiveStream(int generation) async {
-    while (mounted && generation == _liveStreamGeneration && widget.workerMode) {
+    while (
+        mounted && generation == _liveStreamGeneration && widget.workerMode) {
       try {
         await _connectWorkerLiveStreamOnce(generation);
       } catch (_) {
@@ -749,6 +759,10 @@ class _AdminProductionMapOrdersScreenState
   List<ProductionMapSaved> _ordersForApparatus(AdminWarehouse apparatus) {
     final title = apparatus.warehouse.trim();
     final filtered = _orders.where((order) {
+      final hasAlternative = _hasAlternativeApparatus(order.map);
+      if (hasAlternative) {
+        return _alternativeOrderAssignedToApparatus(order.map, apparatus);
+      }
       return productionMapMapHasWorkStageForStation(
         map: order.map,
         station: title,
@@ -766,7 +780,28 @@ class _AdminProductionMapOrdersScreenState
     ];
   }
 
-  Future<void> _reorderSelectedApparatusOrders(int oldIndex, int newIndex) async {
+  List<ProductionMapSaved> _moveOrdersForApparatus({
+    required AdminWarehouse source,
+    required AdminWarehouse target,
+  }) {
+    if (_isMoveUnassignedApparatus(source)) {
+      if (_isMoveUnassignedApparatus(target)) {
+        return const [];
+      }
+      return _alternativeOrdersForApparatus(target);
+    }
+    if (_isMoveUnassignedApparatus(target)) {
+      return _ordersForApparatus(source);
+    }
+    return _ordersForApparatus(source)
+        .where(
+          (order) => _canMoveOrderToApparatus(order, target, source: source),
+        )
+        .toList(growable: false);
+  }
+
+  Future<void> _reorderSelectedApparatusOrders(
+      int oldIndex, int newIndex) async {
     if (widget.readOnly) {
       return;
     }
@@ -774,7 +809,8 @@ class _AdminProductionMapOrdersScreenState
     if (apparatus == null) {
       return;
     }
-    final orders = List<ProductionMapSaved>.from(_ordersForApparatus(apparatus));
+    final orders =
+        List<ProductionMapSaved>.from(_ordersForApparatus(apparatus));
     if (oldIndex == newIndex) {
       return;
     }
@@ -810,9 +846,7 @@ class _AdminProductionMapOrdersScreenState
       });
       showAdminTopNotice(
         context,
-        error is MobileApiException
-            ? error.message
-            : 'Ketma-ketlik saqlanmadi',
+        error is MobileApiException ? error.message : 'Ketma-ketlik saqlanmadi',
       );
     }
   }
@@ -854,8 +888,24 @@ class _AdminProductionMapOrdersScreenState
     required AdminWarehouse from,
     required AdminWarehouse to,
   }) async {
+    if (_isMoveUnassignedApparatus(from) && !_isMoveUnassignedApparatus(to)) {
+      await _assignAlternativeOrdersToApparatus(
+        orders: orders,
+        apparatus: to,
+      );
+      return;
+    }
+    if (!_isMoveUnassignedApparatus(from) && _isMoveUnassignedApparatus(to)) {
+      await _returnOrdersToUnassigned(
+        orders: orders,
+        source: from,
+      );
+      return;
+    }
     if (widget.readOnly ||
         from.warehouse.trim() == to.warehouse.trim() ||
+        _isMoveUnassignedApparatus(from) ||
+        _isMoveUnassignedApparatus(to) ||
         orders.isEmpty) {
       return;
     }
@@ -919,6 +969,190 @@ class _AdminProductionMapOrdersScreenState
     }
   }
 
+  Future<void> _returnOrdersToUnassigned({
+    required List<ProductionMapSaved> orders,
+    required AdminWarehouse source,
+  }) async {
+    if (widget.readOnly || orders.isEmpty) {
+      return;
+    }
+    final convertible = orders
+        .map(
+          (order) => MapEntry(
+            order,
+            _returnAssignedMapToAlternatives(order.map, source),
+          ),
+        )
+        .where((entry) => entry.value != null)
+        .toList(growable: false);
+    if (convertible.isEmpty) {
+      showAdminTopNotice(context, 'Bu zakaz tanlanmagan holatga qaytmaydi');
+      return;
+    }
+    final convertibleIds =
+        convertible.map((entry) => entry.key.map.id.trim()).toSet();
+    setState(() {
+      _draggingMoveOrders = const [];
+      _draggingMoveSource = null;
+      _selectedMoveOrderIds.removeAll(convertibleIds);
+    });
+    try {
+      final saved = <ProductionMapSaved>[];
+      for (final entry in convertible) {
+        saved.add(
+          await MobileApi.instance.adminSaveProductionMap(entry.value!),
+        );
+      }
+      if (!mounted) {
+        return;
+      }
+      final savedById = {
+        for (final item in saved) item.map.id.trim(): item,
+      };
+      setState(() {
+        _orders = [
+          for (final item in _orders)
+            if (savedById.containsKey(item.map.id.trim()))
+              savedById[item.map.id.trim()]!
+            else
+              item,
+        ];
+      });
+      showAdminTopNotice(
+        context,
+        convertible.length == 1
+            ? 'Zakaz tanlanmagan holatga qaytarildi'
+            : '${convertible.length} ta zakaz tanlanmagan holatga qaytarildi',
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      showAdminTopNotice(
+        context,
+        error is MobileApiException
+            ? error.message
+            : 'Zakaz tanlanmagan holatga qaytmadi',
+      );
+      await _load();
+    }
+  }
+
+  ProductionMapDefinition? _returnAssignedMapToAlternatives(
+    ProductionMapDefinition map,
+    AdminWarehouse source,
+  ) {
+    final sourceTitle = source.warehouse.trim();
+    final assignedGroupId = _assignedAlternativeGroupIdForApparatus(
+      map,
+      sourceTitle,
+    );
+    if (assignedGroupId == null) {
+      return null;
+    }
+    return map.copyWith(
+      nodes: [
+        for (final node in map.nodes)
+          node.alternativeGroupId.trim() == assignedGroupId
+              ? node.copyWith(alternativeAssignedTitle: '')
+              : node,
+      ],
+    );
+  }
+
+  Future<void> _assignAlternativeOrdersToApparatus({
+    required List<ProductionMapSaved> orders,
+    required AdminWarehouse apparatus,
+  }) async {
+    if (widget.readOnly || orders.isEmpty) {
+      return;
+    }
+    final assignable = orders
+        .where((order) => _isAlternativeOrderForApparatus(order, apparatus))
+        .toList(growable: false);
+    if (assignable.isEmpty) {
+      showAdminTopNotice(context, 'Tanlangan zakazlar bu aparatga tushmaydi');
+      return;
+    }
+    final assignableIds =
+        assignable.map((order) => order.map.id.trim()).toSet();
+    setState(() {
+      _draggingMoveOrders = const [];
+      _draggingMoveSource = null;
+      _selectedMoveOrderIds.removeAll(assignableIds);
+    });
+    try {
+      final saved = <ProductionMapSaved>[];
+      for (final order in assignable) {
+        final assignedMap = _assignAlternativeMapToApparatus(
+          order.map,
+          apparatus,
+        );
+        saved.add(await MobileApi.instance.adminSaveProductionMap(assignedMap));
+      }
+      if (!mounted) {
+        return;
+      }
+      final savedById = {
+        for (final item in saved) item.map.id.trim(): item,
+      };
+      setState(() {
+        _orders = [
+          for (final item in _orders)
+            if (savedById.containsKey(item.map.id.trim()))
+              savedById[item.map.id.trim()]!
+            else
+              item,
+        ];
+      });
+      showAdminTopNotice(
+        context,
+        assignable.length == 1
+            ? 'Zakaz aparatga biriktirildi'
+            : '${assignable.length} ta zakaz aparatga biriktirildi',
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      showAdminTopNotice(
+        context,
+        error is MobileApiException ? error.message : 'Zakaz biriktirilmadi',
+      );
+      await _load();
+    }
+  }
+
+  ProductionMapDefinition _assignAlternativeMapToApparatus(
+    ProductionMapDefinition map,
+    AdminWarehouse apparatus,
+  ) {
+    final targetTitle = apparatus.warehouse.trim();
+    final targetNode = map.nodes
+        .where((node) {
+          return node.kind == 'apparatus' &&
+              node.alternativeGroupId.trim().isNotEmpty &&
+              productionMapWarehouseTitlesMatch(node.title, targetTitle);
+        })
+        .cast<ProductionMapNode?>()
+        .firstWhere(
+          (node) => node != null,
+          orElse: () => null,
+        );
+    if (targetNode == null) {
+      return map;
+    }
+    final groupId = targetNode.alternativeGroupId.trim();
+    return map.copyWith(
+      nodes: [
+        for (final node in map.nodes)
+          node.alternativeGroupId.trim() == groupId
+              ? node.copyWith(alternativeAssignedTitle: targetTitle)
+              : node,
+      ],
+    );
+  }
+
   int? _orderPechatColorCount(ProductionMapSaved order) {
     return productionMapOrderPechatColorCount(
       order.map.nodes
@@ -932,6 +1166,13 @@ class _AdminProductionMapOrdersScreenState
     AdminWarehouse target, {
     required AdminWarehouse source,
   }) {
+    if (_isMoveUnassignedApparatus(source)) {
+      return !_isMoveUnassignedApparatus(target) &&
+          _isAlternativeOrderForApparatus(order, target);
+    }
+    if (_isMoveUnassignedApparatus(target)) {
+      return _returnAssignedMapToAlternatives(order.map, source) != null;
+    }
     final colorCount = productionMapPechatColorCount(target.warehouse);
     if (colorCount == null) {
       return true;
@@ -947,6 +1188,11 @@ class _AdminProductionMapOrdersScreenState
   }
 
   Future<void> _pickMoveApparatus({required bool top}) async {
+    final anchor = top ? _moveBottomApparatus : _moveTopApparatus;
+    final unassignedOrderCount =
+        anchor == null || _isMoveUnassignedApparatus(anchor)
+            ? 0
+            : _alternativeOrdersForApparatus(anchor).length;
     final picked = await showModalBottomSheet<AdminWarehouse>(
       context: context,
       useSafeArea: true,
@@ -955,6 +1201,8 @@ class _AdminProductionMapOrdersScreenState
         apparatus: _apparatus,
         selected: top ? _moveTopApparatus : _moveBottomApparatus,
         orderCountFor: (apparatus) => _ordersForApparatus(apparatus).length,
+        showUnassigned: anchor != null && !_isMoveUnassignedApparatus(anchor),
+        unassignedOrderCount: unassignedOrderCount,
       ),
     );
     if (picked == null || !mounted) {
@@ -967,6 +1215,76 @@ class _AdminProductionMapOrdersScreenState
         _moveBottomApparatus = picked;
       }
     });
+  }
+
+  List<ProductionMapSaved> _alternativeOrdersForApparatus(
+    AdminWarehouse apparatus,
+  ) {
+    return _orders
+        .where((order) =>
+            _isAlternativeOrderForApparatus(order, apparatus) &&
+            !_alternativeOrderIsAssigned(order.map))
+        .toList(growable: false);
+  }
+
+  bool _isAlternativeOrderForApparatus(
+    ProductionMapSaved order,
+    AdminWarehouse apparatus,
+  ) {
+    return order.map.nodes.any((node) {
+      return node.kind == 'apparatus' &&
+          node.alternativeGroupId.trim().isNotEmpty &&
+          productionMapWarehouseTitlesMatch(node.title, apparatus.warehouse);
+    });
+  }
+
+  bool _hasAlternativeApparatus(ProductionMapDefinition map) {
+    return map.nodes.any(
+      (node) =>
+          node.kind == 'apparatus' && node.alternativeGroupId.trim().isNotEmpty,
+    );
+  }
+
+  bool _alternativeOrderIsAssigned(ProductionMapDefinition map) {
+    return map.nodes.any(
+      (node) =>
+          node.kind == 'apparatus' &&
+          node.alternativeGroupId.trim().isNotEmpty &&
+          node.alternativeAssignedTitle.trim().isNotEmpty,
+    );
+  }
+
+  bool _alternativeOrderAssignedToApparatus(
+    ProductionMapDefinition map,
+    AdminWarehouse apparatus,
+  ) {
+    final title = apparatus.warehouse.trim();
+    return map.nodes.any(
+      (node) =>
+          node.kind == 'apparatus' &&
+          node.alternativeGroupId.trim().isNotEmpty &&
+          productionMapWarehouseTitlesMatch(
+            node.alternativeAssignedTitle,
+            title,
+          ),
+    );
+  }
+
+  String? _assignedAlternativeGroupIdForApparatus(
+    ProductionMapDefinition map,
+    String apparatusTitle,
+  ) {
+    for (final node in map.nodes) {
+      if (node.kind == 'apparatus' &&
+          node.alternativeGroupId.trim().isNotEmpty &&
+          productionMapWarehouseTitlesMatch(
+            node.alternativeAssignedTitle,
+            apparatusTitle,
+          )) {
+        return node.alternativeGroupId.trim();
+      }
+    }
+    return null;
   }
 
   @override
@@ -990,7 +1308,7 @@ class _AdminProductionMapOrdersScreenState
               selectedRouteName: AppRoutes.adminProductionMapOrders,
               onNavigate: _openDrawerRoute,
             ),
-      title: widget.workerMode ? workerTitle : 'Ochilgan zakazlar',
+      title: widget.workerMode ? workerTitle : 'reja menu',
       subtitle: widget.workerMode ? 'Kuzatish' : '',
       nativeTopBar: true,
       nativeTitleTextStyle: AppTheme.werkaNativeAppBarTitleStyle(context),
@@ -1036,14 +1354,17 @@ class _AdminProductionMapOrdersScreenState
                                     _searchController.clear();
                                     setState(() => _searchQuery = '');
                                   },
-                                  onTapOrder: widget.readOnly ? null : _openOrder,
+                                  onTapOrder:
+                                      widget.readOnly ? null : _openOrder,
                                 ),
-                              _OpenedOrderModule.sequence => _SequenceModulePage(
+                              _OpenedOrderModule.sequence =>
+                                _SequenceModulePage(
                                   bottomPadding: bottomPadding,
                                   apparatus: _selectedApparatus,
                                   orders: _selectedApparatus == null
                                       ? const []
-                                      : _ordersForApparatus(_selectedApparatus!),
+                                      : _ordersForApparatus(
+                                          _selectedApparatus!),
                                   readOnly: widget.readOnly,
                                   onPickApparatus: _pickSequenceApparatus,
                                   onReorder: (oldIndex, newIndex) {
@@ -1061,22 +1382,31 @@ class _AdminProductionMapOrdersScreenState
                               _OpenedOrderModule.move => _MoveModulePage(
                                   topApparatus: _moveTopApparatus,
                                   bottomApparatus: _moveBottomApparatus,
-                                  topOrders: _moveTopApparatus == null
+                                  topOrders: _moveTopApparatus == null ||
+                                          _moveBottomApparatus == null
                                       ? const []
-                                      : _ordersForApparatus(_moveTopApparatus!),
-                                  bottomOrders: _moveBottomApparatus == null
+                                      : _moveOrdersForApparatus(
+                                          source: _moveTopApparatus!,
+                                          target: _moveBottomApparatus!,
+                                        ),
+                                  bottomOrders: _moveTopApparatus == null ||
+                                          _moveBottomApparatus == null
                                       ? const []
-                                      : _ordersForApparatus(_moveBottomApparatus!),
+                                      : _moveOrdersForApparatus(
+                                          source: _moveBottomApparatus!,
+                                          target: _moveTopApparatus!,
+                                        ),
                                   selectedOrderIds: _selectedMoveOrderIds,
                                   draggingOrders: _draggingMoveOrders,
                                   draggingSource: _draggingMoveSource,
                                   canMoveTo: (order, target, source) =>
                                       _canMoveOrderToApparatus(
-                                        order,
-                                        target,
-                                        source: source,
-                                      ),
-                                  onPickTop: () => _pickMoveApparatus(top: true),
+                                    order,
+                                    target,
+                                    source: source,
+                                  ),
+                                  onPickTop: () =>
+                                      _pickMoveApparatus(top: true),
                                   onPickBottom: () =>
                                       _pickMoveApparatus(top: false),
                                   onToggleSelect: _toggleMoveOrderSelection,
@@ -1314,7 +1644,8 @@ class _SequenceModulePage extends StatelessWidget {
                               : 0,
                         ),
                         child: _SequenceOrderRow(
-                          slot: M3SegmentedListGeometry.standaloneListSlotForIndex(
+                          slot: M3SegmentedListGeometry
+                              .standaloneListSlotForIndex(
                             index,
                             orders.length,
                           ),
@@ -1336,7 +1667,8 @@ class _SequenceModulePage extends StatelessWidget {
                               : 0,
                         ),
                         child: _SequenceOrderRow(
-                          slot: M3SegmentedListGeometry.standaloneListSlotForIndex(
+                          slot: M3SegmentedListGeometry
+                              .standaloneListSlotForIndex(
                             index,
                             orders.length,
                           ),
@@ -1390,8 +1722,7 @@ class _SequenceModulePage extends StatelessWidget {
                     order: order,
                     index: index,
                     readOnly: false,
-                    onTap:
-                        onTapOrder == null ? null : () => onTapOrder!(order),
+                    onTap: onTapOrder == null ? null : () => onTapOrder!(order),
                   ),
                 );
               },
@@ -1559,6 +1890,7 @@ class _MoveModulePage extends StatelessWidget {
             child: Column(
               children: [
                 _MoveApparatusHeader(
+                  key: const ValueKey('move-top-apparatus-picker'),
                   apparatus: top,
                   alignment: Alignment.centerLeft,
                   onTap: onPickTop,
@@ -1710,6 +2042,9 @@ class _MoveDropZone extends StatelessWidget {
                     zoneOrders: orders,
                   );
                   return Padding(
+                    key: ValueKey(
+                      'move-order-${apparatus.warehouse}-${order.map.id}',
+                    ),
                     padding: EdgeInsets.only(
                       bottom: index < orders.length - 1
                           ? M3SegmentedListGeometry.gap
@@ -1761,6 +2096,7 @@ class _MoveDropZone extends StatelessWidget {
 
 class _MoveApparatusHeader extends StatelessWidget {
   const _MoveApparatusHeader({
+    super.key,
     required this.apparatus,
     required this.alignment,
     required this.onTap,
@@ -1832,6 +2168,7 @@ class _MoveBoundary extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return InkWell(
+      key: const ValueKey('move-boundary-apparatus-picker'),
       onTap: onTap,
       borderRadius: BorderRadius.circular(999),
       child: Row(
@@ -2011,9 +2348,12 @@ class _MoveEmptyZone extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final message = _isMoveUnassignedApparatus(apparatus)
+        ? 'Tanlanmagan zakaz yo‘q'
+        : '${apparatus.warehouse} uchun zakaz yo‘q';
     return Center(
       child: Text(
-        '${apparatus.warehouse} uchun zakaz yo‘q',
+        message,
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: scheme.onSurfaceVariant,
@@ -2028,45 +2368,101 @@ class _ApparatusPickerSheet extends StatelessWidget {
     required this.apparatus,
     this.selected,
     this.orderCountFor,
+    this.showUnassigned = false,
+    this.unassignedOrderCount = 0,
   });
 
   final List<AdminWarehouse> apparatus;
   final AdminWarehouse? selected;
   final int Function(AdminWarehouse apparatus)? orderCountFor;
+  final bool showUnassigned;
+  final int unassignedOrderCount;
 
   @override
   Widget build(BuildContext context) {
+    final sheetHeight =
+        (MediaQuery.sizeOf(context).height * 0.52).clamp(360.0, 520.0);
     return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-        shrinkWrap: true,
-        children: [
-          Text(
-            'Aparat tanlang',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
-          ),
-          const SizedBox(height: 12),
-          M3SegmentSpacedColumn(
-            children: [
-              for (var index = 0; index < apparatus.length; index++)
-                _ApparatusRow(
-                  slot: M3SegmentedListGeometry.standaloneListSlotForIndex(
-                    index,
-                    apparatus.length,
-                  ),
-                  apparatus: apparatus[index],
-                  selected:
-                      selected?.warehouse == apparatus[index].warehouse,
-                  orderCount:
-                      orderCountFor?.call(apparatus[index]) ?? 0,
-                  onTap: () => Navigator.of(context).pop(apparatus[index]),
-                ),
-            ],
-          ),
-        ],
+      child: SizedBox(
+        height: sheetHeight.toDouble(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Text(
+                'Aparat tanlang',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: _ApparatusPickerList(
+                apparatus: apparatus,
+                selected: selected,
+                orderCountFor: orderCountFor,
+                showUnassigned: showUnassigned,
+                unassignedOrderCount: unassignedOrderCount,
+              ),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+}
+
+class _ApparatusPickerList extends StatelessWidget {
+  const _ApparatusPickerList({
+    required this.apparatus,
+    this.selected,
+    this.orderCountFor,
+    this.showUnassigned = false,
+    this.unassignedOrderCount = 0,
+  });
+
+  final List<AdminWarehouse> apparatus;
+  final AdminWarehouse? selected;
+  final int Function(AdminWarehouse apparatus)? orderCountFor;
+  final bool showUnassigned;
+  final int unassignedOrderCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final itemCount = apparatus.length + (showUnassigned ? 1 : 0);
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      children: [
+        M3SegmentSpacedColumn(
+          children: [
+            if (showUnassigned)
+              _ApparatusRow(
+                slot: M3SegmentedListGeometry.standaloneListSlotForIndex(
+                  0,
+                  itemCount,
+                ),
+                apparatus: _moveUnassignedWarehouse,
+                selected: _isMoveUnassignedApparatus(selected),
+                orderCount: unassignedOrderCount,
+                onTap: () =>
+                    Navigator.of(context).pop(_moveUnassignedWarehouse),
+              ),
+            for (var index = 0; index < apparatus.length; index++)
+              _ApparatusRow(
+                slot: M3SegmentedListGeometry.standaloneListSlotForIndex(
+                  index + (showUnassigned ? 1 : 0),
+                  itemCount,
+                ),
+                apparatus: apparatus[index],
+                selected: selected?.warehouse == apparatus[index].warehouse,
+                orderCount: orderCountFor?.call(apparatus[index]) ?? 0,
+                onTap: () => Navigator.of(context).pop(apparatus[index]),
+              ),
+          ],
+        ),
+      ],
     );
   }
 }

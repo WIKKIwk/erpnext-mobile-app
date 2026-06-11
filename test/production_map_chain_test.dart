@@ -2,6 +2,7 @@ import 'package:erpnext_stock_mobile/src/features/admin/logic/apparatus_queue_st
 import 'package:erpnext_stock_mobile/src/features/admin/logic/production_map_chain.dart';
 import 'package:erpnext_stock_mobile/src/features/admin/logic/production_map_pechat_rules.dart';
 import 'package:erpnext_stock_mobile/src/features/admin/models/production_map_models.dart';
+import 'package:erpnext_stock_mobile/src/features/shared/models/app_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 ProductionMapDefinition _hotlunchMap() {
@@ -55,9 +56,49 @@ ProductionMapDefinition _pechatOnlyMap() {
 }
 
 void main() {
+  test('production map node preserves alternative group metadata', () {
+    const node = ProductionMapNode(
+      id: 'apparatus-7',
+      kind: 'apparatus',
+      title: '7 ta rangli pechat',
+      alternativeGroupId: 'alt-pechat-1',
+      alternativeGroupLabel: 'pechat',
+      alternativeAssignedTitle: '7 ta rangli pechat',
+    );
+
+    final restored = ProductionMapNode.fromJson(node.toJson());
+
+    expect(restored.alternativeGroupId, 'alt-pechat-1');
+    expect(restored.alternativeGroupLabel, 'pechat');
+    expect(restored.alternativeAssignedTitle, '7 ta rangli pechat');
+    expect(restored.toJson()['alternative_group_id'], 'alt-pechat-1');
+    expect(restored.toJson()['alternative_group_label'], 'pechat');
+    expect(
+      restored.toJson()['alternative_assigned_title'],
+      '7 ta rangli pechat',
+    );
+  });
+
+  test('admin apparatus group normalizes server json shape', () {
+    final group = AdminApparatusGroup.fromJson(const {
+      'name': 'pechat',
+      'apparatus': ['7 ta rangli pechat', '8 ta rangli pechat'],
+    });
+
+    expect(group.name, 'pechat');
+    expect(group.apparatus, ['7 ta rangli pechat', '8 ta rangli pechat']);
+    expect(group.toJson(), {
+      'name': 'pechat',
+      'apparatus': ['7 ta rangli pechat', '8 ta rangli pechat'],
+    });
+  });
+
   test('warehouse suffix titles match', () {
-    expect(productionMapWarehouseTitlesMatch('Laminatsiya - A', 'Laminatsiya'), isTrue);
-    expect(productionMapWarehouseTitlesMatch('Paket aparat - A', 'Paket aparat'), isTrue);
+    expect(productionMapWarehouseTitlesMatch('Laminatsiya - A', 'Laminatsiya'),
+        isTrue);
+    expect(
+        productionMapWarehouseTitlesMatch('Paket aparat - A', 'Paket aparat'),
+        isTrue);
   });
 
   test('linear work stages skip product task before first apparatus', () {

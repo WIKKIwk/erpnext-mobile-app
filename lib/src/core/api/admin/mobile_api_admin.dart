@@ -1,6 +1,9 @@
 part of '../mobile_api.dart';
 
 final List<ProductionMapSaved> _testModeProductionMaps = [];
+final List<AdminApparatusGroup> _testModeApparatusGroups = [
+  ...TestModeDemoData.apparatusGroups,
+];
 final Map<String, List<String>> _testModeApparatusSequences = {};
 final Map<String, Map<String, String>> _testModeApparatusQueueStates = {};
 bool _testModeForceSequenceSaveFailure = false;
@@ -53,7 +56,8 @@ class AdminProductionMapLiveSnapshot {
           for (final item in mapsRaw)
             ProductionMapSaved.fromJson(item as Map<String, dynamic>),
       ],
-      sequences: MobileApi.instance.parseApparatusSequenceMap(json['sequences']),
+      sequences:
+          MobileApi.instance.parseApparatusSequenceMap(json['sequences']),
       queueStates:
           MobileApi.instance.parseApparatusQueueStateMap(json['queue_states']),
     );
@@ -80,8 +84,10 @@ MobileApiException _adminProductionMapException(
       'duplicate_order_number' => 'Bu raqam boshqa zakazga berilgan',
       'order_number_immutable' => 'Zakaz raqamini o‘zgartirish mumkin emas',
       'move_not_allowed' => 'Zakaz bu aparatga tushmaydi',
-      'queue_action_not_allowed' => 'Faqat navbatdagi zakazni boshlash yoki tugatish mumkin',
-      'previous_stage_not_completed' => 'Oldingi bosqich tugallanguncha kutilmoqda',
+      'queue_action_not_allowed' =>
+        'Faqat navbatdagi zakazni boshlash yoki tugatish mumkin',
+      'previous_stage_not_completed' =>
+        'Oldingi bosqich tugallanguncha kutilmoqda',
       'apparatus_not_assigned' => 'Bu aparat sizga biriktirilmagan',
       'map_not_found' => 'Zakaz topilmadi',
       _ => 'Production map amali bajarilmadi',
@@ -157,6 +163,57 @@ extension MobileApiAdmin on MobileApi {
     return json
         .map((item) => DispatchRecord.fromJson(item as Map<String, dynamic>))
         .toList();
+  }
+
+  Future<List<AdminApparatusGroup>> adminApparatusGroups() async {
+    if (await TestModeController.instance.isEnabled()) {
+      return List<AdminApparatusGroup>.from(_testModeApparatusGroups);
+    }
+    final response = await _sendAuthorized(
+      () => http.get(
+        Uri.parse('$baseUrl/v1/mobile/admin/apparatus-groups'),
+        headers: _headers(requireToken()),
+      ),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Admin apparatus groups failed');
+    }
+    final List<dynamic> json = jsonDecode(response.body) as List<dynamic>;
+    return json
+        .map((item) =>
+            AdminApparatusGroup.fromJson(item as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+
+  Future<AdminApparatusGroup> adminSaveApparatusGroup(
+    AdminApparatusGroup group,
+  ) async {
+    if (await TestModeController.instance.isEnabled()) {
+      final normalized = AdminApparatusGroup.fromJson(group.toJson());
+      final key = normalized.name.toLowerCase();
+      final index = _testModeApparatusGroups
+          .indexWhere((item) => item.name.toLowerCase() == key);
+      if (index >= 0) {
+        _testModeApparatusGroups[index] = normalized;
+      } else {
+        _testModeApparatusGroups.add(normalized);
+      }
+      return normalized;
+    }
+    final response = await _sendAuthorized(
+      () => http.put(
+        Uri.parse('$baseUrl/v1/mobile/admin/apparatus-groups'),
+        headers: _headers(requireToken())
+          ..['Content-Type'] = 'application/json',
+        body: jsonEncode(group.toJson()),
+      ),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Admin apparatus group save failed');
+    }
+    return AdminApparatusGroup.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
   }
 
   Future<List<AdminCapability>> adminCapabilities() async {
@@ -591,8 +648,7 @@ extension MobileApiAdmin on MobileApi {
         ..._testModeApparatusQueueStates.keys,
       };
       final storageKey = resolveApparatusStorageKey(apparatus, knownKeys);
-      final sequence =
-          _testModeApparatusSequences[storageKey] ?? const [];
+      final sequence = _testModeApparatusSequences[storageKey] ?? const [];
       final states = Map<String, String>.from(
         _testModeApparatusQueueStates[storageKey] ?? const {},
       );
