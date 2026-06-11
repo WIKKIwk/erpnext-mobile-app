@@ -3,7 +3,6 @@ import 'package:erpnext_stock_mobile/src/core/localization/app_localizations.dar
 import 'package:erpnext_stock_mobile/src/core/api/mobile_api.dart';
 import 'package:erpnext_stock_mobile/src/core/session/session.dart';
 import 'package:erpnext_stock_mobile/src/core/test_mode/test_mode_controller.dart';
-import 'package:erpnext_stock_mobile/src/features/admin/models/production_map_models.dart';
 import 'package:erpnext_stock_mobile/src/features/admin/presentation/admin_calculate_screen.dart';
 import 'package:erpnext_stock_mobile/src/features/admin/presentation/admin_production_map_test_screen.dart';
 import 'package:erpnext_stock_mobile/src/features/shared/models/app_models.dart';
@@ -62,46 +61,34 @@ void main() {
     expect(find.text('Production mapga ulash'), findsOneWidget);
   });
 
-  testWidgets('production map link asks before rebuilding existing product map',
+  testWidgets('product picker asks before recreating existing quick order',
       (tester) async {
     await TestModeController.instance.setEnabled(true);
-    await MobileApi.instance.adminSaveProductionMap(
-      const ProductionMapDefinition(
-        id: 'zakaz-1234',
-        productCode: 'ITEM-001',
-        title: 'Old map',
-        code: '1234',
-        orderNumber: '1234',
-        nodes: [
-          ProductionMapNode(id: 'start', kind: 'start', title: 'Start'),
-          ProductionMapNode(id: 'end', kind: 'end', title: 'End'),
-        ],
-        edges: [ProductionMapEdge(from: 'start', to: 'end')],
-      ),
+    await MobileApi.instance.upsertCalculateOrderTemplate(
+      _template(itemCode: 'DEMO-HOTLUNCH'),
     );
-    await _pumpCalculateScreen(
-      tester,
-      template: _template(itemCode: 'ITEM-001'),
-    );
+    await _pumpCalculateScreen(tester);
 
-    await tester.drag(find.byType(ListView), const Offset(0, -900));
+    await tester.tap(find.text('Mahsulot'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Production mapga ulash'));
+    await tester.tap(find.text('Hotlunch').last);
     await tester.pumpAndSettle();
 
-    expect(find.text('Bu mahsulotni allaqachon mapi bor'), findsOneWidget);
-    expect(find.text('Qayta qurmoqchimisiz?'), findsOneWidget);
+    expect(find.text('Bu tezkor zakazlar ro‘yxatida bor'), findsOneWidget);
+    expect(find.text('Qaytadan yaratmoqchimisiz?'), findsOneWidget);
 
     await tester.tap(find.text('Yo‘q'));
     await tester.pumpAndSettle();
-    expect(find.text('MAP OPENED'), findsNothing);
+    expect(find.text('Hotlunch'), findsNothing);
 
-    await tester.tap(find.text('Production mapga ulash'));
+    await tester.tap(find.text('Mahsulot'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Hotlunch').last);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Ha'));
     await tester.pumpAndSettle();
 
-    expect(find.text('MAP OPENED'), findsOneWidget);
+    expect(find.text('Hotlunch'), findsWidgets);
   });
 }
 

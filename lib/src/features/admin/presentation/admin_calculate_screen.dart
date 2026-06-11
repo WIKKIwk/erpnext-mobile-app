@@ -145,15 +145,6 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
       showAdminTopNotice(context, error);
       return;
     }
-    if (await _hasExistingProductProductionMap()) {
-      if (!mounted) {
-        return;
-      }
-      final rebuild = await _confirmProductionMapRebuild();
-      if (!mounted || rebuild != true) {
-        return;
-      }
-    }
     if (!mounted) {
       return;
     }
@@ -179,34 +170,38 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
     });
   }
 
-  Future<bool> _hasExistingProductProductionMap() async {
-    final productKeys = _currentProductMapKeys();
+  Future<bool> _hasExistingQuickOrderForProduct(SupplierItem product) async {
+    final productKeys = {
+      product.code,
+      product.name,
+    }.map(_normalizeProductMapKey).where((key) => key.isNotEmpty).toSet();
     if (productKeys.isEmpty) {
       return false;
     }
-    final maps = await MobileApi.instance.adminProductionMaps();
-    return maps.any((saved) {
-      final key = _normalizeProductMapKey(saved.map.productCode);
-      return key.isNotEmpty && productKeys.contains(key);
+    final currentTemplateId = _templateId.trim();
+    final templates = await MobileApi.instance.calculateOrderTemplates();
+    return templates.any((template) {
+      if (currentTemplateId.isNotEmpty &&
+          template.id.trim() == currentTemplateId) {
+        return false;
+      }
+      final templateKeys = {
+        template.itemCode,
+        template.product,
+        template.name,
+        template.code,
+      }.map(_normalizeProductMapKey).where((key) => key.isNotEmpty);
+      return templateKeys.any(productKeys.contains);
     });
   }
 
-  Set<String> _currentProductMapKeys() {
-    return {
-      _itemCode,
-      _product.text,
-      _resolvedOrderName(),
-      _templateId,
-    }.map(_normalizeProductMapKey).where((key) => key.isNotEmpty).toSet();
-  }
-
-  Future<bool?> _confirmProductionMapRebuild() {
+  Future<bool?> _confirmQuickOrderRecreate() {
     return showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Bu mahsulotni allaqachon mapi bor'),
-          content: const Text('Qayta qurmoqchimisiz?'),
+          title: const Text('Bu tezkor zakazlar ro‘yxatida bor'),
+          content: const Text('Qaytadan yaratmoqchimisiz?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
@@ -335,6 +330,18 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
       },
     );
     if (picked == null || !mounted) {
+      return;
+    }
+    if (await _hasExistingQuickOrderForProduct(picked)) {
+      if (!mounted) {
+        return;
+      }
+      final recreate = await _confirmQuickOrderRecreate();
+      if (!mounted || recreate != true) {
+        return;
+      }
+    }
+    if (!mounted) {
       return;
     }
     setState(() {
