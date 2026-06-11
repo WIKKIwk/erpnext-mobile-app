@@ -70,6 +70,14 @@ class TestModeDemoData {
       warehouse: '9 ta rangli pechat',
       parentWarehouse: 'aparat - A',
     ),
+    AdminWarehouse(
+      warehouse: 'Laminatsiya 1',
+      parentWarehouse: 'aparat - A',
+    ),
+    AdminWarehouse(
+      warehouse: 'Laminatsiya 2',
+      parentWarehouse: 'aparat - A',
+    ),
   ];
 
   static const List<AdminApparatusGroup> apparatusGroups = [
@@ -79,6 +87,13 @@ class TestModeDemoData {
         '7 ta rangli pechat',
         '8 ta rangli pechat',
         '9 ta rangli pechat',
+      ],
+    ),
+    AdminApparatusGroup(
+      name: 'Laminatsiya',
+      apparatus: [
+        'Laminatsiya 1',
+        'Laminatsiya 2',
       ],
     ),
   ];

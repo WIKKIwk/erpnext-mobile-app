@@ -118,6 +118,45 @@ void main() {
     expect(find.byKey(const ValueKey('admin-fab-menu-Ishlov')), findsOneWidget);
   });
 
+  testWidgets('production map order flow hides laminatsiya group above 1050',
+      (tester) async {
+    await TestModeController.instance.setEnabled(true);
+    await _usePhoneViewport(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(useMaterial3: true),
+        locale: const Locale('uz'),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const AdminProductionMapTestScreen(
+          orderContext: ProductionMapOrderContext(
+            orderName: 'Large rubber order',
+            productName: 'large rubber product',
+            itemCode: 'ITEM-1100',
+            rollCount: 7,
+            widthMm: 1070,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.bySemanticsLabel('Element qo‘shish'));
+    await tester.pumpAndSettle();
+
+    expect(productionMapRubberSizeFromWidth(1070), 1100);
+    expect(find.byKey(const ValueKey('admin-fab-menu-pechat')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('admin-fab-menu-Laminatsiya')),
+      findsNothing,
+    );
+  });
+
   testWidgets(
       'production map pechat group skip adds alternative apparatus nodes',
       (tester) async {

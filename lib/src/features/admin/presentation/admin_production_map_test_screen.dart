@@ -1269,13 +1269,14 @@ class _AdminProductionMapTestScreenState
     if (_orderMode) {
       final groupActions = [
         for (final group in _apparatusGroups)
-          AdminFabMenuAction(
-            title: group.name,
-            icon: Icons.precision_manufacturing_rounded,
-            onTap: () => _runMapToolAction(() {
-              unawaited(_addApparatusGroup(group));
-            }),
-          ),
+          if (_apparatusGroupMatchesOrder(group))
+            AdminFabMenuAction(
+              title: group.name,
+              icon: Icons.precision_manufacturing_rounded,
+              onTap: () => _runMapToolAction(() {
+                unawaited(_addApparatusGroup(group));
+              }),
+            ),
       ];
       return [
         if (groupActions.isEmpty)
@@ -1325,6 +1326,18 @@ class _AdminProductionMapTestScreenState
         onTap: () => _runMapToolAction(() => _addNode('condition')),
       ),
     ];
+  }
+
+  bool _apparatusGroupMatchesOrder(AdminApparatusGroup group) {
+    return group.apparatus.any(
+      (apparatus) => productionMapApparatusMatchesOrder(
+        AdminWarehouse(
+          warehouse: apparatus,
+          parentWarehouse: 'aparat - A',
+        ),
+        widget.orderContext,
+      ),
+    );
   }
 
   @override
