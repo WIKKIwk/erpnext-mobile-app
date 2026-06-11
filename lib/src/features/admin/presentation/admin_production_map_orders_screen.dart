@@ -2368,8 +2368,12 @@ class _MoveOrderTile extends StatelessWidget {
             onDragStarted: onDragStarted,
             onDragEnd: (_) => onDragEnded(),
             onDraggableCanceled: (_, __) => onDragEnded(),
-            child: _MoveDragHandle(
-              color: scheme.onSurfaceVariant,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: onToggleSelect,
+              child: _MoveDragHandle(
+                color: scheme.onSurfaceVariant,
+              ),
             ),
           ),
         );
