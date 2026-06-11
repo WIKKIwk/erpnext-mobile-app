@@ -32,33 +32,26 @@ void main() {
     AppSession.instance.profile = null;
   });
 
-  testWidgets('zakaz create page shows production map link action',
+  testWidgets('zakaz create page shows production map link after calculation',
       (tester) async {
-    tester.view.devicePixelRatio = 1;
-    tester.view.physicalSize = const Size(430, 1200);
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: ThemeData(useMaterial3: true),
-        locale: const Locale('uz'),
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-        ],
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: const AdminCalculateScreen(),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await TestModeController.instance.setEnabled(true);
+    await _pumpCalculateScreen(tester, template: _template(itemCode: 'ITEM-1'));
 
     await tester.drag(find.byType(ListView), const Offset(0, -900));
     await tester.pumpAndSettle();
 
+    expect(find.text('Production mapga ulash'), findsNothing);
+
+    await tester.enterText(find.byType(TextFormField).first, '100');
+    await tester.tap(find.text('Hisoblash'));
+    await tester.pumpAndSettle();
+
     expect(find.text('Production mapga ulash'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextFormField).first, '120');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Production mapga ulash'), findsNothing);
   });
 
   testWidgets('product picker asks before recreating existing quick order',

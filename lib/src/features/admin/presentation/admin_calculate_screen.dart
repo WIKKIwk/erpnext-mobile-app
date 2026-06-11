@@ -54,6 +54,7 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
   bool _calculating = false;
   bool _uploadingImage = false;
   bool _editingAllFields = true;
+  bool _applyingTemplate = false;
   String _imageId = '';
   String _imageName = '';
   String _imageMime = '';
@@ -61,6 +62,7 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
   String _imageLocalPath = '';
   int _imageSizeBytes = 0;
   CalculateResponse? _result;
+  String _lastCalculatedSignature = '';
   String _error = '';
 
   @override
@@ -68,10 +70,16 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
     super.initState();
     _editingAllFields = widget.template == null;
     _applyTemplate(widget.template);
+    for (final controller in _calculationInputControllers) {
+      controller.addListener(_handleCalculationInputChanged);
+    }
   }
 
   @override
   void dispose() {
+    for (final controller in _calculationInputControllers) {
+      controller.removeListener(_handleCalculationInputChanged);
+    }
     _customer.dispose();
     _product.dispose();
     _status.dispose();
@@ -89,35 +97,66 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
     super.dispose();
   }
 
+  List<TextEditingController> get _calculationInputControllers => [
+        _product,
+        _kg,
+        _widthMm,
+        _wastePercent,
+        _rollCount,
+        _firstMaterial,
+        _firstMicron,
+        _secondMaterial,
+        _secondMicron,
+        _thirdMaterial,
+        _thirdMicron,
+      ];
+
+  void _handleCalculationInputChanged() {
+    if (_applyingTemplate || !mounted) {
+      return;
+    }
+    if (_result == null && _lastCalculatedSignature.isEmpty) {
+      return;
+    }
+    setState(() {});
+  }
+
   void _applyTemplate(CalculateOrderTemplate? template) {
     if (template == null) {
       return;
     }
-    _templateId = template.id;
-    _orderCode = template.code;
-    _customerRef = template.customerRef;
-    _customer.text = template.customer;
-    _itemCode = template.itemCode;
-    _product.text = template.product;
-    _status.text = template.status;
-    _imageId = template.imageId;
-    _imageName = template.imageName;
-    _imageMime = template.imageMime;
-    _imageSizeBytes = template.imageSizeBytes;
-    _imageUrl = template.imageUrl;
-    _imageLocalPath = '';
-    _kg.clear();
-    _widthMm.text = _fmtInput(template.widthMm);
-    _wastePercent.text = _fmtInput(template.wastePercent);
-    _rollCount.text =
-        template.rollCount == null ? '' : _fmtInput(template.rollCount!);
-    _firstMaterial.text = template.firstLayerMaterial;
-    _firstMicron.text = template.firstLayerMicron;
-    _secondMaterial.text = template.secondLayerMaterial;
-    _secondMicron.text = template.secondLayerMicron;
-    _thirdMaterial.text = template.thirdLayerMaterial;
-    _thirdMicron.text = template.thirdLayerMicron;
-    _note.text = template.note;
+    _applyingTemplate = true;
+    try {
+      _templateId = template.id;
+      _orderCode = template.code;
+      _customerRef = template.customerRef;
+      _customer.text = template.customer;
+      _itemCode = template.itemCode;
+      _product.text = template.product;
+      _status.text = template.status;
+      _imageId = template.imageId;
+      _imageName = template.imageName;
+      _imageMime = template.imageMime;
+      _imageSizeBytes = template.imageSizeBytes;
+      _imageUrl = template.imageUrl;
+      _imageLocalPath = '';
+      _kg.clear();
+      _widthMm.text = _fmtInput(template.widthMm);
+      _wastePercent.text = _fmtInput(template.wastePercent);
+      _rollCount.text =
+          template.rollCount == null ? '' : _fmtInput(template.rollCount!);
+      _firstMaterial.text = template.firstLayerMaterial;
+      _firstMicron.text = template.firstLayerMicron;
+      _secondMaterial.text = template.secondLayerMaterial;
+      _secondMicron.text = template.secondLayerMicron;
+      _thirdMaterial.text = template.thirdLayerMaterial;
+      _thirdMicron.text = template.thirdLayerMicron;
+      _note.text = template.note;
+      _result = null;
+      _lastCalculatedSignature = '';
+    } finally {
+      _applyingTemplate = false;
+    }
   }
 
   void _openDrawerRoute(String routeName) {
@@ -140,6 +179,10 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
   }
 
   Future<void> _openProductionMap() async {
+    if (!_hasFreshCalculation) {
+      showAdminTopNotice(context, 'Avval hisoblash tugmasini bosing');
+      return;
+    }
     final error = _templateValidationError();
     if (error != null) {
       showAdminTopNotice(context, error);
@@ -420,6 +463,7 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
       }
       setState(() {
         _result = result;
+        _lastCalculatedSignature = _calculationSignature();
       });
     } catch (error) {
       if (!mounted) {
@@ -428,6 +472,7 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
       setState(() {
         _error = error is MobileApiException ? error.message : error.toString();
         _result = null;
+        _lastCalculatedSignature = '';
       });
       showAdminTopNotice(context, 'Hisoblashda xatolik');
     } finally {
@@ -628,6 +673,7 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
   }
 
   List<Widget> _calculateActionChildren() {
+    final freshResult = _hasFreshCalculation ? _result : null;
     return [
       const SizedBox(height: 22),
       FilledButton.icon(
@@ -642,24 +688,43 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
         const SizedBox(height: 16),
         _ErrorPanel(message: _error),
       ],
-      if (_result != null) ...[
+      if (freshResult != null) ...[
         const SizedBox(height: 18),
         _ResultPanel(
-          response: _result!,
+          response: freshResult,
           rollCount: _parseOptionalDouble(_rollCount.text),
           widthMm: _parseRequiredDouble(_widthMm.text),
         ),
-      ],
-      const SizedBox(height: 18),
-      OutlinedButton.icon(
-        onPressed: _openProductionMap,
-        icon: const Icon(Icons.account_tree_outlined),
-        label: const Text('Production mapga ulash'),
-        style: OutlinedButton.styleFrom(
-          minimumSize: const Size.fromHeight(52),
+        const SizedBox(height: 18),
+        OutlinedButton.icon(
+          onPressed: _openProductionMap,
+          icon: const Icon(Icons.account_tree_outlined),
+          label: const Text('Production mapga ulash'),
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size.fromHeight(52),
+          ),
         ),
-      ),
+      ],
     ];
+  }
+
+  bool get _hasFreshCalculation =>
+      _result != null && _lastCalculatedSignature == _calculationSignature();
+
+  String _calculationSignature() {
+    return [
+      _product.text.trim(),
+      _kg.text.trim(),
+      _widthMm.text.trim(),
+      _wastePercent.text.trim(),
+      _rollCount.text.trim(),
+      _firstMaterial.text.trim(),
+      _firstMicron.text.trim(),
+      _secondMaterial.text.trim(),
+      _secondMicron.text.trim(),
+      _thirdMaterial.text.trim(),
+      _thirdMicron.text.trim(),
+    ].join('\u001f');
   }
 
   @override

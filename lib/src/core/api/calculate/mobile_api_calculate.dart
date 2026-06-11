@@ -4,6 +4,9 @@ final List<CalculateOrderTemplate> _testModeCalculateOrderTemplates = [];
 
 extension MobileApiCalculate on MobileApi {
   Future<CalculateResponse> calculate(CalculateRequest request) async {
+    if (await TestModeController.instance.isEnabled()) {
+      return _testModeCalculate(request);
+    }
     final response = await _sendAuthorized(
       () => http.post(
         Uri.parse('${MobileApi.baseUrl}/v1/mobile/calculate'),
@@ -161,6 +164,49 @@ extension MobileApiCalculate on MobileApi {
     }
     return value;
   }
+}
+
+CalculateResponse _testModeCalculate(CalculateRequest request) {
+  final widthSm = request.widthMm / 10;
+  final rubberSize = productionMapRubberSizeFromWidth(request.widthMm);
+  const coeffSum = 4.3;
+  final baseLength =
+      widthSm <= 0 ? 0.0 : request.kg / (coeffSum * widthSm) * 6000.0;
+  final wasteLength = baseLength * request.wastePercent / 100;
+  final roundedLength = ((baseLength + wasteLength) / 100).ceil() * 100.0;
+  return CalculateResponse(
+    ok: true,
+    kg: request.kg,
+    widthMm: request.widthMm,
+    rubberSizeMm: rubberSize,
+    wastePercent: request.wastePercent,
+    layers: [
+      CalculateLayer(
+        material: request.firstLayer.material,
+        micron: request.firstLayer.micron,
+      ),
+      CalculateLayer(
+        material: request.secondLayer.material,
+        micron: request.secondLayer.micron,
+      ),
+      if (!request.thirdLayer.isEmpty)
+        CalculateLayer(
+          material: request.thirdLayer.material,
+          micron: request.thirdLayer.micron,
+        ),
+    ],
+    results: [
+      CalculateResult(
+        firstCoeff: 1,
+        otherCoeff: coeffSum - 1,
+        coeffSum: coeffSum,
+        widthSm: widthSm,
+        baseLength: baseLength,
+        wasteLength: wasteLength,
+        roundedLength: roundedLength,
+      ),
+    ],
+  );
 }
 
 class CalculateRequest {
@@ -488,8 +534,7 @@ CalculateOrderTemplate _testModeUpsertCalculateOrderTemplate(
   final id = template.id.trim().isNotEmpty
       ? template.id.trim()
       : 'test-co-${DateTime.now().millisecondsSinceEpoch}';
-  final code =
-      template.code.trim().isNotEmpty ? template.code.trim() : 'Z-$id';
+  final code = template.code.trim().isNotEmpty ? template.code.trim() : 'Z-$id';
   final saved = CalculateOrderTemplate(
     id: id,
     code: code,
@@ -521,8 +566,7 @@ CalculateOrderTemplate _testModeUpsertCalculateOrderTemplate(
   );
   final lowerCode = code.toLowerCase();
   _testModeCalculateOrderTemplates.removeWhere(
-    (item) =>
-        item.id == saved.id || item.code.toLowerCase() == lowerCode,
+    (item) => item.id == saved.id || item.code.toLowerCase() == lowerCode,
   );
   _testModeCalculateOrderTemplates.insert(0, saved);
   return saved;
