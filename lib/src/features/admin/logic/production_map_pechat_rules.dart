@@ -131,9 +131,8 @@ String productionMapPechatCompatibilitySummary({
   if (compatible.isEmpty) {
     return 'Mos pechat topilmadi';
   }
-  final compatibleText = compatible
-      .map(productionMapPechatApparatusLabel)
-      .join(', ');
+  final compatibleText =
+      compatible.map(productionMapPechatApparatusLabel).join(', ');
   if (recommended == null) {
     return 'Mos pechat: $compatibleText';
   }
@@ -224,6 +223,57 @@ bool productionMapApparatusNodeMatchesFrom({
     return false;
   }
   return productionMapPechatColorCount(nodeTitle) == fromColor;
+}
+
+/// Reassigns the chosen apparatus for alternative-group maps.
+/// Returns null when the order is not currently assigned to [fromApparatus]
+/// inside a group that also contains [toApparatus].
+List<ProductionMapNode>? productionMapReassignAlternativeApparatusAssignment({
+  required List<ProductionMapNode> nodes,
+  required String fromApparatus,
+  required String toApparatus,
+}) {
+  final to = toApparatus.trim();
+  if (to.isEmpty) {
+    return null;
+  }
+  final candidateGroups = <String>{};
+  for (final node in nodes) {
+    final groupId = node.alternativeGroupId.trim();
+    if (node.kind == 'apparatus' &&
+        groupId.isNotEmpty &&
+        productionMapWarehouseTitlesMatch(
+          node.alternativeAssignedTitle,
+          fromApparatus,
+        )) {
+      candidateGroups.add(groupId);
+    }
+  }
+  if (candidateGroups.isEmpty) {
+    return null;
+  }
+  final targetGroups = <String>{};
+  for (final groupId in candidateGroups) {
+    final hasTarget = nodes.any(
+      (node) =>
+          node.kind == 'apparatus' &&
+          node.alternativeGroupId.trim() == groupId &&
+          productionMapWarehouseTitlesMatch(node.title, to),
+    );
+    if (hasTarget) {
+      targetGroups.add(groupId);
+    }
+  }
+  if (targetGroups.isEmpty) {
+    return null;
+  }
+  return [
+    for (final node in nodes)
+      node.kind == 'apparatus' &&
+              targetGroups.contains(node.alternativeGroupId.trim())
+          ? node.copyWith(alternativeAssignedTitle: to)
+          : node,
+  ];
 }
 
 /// Reassigns apparatus nodes from [fromApparatus] to [toApparatus].

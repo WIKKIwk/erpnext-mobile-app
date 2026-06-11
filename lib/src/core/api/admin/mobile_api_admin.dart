@@ -438,11 +438,16 @@ extension MobileApiAdmin on MobileApi {
             );
           }
         }
-        final nodes = productionMapReassignApparatusNodes(
-          nodes: current.map.nodes,
-          fromApparatus: fromApparatus,
-          toApparatus: toApparatus,
-        );
+        final nodes = productionMapReassignAlternativeApparatusAssignment(
+              nodes: current.map.nodes,
+              fromApparatus: fromApparatus,
+              toApparatus: toApparatus,
+            ) ??
+            productionMapReassignApparatusNodes(
+              nodes: current.map.nodes,
+              fromApparatus: fromApparatus,
+              toApparatus: toApparatus,
+            );
         if (nodes == null) {
           throw const MobileApiException(
             code: 'move_not_allowed',
@@ -524,11 +529,16 @@ extension MobileApiAdmin on MobileApi {
           );
         }
       }
-      final nodes = productionMapReassignApparatusNodes(
-        nodes: current.map.nodes,
-        fromApparatus: fromApparatus,
-        toApparatus: toApparatus,
-      );
+      final nodes = productionMapReassignAlternativeApparatusAssignment(
+            nodes: current.map.nodes,
+            fromApparatus: fromApparatus,
+            toApparatus: toApparatus,
+          ) ??
+          productionMapReassignApparatusNodes(
+            nodes: current.map.nodes,
+            fromApparatus: fromApparatus,
+            toApparatus: toApparatus,
+          );
       if (nodes == null) {
         throw const MobileApiException(
           code: 'move_not_allowed',

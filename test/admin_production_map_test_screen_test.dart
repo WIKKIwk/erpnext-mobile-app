@@ -477,6 +477,52 @@ void main() {
     );
   });
 
+  test('production map batch move reassigns alternative assigned apparatus',
+      () async {
+    await TestModeController.instance.setEnabled(true);
+    final map = _alternativeProductionOrderMap(
+      id: 'zakaz-alt-move',
+      title: 'Alternative move order',
+      productCode: 'ALT-MOVE',
+      product: 'alternative move product',
+      apparatus: const ['7 ta rangli pechat', '8 ta rangli pechat'],
+      rollCount: 7,
+      widthMm: 650,
+    );
+    await MobileApi.instance.adminSaveProductionMap(
+      map.copyWith(
+        nodes: [
+          for (final node in map.nodes)
+            node.kind == 'apparatus'
+                ? node.copyWith(
+                    alternativeAssignedTitle: '7 ta rangli pechat',
+                  )
+                : node,
+        ],
+      ),
+    );
+
+    final moved = await MobileApi.instance.adminMoveProductionMapOrdersBatch(
+      mapIds: const ['zakaz-alt-move'],
+      fromApparatus: '7 ta rangli pechat',
+      toApparatus: '8 ta rangli pechat',
+    );
+
+    expect(_apparatusTitles(moved, 'zakaz-alt-move'), [
+      '7 ta rangli pechat',
+      '8 ta rangli pechat',
+    ]);
+    expect(_alternativeAssignedTitles(moved, 'zakaz-alt-move'), [
+      '8 ta rangli pechat',
+      '8 ta rangli pechat',
+    ]);
+    final maps = await MobileApi.instance.adminProductionMaps();
+    expect(_alternativeAssignedTitles(maps, 'zakaz-alt-move'), [
+      '8 ta rangli pechat',
+      '8 ta rangli pechat',
+    ]);
+  });
+
   testWidgets('production map order flow requires four digit order number',
       (tester) async {
     await TestModeController.instance.setEnabled(true);
