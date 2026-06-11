@@ -145,6 +145,18 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
       showAdminTopNotice(context, error);
       return;
     }
+    if (await _hasExistingProductProductionMap()) {
+      if (!mounted) {
+        return;
+      }
+      final rebuild = await _confirmProductionMapRebuild();
+      if (!mounted || rebuild != true) {
+        return;
+      }
+    }
+    if (!mounted) {
+      return;
+    }
     final saved = await Navigator.of(context).pushNamed(
       AppRoutes.adminProductionMapTest,
       arguments: ProductionMapOrderContext(
@@ -165,6 +177,49 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
       _applyTemplate(saved);
       _editingAllFields = false;
     });
+  }
+
+  Future<bool> _hasExistingProductProductionMap() async {
+    final productKeys = _currentProductMapKeys();
+    if (productKeys.isEmpty) {
+      return false;
+    }
+    final maps = await MobileApi.instance.adminProductionMaps();
+    return maps.any((saved) {
+      final key = _normalizeProductMapKey(saved.map.productCode);
+      return key.isNotEmpty && productKeys.contains(key);
+    });
+  }
+
+  Set<String> _currentProductMapKeys() {
+    return {
+      _itemCode,
+      _product.text,
+      _resolvedOrderName(),
+      _templateId,
+    }.map(_normalizeProductMapKey).where((key) => key.isNotEmpty).toSet();
+  }
+
+  Future<bool?> _confirmProductionMapRebuild() {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Bu mahsulotni allaqachon mapi bor'),
+          content: const Text('Qayta qurmoqchimisiz?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Yo‘q'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Ha'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   CalculateOrderTemplate _buildTemplateDraft() {
@@ -606,8 +661,9 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
     final children =
         _editingAllFields ? _fullEditChildren() : _compactTemplateChildren();
     final resolvedName = _resolvedOrderName().trim();
-    final pageTitle =
-        resolvedName.isEmpty || resolvedName == 'Zakaz' ? 'Zakaz yaratish' : resolvedName;
+    final pageTitle = resolvedName.isEmpty || resolvedName == 'Zakaz'
+        ? 'Zakaz yaratish'
+        : resolvedName;
     return AppShell(
       drawer: AdminNavigationDrawer(
         selectedIndex: 0,
@@ -1673,4 +1729,8 @@ String _fmtInput(double value) {
     return value.toStringAsFixed(0);
   }
   return value.toString();
+}
+
+String _normalizeProductMapKey(String value) {
+  return value.trim().toLowerCase();
 }
