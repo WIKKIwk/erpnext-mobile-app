@@ -451,9 +451,30 @@ class _AdminProductionMapOrdersScreenState
       orders.map(
         (item) => Object.hash(
           item.map.id,
+          item.map.code,
+          item.map.orderNumber,
           item.map.title,
+          item.map.productCode,
+          item.map.rollCount,
+          item.map.widthMm,
           item.map.nodes.length,
+          Object.hashAll(
+            item.map.nodes.map(
+              (node) => Object.hash(
+                node.id,
+                node.kind,
+                node.title,
+                node.alternativeGroupId,
+                node.alternativeAssignedTitle,
+              ),
+            ),
+          ),
           item.map.edges.length,
+          Object.hashAll(
+            item.map.edges.map(
+              (edge) => Object.hash(edge.from, edge.to, edge.branch),
+            ),
+          ),
         ),
       ),
     );

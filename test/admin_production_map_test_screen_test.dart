@@ -855,7 +855,7 @@ void main() {
   testWidgets('opened orders move module moves every selected pechat order',
       (tester) async {
     await TestModeController.instance.setEnabled(true);
-    for (var index = 0; index < 4; index++) {
+    for (var index = 0; index < 2; index++) {
       await MobileApi.instance.adminSaveProductionMap(
         _productionOrderMap(
           id: 'zakaz-batch-move-$index',
@@ -865,6 +865,29 @@ void main() {
           product: 'batch move product ${index + 1}',
           rollCount: 7,
           widthMm: 650,
+        ),
+      );
+    }
+    for (var index = 2; index < 4; index++) {
+      final map = _alternativeProductionOrderMap(
+        id: 'zakaz-batch-move-$index',
+        title: 'Batch move order ${index + 1}',
+        productCode: 'BATCH-$index',
+        product: 'batch move product ${index + 1}',
+        apparatus: const ['7 ta rangli pechat', '8 ta rangli pechat'],
+        rollCount: 7,
+        widthMm: 650,
+      );
+      await MobileApi.instance.adminSaveProductionMap(
+        map.copyWith(
+          nodes: [
+            for (final node in map.nodes)
+              node.kind == 'apparatus'
+                  ? node.copyWith(
+                      alternativeAssignedTitle: '7 ta rangli pechat',
+                    )
+                  : node,
+          ],
         ),
       );
     }
@@ -914,10 +937,16 @@ void main() {
     );
 
     final maps = await MobileApi.instance.adminProductionMaps();
-    for (var index = 0; index < 4; index++) {
+    for (var index = 0; index < 2; index++) {
       expect(
         _apparatusTitle(maps, 'zakaz-batch-move-$index'),
         '8 ta rangli pechat',
+      );
+    }
+    for (var index = 2; index < 4; index++) {
+      expect(
+        _alternativeAssignedTitles(maps, 'zakaz-batch-move-$index'),
+        ['8 ta rangli pechat', '8 ta rangli pechat'],
       );
     }
     await tester.pump(const Duration(seconds: 3));

@@ -37,7 +37,8 @@ void main() {
     setMobileApiTestModeForceCalculateTemplateSaveFailure(false);
   });
 
-  testWidgets('re-saving opened zakaz skips order number dialog', (tester) async {
+  testWidgets('re-saving opened zakaz skips order number dialog',
+      (tester) async {
     final saved = await MobileApi.instance.adminSaveProductionMap(
       _productionOrderMap(
         id: 'zakaz-4444',
@@ -221,7 +222,92 @@ void main() {
     }
   });
 
-  test('with-order rolls back map when template upsert fails in test mode', () async {
+  test('batch move handles mixed direct and alternative pechat orders',
+      () async {
+    await MobileApi.instance.adminSaveProductionMap(
+      _productionOrderMap(
+        id: 'zakaz-mix-direct-1',
+        title: 'Mix direct 1',
+        productCode: 'MIX-D1',
+        apparatus: '7 ta rangli pechat',
+        product: 'mix direct 1',
+        orderNumber: '8101',
+        rollCount: 7,
+        widthMm: 650,
+      ),
+    );
+    await MobileApi.instance.adminSaveProductionMap(
+      _productionOrderMap(
+        id: 'zakaz-mix-direct-2',
+        title: 'Mix direct 2',
+        productCode: 'MIX-D2',
+        apparatus: '7 ta rangli pechat',
+        product: 'mix direct 2',
+        orderNumber: '8102',
+        rollCount: 7,
+        widthMm: 650,
+      ),
+    );
+    await MobileApi.instance.adminSaveProductionMap(
+      _alternativeProductionOrderMap(
+        id: 'zakaz-mix-alt-1',
+        title: 'Mix alternative 1',
+        productCode: 'MIX-A1',
+        product: 'mix alternative 1',
+        orderNumber: '8103',
+        rollCount: 7,
+        widthMm: 650,
+        assigned: '7 ta rangli pechat',
+      ),
+    );
+    await MobileApi.instance.adminSaveProductionMap(
+      _alternativeProductionOrderMap(
+        id: 'zakaz-mix-alt-2',
+        title: 'Mix alternative 2',
+        productCode: 'MIX-A2',
+        product: 'mix alternative 2',
+        orderNumber: '8104',
+        rollCount: 7,
+        widthMm: 650,
+        assigned: '7 ta rangli pechat',
+      ),
+    );
+
+    const ids = [
+      'zakaz-mix-direct-1',
+      'zakaz-mix-direct-2',
+      'zakaz-mix-alt-1',
+      'zakaz-mix-alt-2',
+    ];
+    final moved = await MobileApi.instance.adminMoveProductionMapOrdersBatch(
+      mapIds: ids,
+      fromApparatus: '7 ta rangli pechat',
+      toApparatus: '8 ta rangli pechat',
+    );
+    expect(moved, hasLength(4));
+
+    final maps = await MobileApi.instance.adminProductionMaps();
+    for (final id in ids.take(2)) {
+      final map = maps.firstWhere((item) => item.map.id == id);
+      final apparatus = map.map.nodes
+          .where((node) => node.kind == 'apparatus')
+          .map((node) => node.title)
+          .first;
+      expect(apparatus, '8 ta rangli pechat');
+    }
+    for (final id in ids.skip(2)) {
+      final map = maps.firstWhere((item) => item.map.id == id);
+      final assigned = map.map.nodes
+          .where((node) => node.kind == 'apparatus')
+          .map((node) => node.alternativeAssignedTitle)
+          .where((title) => title.trim().isNotEmpty)
+          .toSet();
+      expect(assigned, {'8 ta rangli pechat'});
+    }
+  });
+
+  test('with-order rolls back map when template upsert fails in test mode',
+      () async {
     setMobileApiTestModeForceCalculateTemplateSaveFailure(true);
     await expectLater(
       MobileApi.instance.adminSaveProductionMapWithOrder(
@@ -270,7 +356,8 @@ void main() {
     expect(maps.where((item) => item.map.id == 'zakaz-9001'), isEmpty);
   });
 
-  test('sequence save failure does not persist reordered ids on server', () async {
+  test('sequence save failure does not persist reordered ids on server',
+      () async {
     setMobileApiTestModeForceSequenceSaveFailure(true);
     await expectLater(
       MobileApi.instance.adminSaveProductionMapSequence(
@@ -322,6 +409,61 @@ ProductionMapDefinition _productionOrderMap({
     edges: const [
       ProductionMapEdge(from: 'start', to: 'apparatus'),
       ProductionMapEdge(from: 'apparatus', to: 'end'),
+    ],
+  );
+}
+
+ProductionMapDefinition _alternativeProductionOrderMap({
+  required String id,
+  required String title,
+  required String productCode,
+  required String product,
+  required String orderNumber,
+  required double rollCount,
+  required double widthMm,
+  required String assigned,
+}) {
+  return ProductionMapDefinition(
+    id: id,
+    productCode: productCode,
+    title: title,
+    orderNumber: orderNumber,
+    rollCount: rollCount,
+    widthMm: widthMm,
+    nodes: [
+      const ProductionMapNode(
+        id: 'start',
+        kind: 'start',
+        title: 'Start',
+      ),
+      ProductionMapNode(
+        id: 'apparatus-7',
+        kind: 'apparatus',
+        title: '7 ta rangli pechat',
+        alternativeGroupId: 'alt-$id',
+        alternativeGroupLabel: 'pechat',
+        alternativeAssignedTitle: assigned,
+      ),
+      ProductionMapNode(
+        id: 'apparatus-8',
+        kind: 'apparatus',
+        title: '8 ta rangli pechat',
+        alternativeGroupId: 'alt-$id',
+        alternativeGroupLabel: 'pechat',
+        alternativeAssignedTitle: assigned,
+      ),
+      ProductionMapNode(
+        id: 'end',
+        kind: 'end',
+        title: product,
+        itemCode: productCode,
+      ),
+    ],
+    edges: const [
+      ProductionMapEdge(from: 'start', to: 'apparatus-7'),
+      ProductionMapEdge(from: 'apparatus-7', to: 'end'),
+      ProductionMapEdge(from: 'start', to: 'apparatus-8'),
+      ProductionMapEdge(from: 'apparatus-8', to: 'end'),
     ],
   );
 }
