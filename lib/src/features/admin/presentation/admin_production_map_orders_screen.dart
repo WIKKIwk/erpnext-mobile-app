@@ -130,7 +130,6 @@ class _AdminProductionMapOrdersScreenState
   AdminWarehouse? _selectedApparatus;
   AdminWarehouse? _moveTopApparatus;
   AdminWarehouse? _moveBottomApparatus;
-  double _moveTopZoneRatio = 0.5;
   final Set<String> _selectedMoveOrderIds = {};
   List<ProductionMapSaved> _draggingMoveOrders = const [];
   AdminWarehouse? _draggingMoveSource;
@@ -1218,20 +1217,6 @@ class _AdminProductionMapOrdersScreenState
     });
   }
 
-  void _resizeMoveZones(double delta, double availableHeight) {
-    if (!availableHeight.isFinite || availableHeight <= 0) {
-      return;
-    }
-    final next = (_moveTopZoneRatio + delta / availableHeight).clamp(
-      0.24,
-      0.76,
-    );
-    if (next == _moveTopZoneRatio) {
-      return;
-    }
-    setState(() => _moveTopZoneRatio = next);
-  }
-
   List<ProductionMapSaved> _alternativeOrdersForApparatus(
     AdminWarehouse apparatus,
   ) {
@@ -1397,7 +1382,6 @@ class _AdminProductionMapOrdersScreenState
                               _OpenedOrderModule.move => _MoveModulePage(
                                   topApparatus: _moveTopApparatus,
                                   bottomApparatus: _moveBottomApparatus,
-                                  topZoneRatio: _moveTopZoneRatio,
                                   topOrders: _moveTopApparatus == null ||
                                           _moveBottomApparatus == null
                                       ? const []
@@ -1425,7 +1409,6 @@ class _AdminProductionMapOrdersScreenState
                                       _pickMoveApparatus(top: true),
                                   onPickBottom: () =>
                                       _pickMoveApparatus(top: false),
-                                  onResizeZones: _resizeMoveZones,
                                   onToggleSelect: _toggleMoveOrderSelection,
                                   buildDragPayload: _buildMoveDragPayload,
                                   onDragStarted: (payload) {
@@ -1839,11 +1822,10 @@ class _SequenceApparatusSelector extends StatelessWidget {
   }
 }
 
-class _MoveModulePage extends StatelessWidget {
+class _MoveModulePage extends StatefulWidget {
   const _MoveModulePage({
     required this.topApparatus,
     required this.bottomApparatus,
-    required this.topZoneRatio,
     required this.topOrders,
     required this.bottomOrders,
     required this.selectedOrderIds,
@@ -1852,7 +1834,6 @@ class _MoveModulePage extends StatelessWidget {
     required this.canMoveTo,
     required this.onPickTop,
     required this.onPickBottom,
-    required this.onResizeZones,
     required this.onToggleSelect,
     required this.buildDragPayload,
     required this.onDragStarted,
@@ -1862,7 +1843,6 @@ class _MoveModulePage extends StatelessWidget {
 
   final AdminWarehouse? topApparatus;
   final AdminWarehouse? bottomApparatus;
-  final double topZoneRatio;
   final List<ProductionMapSaved> topOrders;
   final List<ProductionMapSaved> bottomOrders;
   final Set<String> selectedOrderIds;
@@ -1875,7 +1855,6 @@ class _MoveModulePage extends StatelessWidget {
   ) canMoveTo;
   final VoidCallback onPickTop;
   final VoidCallback onPickBottom;
-  final void Function(double delta, double availableHeight) onResizeZones;
   final ValueChanged<String> onToggleSelect;
   final _MoveDragPayload Function({
     required ProductionMapSaved order,
@@ -1889,6 +1868,52 @@ class _MoveModulePage extends StatelessWidget {
     required AdminWarehouse from,
     required AdminWarehouse to,
   }) onMove;
+
+  @override
+  State<_MoveModulePage> createState() => _MoveModulePageState();
+}
+
+class _MoveModulePageState extends State<_MoveModulePage> {
+  double _topZoneRatio = 0.5;
+
+  AdminWarehouse? get topApparatus => widget.topApparatus;
+  AdminWarehouse? get bottomApparatus => widget.bottomApparatus;
+  List<ProductionMapSaved> get topOrders => widget.topOrders;
+  List<ProductionMapSaved> get bottomOrders => widget.bottomOrders;
+  Set<String> get selectedOrderIds => widget.selectedOrderIds;
+  List<ProductionMapSaved> get draggingOrders => widget.draggingOrders;
+  AdminWarehouse? get draggingSource => widget.draggingSource;
+  bool Function(
+    ProductionMapSaved order,
+    AdminWarehouse target,
+    AdminWarehouse source,
+  ) get canMoveTo => widget.canMoveTo;
+  VoidCallback get onPickTop => widget.onPickTop;
+  VoidCallback get onPickBottom => widget.onPickBottom;
+  ValueChanged<String> get onToggleSelect => widget.onToggleSelect;
+  _MoveDragPayload Function({
+    required ProductionMapSaved order,
+    required AdminWarehouse source,
+    required List<ProductionMapSaved> zoneOrders,
+  }) get buildDragPayload => widget.buildDragPayload;
+  ValueChanged<_MoveDragPayload> get onDragStarted => widget.onDragStarted;
+  VoidCallback get onDragEnded => widget.onDragEnded;
+  Future<void> Function({
+    required List<ProductionMapSaved> orders,
+    required AdminWarehouse from,
+    required AdminWarehouse to,
+  }) get onMove => widget.onMove;
+
+  void _resizeMoveZones(double delta, double availableHeight) {
+    if (!availableHeight.isFinite || availableHeight <= 0) {
+      return;
+    }
+    final next = (_topZoneRatio + delta / availableHeight).clamp(0.24, 0.76);
+    if (next == _topZoneRatio) {
+      return;
+    }
+    setState(() => _topZoneRatio = next);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1910,7 +1935,7 @@ class _MoveModulePage extends StatelessWidget {
           final availableHeight = constraints.maxHeight.isFinite
               ? constraints.maxHeight
               : MediaQuery.sizeOf(context).height * 0.7;
-          final topFlex = (topZoneRatio.clamp(0.24, 0.76) * 1000).round();
+          final topFlex = (_topZoneRatio.clamp(0.24, 0.76) * 1000).round();
           final bottomFlex = 1000 - topFlex;
           return Column(
             children: [
@@ -1949,7 +1974,7 @@ class _MoveModulePage extends StatelessWidget {
                   apparatus: bottom,
                   onTap: onPickBottom,
                   onVerticalDragUpdate: (delta) {
-                    onResizeZones(delta, availableHeight);
+                    _resizeMoveZones(delta, availableHeight);
                   },
                 ),
               ),
