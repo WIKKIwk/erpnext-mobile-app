@@ -761,12 +761,8 @@ void main() {
     expect(find.byIcon(Icons.add_rounded), findsNothing);
     expect(find.textContaining('Move ok order'), findsOneWidget);
     expect(find.textContaining('Move blocked order'), findsNothing);
-    await tester.tap(
-      find.descendant(
-        of: find.byKey(const ValueKey('move-boundary-apparatus-picker')),
-        matching: find.textContaining('8 ta rangli pechat'),
-      ),
-    );
+    await tester
+        .tap(find.byKey(const ValueKey('move-boundary-apparatus-picker')));
     await tester.pumpAndSettle();
     expect(find.text('Aparat tanlang'), findsOneWidget);
     expect(find.text('Tanlangan'), findsNothing);
@@ -890,12 +886,8 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byKey(const ValueKey('move-boundary-apparatus-picker')),
-        matching: find.textContaining('8 ta rangli pechat'),
-      ),
-    );
+    await tester
+        .tap(find.byKey(const ValueKey('move-boundary-apparatus-picker')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Tanlanmagan'));
     await tester.pumpAndSettle();
@@ -923,6 +915,61 @@ void main() {
     expect(_apparatusTitles(maps, 'zakaz-direct-pechat'), [
       '7 ta rangli pechat',
     ]);
+  });
+
+  testWidgets('opened orders move module boundary resizes zones',
+      (tester) async {
+    await TestModeController.instance.setEnabled(true);
+    await MobileApi.instance.adminSaveProductionMap(
+      _productionOrderMap(
+        id: 'zakaz-resize-a',
+        title: 'Resize top order',
+        productCode: 'RESIZE-A',
+        apparatus: '7 ta rangli pechat',
+        product: 'resize product a',
+        rollCount: 7,
+        widthMm: 650,
+      ),
+    );
+    await MobileApi.instance.adminSaveProductionMap(
+      _productionOrderMap(
+        id: 'zakaz-resize-b',
+        title: 'Resize bottom order',
+        productCode: 'RESIZE-B',
+        apparatus: '8 ta rangli pechat',
+        product: 'resize product b',
+        rollCount: 7,
+        widthMm: 650,
+      ),
+    );
+    await _usePhoneViewport(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(useMaterial3: true),
+        locale: const Locale('uz'),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const AdminProductionMapOrdersScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Ko‘chirish'));
+    await tester.pumpAndSettle();
+    final boundary =
+        find.byKey(const ValueKey('move-boundary-apparatus-picker'));
+    final before = tester.getTopLeft(boundary).dy;
+    final gesture = await tester.startGesture(tester.getCenter(boundary));
+    await gesture.moveBy(const Offset(0, 160));
+    await gesture.up();
+    await tester.pumpAndSettle();
+
+    expect(tester.getTopLeft(boundary).dy, greaterThan(before + 40));
   });
 
   testWidgets(
@@ -970,12 +1017,8 @@ void main() {
 
     await tester.tap(find.text('Ko‘chirish'));
     await tester.pumpAndSettle();
-    await tester.tap(
-      find.descendant(
-        of: find.byKey(const ValueKey('move-boundary-apparatus-picker')),
-        matching: find.textContaining('8 ta rangli pechat'),
-      ),
-    );
+    await tester
+        .tap(find.byKey(const ValueKey('move-boundary-apparatus-picker')));
     await tester.pumpAndSettle();
     expect(find.text('Tanlangan'), findsNothing);
     expect(find.text('Tanlanmagan'), findsOneWidget);

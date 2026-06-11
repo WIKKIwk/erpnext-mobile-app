@@ -130,6 +130,7 @@ class _AdminProductionMapOrdersScreenState
   AdminWarehouse? _selectedApparatus;
   AdminWarehouse? _moveTopApparatus;
   AdminWarehouse? _moveBottomApparatus;
+  double _moveTopZoneRatio = 0.5;
   final Set<String> _selectedMoveOrderIds = {};
   List<ProductionMapSaved> _draggingMoveOrders = const [];
   AdminWarehouse? _draggingMoveSource;
@@ -1217,6 +1218,20 @@ class _AdminProductionMapOrdersScreenState
     });
   }
 
+  void _resizeMoveZones(double delta, double availableHeight) {
+    if (!availableHeight.isFinite || availableHeight <= 0) {
+      return;
+    }
+    final next = (_moveTopZoneRatio + delta / availableHeight).clamp(
+      0.24,
+      0.76,
+    );
+    if (next == _moveTopZoneRatio) {
+      return;
+    }
+    setState(() => _moveTopZoneRatio = next);
+  }
+
   List<ProductionMapSaved> _alternativeOrdersForApparatus(
     AdminWarehouse apparatus,
   ) {
@@ -1382,6 +1397,7 @@ class _AdminProductionMapOrdersScreenState
                               _OpenedOrderModule.move => _MoveModulePage(
                                   topApparatus: _moveTopApparatus,
                                   bottomApparatus: _moveBottomApparatus,
+                                  topZoneRatio: _moveTopZoneRatio,
                                   topOrders: _moveTopApparatus == null ||
                                           _moveBottomApparatus == null
                                       ? const []
@@ -1409,6 +1425,7 @@ class _AdminProductionMapOrdersScreenState
                                       _pickMoveApparatus(top: true),
                                   onPickBottom: () =>
                                       _pickMoveApparatus(top: false),
+                                  onResizeZones: _resizeMoveZones,
                                   onToggleSelect: _toggleMoveOrderSelection,
                                   buildDragPayload: _buildMoveDragPayload,
                                   onDragStarted: (payload) {
@@ -1826,6 +1843,7 @@ class _MoveModulePage extends StatelessWidget {
   const _MoveModulePage({
     required this.topApparatus,
     required this.bottomApparatus,
+    required this.topZoneRatio,
     required this.topOrders,
     required this.bottomOrders,
     required this.selectedOrderIds,
@@ -1834,6 +1852,7 @@ class _MoveModulePage extends StatelessWidget {
     required this.canMoveTo,
     required this.onPickTop,
     required this.onPickBottom,
+    required this.onResizeZones,
     required this.onToggleSelect,
     required this.buildDragPayload,
     required this.onDragStarted,
@@ -1843,6 +1862,7 @@ class _MoveModulePage extends StatelessWidget {
 
   final AdminWarehouse? topApparatus;
   final AdminWarehouse? bottomApparatus;
+  final double topZoneRatio;
   final List<ProductionMapSaved> topOrders;
   final List<ProductionMapSaved> bottomOrders;
   final Set<String> selectedOrderIds;
@@ -1855,6 +1875,7 @@ class _MoveModulePage extends StatelessWidget {
   ) canMoveTo;
   final VoidCallback onPickTop;
   final VoidCallback onPickBottom;
+  final void Function(double delta, double availableHeight) onResizeZones;
   final ValueChanged<String> onToggleSelect;
   final _MoveDragPayload Function({
     required ProductionMapSaved order,
@@ -1884,59 +1905,73 @@ class _MoveModulePage extends StatelessWidget {
     final bottomInset = 60 + dockInset;
     return Padding(
       padding: EdgeInsets.fromLTRB(12, 8, 12, bottomInset),
-      child: Column(
-        children: [
-          Expanded(
-            child: Column(
-              children: [
-                _MoveApparatusHeader(
-                  key: const ValueKey('move-top-apparatus-picker'),
-                  apparatus: top,
-                  alignment: Alignment.centerLeft,
-                  onTap: onPickTop,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final availableHeight = constraints.maxHeight.isFinite
+              ? constraints.maxHeight
+              : MediaQuery.sizeOf(context).height * 0.7;
+          final topFlex = (topZoneRatio.clamp(0.24, 0.76) * 1000).round();
+          final bottomFlex = 1000 - topFlex;
+          return Column(
+            children: [
+              Expanded(
+                flex: topFlex,
+                child: Column(
+                  children: [
+                    _MoveApparatusHeader(
+                      key: const ValueKey('move-top-apparatus-picker'),
+                      apparatus: top,
+                      alignment: Alignment.centerLeft,
+                      onTap: onPickTop,
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: _MoveDropZone(
+                        apparatus: top,
+                        orders: topOrders,
+                        selectedOrderIds: selectedOrderIds,
+                        draggingOrders: draggingOrders,
+                        draggingSource: draggingSource,
+                        canMoveTo: canMoveTo,
+                        onToggleSelect: onToggleSelect,
+                        buildDragPayload: buildDragPayload,
+                        onDragStarted: onDragStarted,
+                        onDragEnded: onDragEnded,
+                        onMove: onMove,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: _MoveDropZone(
-                    apparatus: top,
-                    orders: topOrders,
-                    selectedOrderIds: selectedOrderIds,
-                    draggingOrders: draggingOrders,
-                    draggingSource: draggingSource,
-                    canMoveTo: canMoveTo,
-                    onToggleSelect: onToggleSelect,
-                    buildDragPayload: buildDragPayload,
-                    onDragStarted: onDragStarted,
-                    onDragEnded: onDragEnded,
-                    onMove: onMove,
-                  ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: _MoveBoundary(
+                  apparatus: bottom,
+                  onTap: onPickBottom,
+                  onVerticalDragUpdate: (delta) {
+                    onResizeZones(delta, availableHeight);
+                  },
                 ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: _MoveBoundary(
-              apparatus: bottom,
-              onTap: onPickBottom,
-            ),
-          ),
-          Expanded(
-            child: _MoveDropZone(
-              apparatus: bottom,
-              orders: bottomOrders,
-              selectedOrderIds: selectedOrderIds,
-              draggingOrders: draggingOrders,
-              draggingSource: draggingSource,
-              canMoveTo: canMoveTo,
-              onToggleSelect: onToggleSelect,
-              buildDragPayload: buildDragPayload,
-              onDragStarted: onDragStarted,
-              onDragEnded: onDragEnded,
-              onMove: onMove,
-            ),
-          ),
-        ],
+              ),
+              Expanded(
+                flex: bottomFlex,
+                child: _MoveDropZone(
+                  apparatus: bottom,
+                  orders: bottomOrders,
+                  selectedOrderIds: selectedOrderIds,
+                  draggingOrders: draggingOrders,
+                  draggingSource: draggingSource,
+                  canMoveTo: canMoveTo,
+                  onToggleSelect: onToggleSelect,
+                  buildDragPayload: buildDragPayload,
+                  onDragStarted: onDragStarted,
+                  onDragEnded: onDragEnded,
+                  onMove: onMove,
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -2159,28 +2194,36 @@ class _MoveBoundary extends StatelessWidget {
   const _MoveBoundary({
     required this.apparatus,
     required this.onTap,
+    required this.onVerticalDragUpdate,
   });
 
   final AdminWarehouse apparatus;
   final VoidCallback onTap;
+  final ValueChanged<double> onVerticalDragUpdate;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return InkWell(
+    return Listener(
       key: const ValueKey('move-boundary-apparatus-picker'),
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(999),
-      child: Row(
-        children: [
-          Expanded(child: Divider(color: scheme.outlineVariant)),
-          _MoveApparatusHeader(
-            apparatus: apparatus,
-            alignment: Alignment.center,
-            onTap: onTap,
-          ),
-          Expanded(child: Divider(color: scheme.outlineVariant)),
-        ],
+      behavior: HitTestBehavior.opaque,
+      onPointerMove: (event) => onVerticalDragUpdate(event.delta.dy),
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Row(
+          children: [
+            Expanded(child: Divider(color: scheme.outlineVariant)),
+            IgnorePointer(
+              child: _MoveApparatusHeader(
+                apparatus: apparatus,
+                alignment: Alignment.center,
+                onTap: onTap,
+              ),
+            ),
+            Expanded(child: Divider(color: scheme.outlineVariant)),
+          ],
+        ),
       ),
     );
   }
