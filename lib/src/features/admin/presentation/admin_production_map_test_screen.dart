@@ -16,6 +16,8 @@ import 'widgets/admin_top_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+const _maxLaminatsiyaRubberSizeMm = 1050;
+
 String productionMapBranchDisplayLabel(String branch) {
   return switch (branch.trim().toLowerCase()) {
     'true' => 'Shunda',
@@ -40,6 +42,10 @@ bool productionMapApparatusMatchesOrder(
   AdminWarehouse apparatus,
   ProductionMapOrderContext? orderContext,
 ) {
+  if (_isProductionMapLaminatsiya(apparatus.warehouse) &&
+      !_productionMapLaminatsiyaMatchesOrder(orderContext)) {
+    return false;
+  }
   final apparatusColorCount =
       productionMapPechatColorCount(apparatus.warehouse);
   if (apparatusColorCount == null) {
@@ -61,6 +67,21 @@ bool productionMapApparatusMatchesOrder(
     rollCount: context.rollCount,
     widthMm: context.widthMm,
   );
+}
+
+bool _isProductionMapLaminatsiya(String title) {
+  return title.trim().toLowerCase().contains('laminatsiya');
+}
+
+bool _productionMapLaminatsiyaMatchesOrder(
+  ProductionMapOrderContext? orderContext,
+) {
+  final widthMm = orderContext?.widthMm;
+  if (widthMm == null || widthMm <= 0) {
+    return true;
+  }
+  return productionMapRubberSizeFromWidth(widthMm) <=
+      _maxLaminatsiyaRubberSizeMm;
 }
 
 const _formulaVariables = [
@@ -1061,14 +1082,22 @@ class _AdminProductionMapTestScreenState
           title: title ?? 'Stansiya tanlang',
           hintText: 'Aparat qidiring',
           pageSize: 50,
-          cacheKey: 'production-map:station-warehouses',
+          cacheKey: 'production-map:station-warehouses'
+              ':${_apparatusFilterCacheSuffix()}',
           loadPage: (query, offset, limit) async {
             final warehouses = await MobileApi.instance.adminWarehouses(
               query: query,
               parent: 'aparat - A',
               limit: 200,
             );
-            return warehouses.skip(offset).take(limit).toList(growable: false);
+            return warehouses
+                .where((warehouse) => productionMapApparatusMatchesOrder(
+                      warehouse,
+                      widget.orderContext,
+                    ))
+                .skip(offset)
+                .take(limit)
+                .toList(growable: false);
           },
           itemTitle: (item) => item.warehouse,
           itemSubtitle: (item) =>

@@ -233,15 +233,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await _tapMapTool(tester, 'Aparat');
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Aparat tanlang'));
+    await _tapMapTool(tester, 'pechat');
     await tester.pumpAndSettle();
 
     expect(find.text('8 ta rangli pechat'), findsOneWidget);
     expect(find.text('7 ta rangli pechat'), findsNothing);
     expect(find.text('9 ta rangli pechat'), findsNothing);
-    expect(find.text('Godex aparat - DEMO'), findsOneWidget);
   });
 
   test('kk product edges are allowed only with apparatus nodes', () {
@@ -379,6 +376,39 @@ void main() {
         ),
         smallRubberContext,
       ),
+      isFalse,
+    );
+  });
+
+  test('production map apparatus filter blocks laminatsiya above 1050 rubber',
+      () {
+    const laminatsiya = AdminWarehouse(
+      warehouse: 'Laminatsiya - A',
+      parentWarehouse: 'aparat - A',
+    );
+    const allowedContext = ProductionMapOrderContext(
+      orderName: 'Allowed order',
+      productName: 'allowed product',
+      itemCode: 'ITEM-1050',
+      rollCount: 7,
+      widthMm: 1050,
+    );
+    const blockedContext = ProductionMapOrderContext(
+      orderName: 'Blocked order',
+      productName: 'blocked product',
+      itemCode: 'ITEM-1051',
+      rollCount: 7,
+      widthMm: 1051,
+    );
+
+    expect(productionMapRubberSizeFromWidth(1050), 1050);
+    expect(productionMapRubberSizeFromWidth(1051), 1100);
+    expect(
+      productionMapApparatusMatchesOrder(laminatsiya, allowedContext),
+      isTrue,
+    );
+    expect(
+      productionMapApparatusMatchesOrder(laminatsiya, blockedContext),
       isFalse,
     );
   });
