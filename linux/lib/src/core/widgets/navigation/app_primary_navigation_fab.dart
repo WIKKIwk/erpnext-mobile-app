@@ -11,7 +11,6 @@ import 'dock_system_bottom_inset.dart';
 import 'drive_reference_layout.dart';
 
 // Pastki dock «+» / FAB — alohida modul. Navigation bar bilan aralashtirilmasin.
-// Qoidalar: .cursor/rules/dock-primary-fab.mdc
 // Geometriya: Google Drive ADB o‘lchovi (docs/google_drive_bottom_nav_measurements.md).
 
 /// O‘ng chetdagi margin ([EdgeToEdgeBottomSlot] ichidagi `end`).
