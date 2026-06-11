@@ -897,10 +897,13 @@ class _AdminProductionMapOrdersScreenState
           (item) => _selectedMoveOrderIds.contains(item.map.id.trim()),
         )
         .toList(growable: false);
-    final orders = selectedFromZone.isNotEmpty &&
-            selectedFromZone.any((item) => item.map.id.trim() == orderId)
-        ? selectedFromZone
-        : [order];
+    final orders = selectedFromZone.isEmpty
+        ? [order]
+        : [
+            ...selectedFromZone,
+            if (!selectedFromZone.any((item) => item.map.id.trim() == orderId))
+              order,
+          ];
     return _MoveDragPayload(orders: orders, source: source);
   }
 
