@@ -381,6 +381,47 @@ void main() {
     }
   });
 
+  test(
+      'batch move preserves alternative node titles when target title is absent',
+      () async {
+    await MobileApi.instance.adminSaveProductionMap(
+      _alternativeProductionOrderMap(
+        id: 'zakaz-real-title-preserve',
+        title: 'title preserve order',
+        productCode: 'TITLE-PRESERVE',
+        product: 'title preserve product',
+        orderNumber: '8110',
+        rollCount: 7,
+        widthMm: 630,
+        assigned: '7 ta rangli pechat - A',
+        apparatusTitles: const [
+          '7 ta rangli pechat - A',
+          '7 ta rangli pechat - A',
+        ],
+      ),
+    );
+
+    final moved = await MobileApi.instance.adminMoveProductionMapOrdersBatch(
+      mapIds: const ['zakaz-real-title-preserve'],
+      fromApparatus: '7 ta rangli pechat - A',
+      toApparatus: '8 ta rangli pechat - A',
+    );
+    expect(moved, hasLength(1));
+
+    final map = (await MobileApi.instance.adminProductionMaps())
+        .firstWhere((item) => item.map.id == 'zakaz-real-title-preserve')
+        .map;
+    final apparatus = map.nodes.where((node) => node.kind == 'apparatus');
+    expect(
+      apparatus.map((node) => node.title).toSet(),
+      {'7 ta rangli pechat - A'},
+    );
+    expect(
+      apparatus.map((node) => node.alternativeAssignedTitle).toSet(),
+      {'8 ta rangli pechat - A'},
+    );
+  });
+
   test('with-order rolls back map when template upsert fails in test mode',
       () async {
     setMobileApiTestModeForceCalculateTemplateSaveFailure(true);

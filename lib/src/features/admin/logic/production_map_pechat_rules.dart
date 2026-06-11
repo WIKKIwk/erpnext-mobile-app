@@ -226,8 +226,7 @@ bool productionMapApparatusNodeMatchesFrom({
 }
 
 /// Reassigns the chosen apparatus for alternative-group maps.
-/// Returns null when the order is not currently assigned to [fromApparatus]
-/// inside a group that also contains [toApparatus].
+/// Returns null when the order is not currently assigned to [fromApparatus].
 List<ProductionMapNode>? productionMapReassignAlternativeApparatusAssignment({
   required List<ProductionMapNode> nodes,
   required String fromApparatus,
@@ -252,25 +251,10 @@ List<ProductionMapNode>? productionMapReassignAlternativeApparatusAssignment({
   if (candidateGroups.isEmpty) {
     return null;
   }
-  final targetGroups = <String>{};
-  for (final groupId in candidateGroups) {
-    final hasTarget = nodes.any(
-      (node) =>
-          node.kind == 'apparatus' &&
-          node.alternativeGroupId.trim() == groupId &&
-          productionMapWarehouseTitlesMatch(node.title, to),
-    );
-    if (hasTarget) {
-      targetGroups.add(groupId);
-    }
-  }
-  if (targetGroups.isEmpty) {
-    return null;
-  }
   return [
     for (final node in nodes)
       node.kind == 'apparatus' &&
-              targetGroups.contains(node.alternativeGroupId.trim())
+              candidateGroups.contains(node.alternativeGroupId.trim())
           ? node.copyWith(alternativeAssignedTitle: to)
           : node,
   ];
