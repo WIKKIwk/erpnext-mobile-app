@@ -253,6 +253,16 @@ class AdminProductionMapTestScreen extends StatefulWidget {
       _AdminProductionMapTestScreenState();
 }
 
+class ProductionMapTestArgs {
+  const ProductionMapTestArgs({
+    this.orderContext,
+    this.savedMap,
+  });
+
+  final ProductionMapOrderContext? orderContext;
+  final ProductionMapDefinition? savedMap;
+}
+
 class ProductionMapOrderContext {
   const ProductionMapOrderContext({
     this.templateId = '',

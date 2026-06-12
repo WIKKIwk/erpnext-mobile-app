@@ -51,7 +51,7 @@ void main() {
 
     expect(find.text('Production mapga ulash'), findsOneWidget);
 
-    await tester.enterText(find.byType(TextFormField).first, '120');
+    await tester.enterText(find.widgetWithText(TextFormField, 'KG'), '120');
     await tester.pumpAndSettle();
 
     expect(find.text('Production mapga ulash'), findsNothing);
@@ -137,7 +137,7 @@ void main() {
 
     await tester.drag(find.byType(ListView), const Offset(0, -900));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextFormField).first, '120');
+    await tester.enterText(find.widgetWithText(TextFormField, 'KG'), '120');
     await tester.tap(find.text('Hisoblash'));
     await tester.pumpAndSettle();
 
@@ -165,11 +165,70 @@ void main() {
     );
     await tester.pump(const Duration(seconds: 3));
   });
+
+  testWidgets('production map link opens stored quick order map',
+      (tester) async {
+    await TestModeController.instance.setEnabled(true);
+    const sourceMapId = 'zakaz-template-map';
+    final source = _map(
+      id: sourceMapId,
+      code: '4444',
+      orderNumber: '4444',
+    ).copyWith(
+      nodes: [
+        ..._map(
+          id: sourceMapId,
+          code: '4444',
+          orderNumber: '4444',
+        ).nodes,
+        const ProductionMapNode(
+          id: 'stored_apparatus',
+          kind: 'apparatus',
+          title: 'Stored pechat',
+          roleCode: 'apparatus',
+          x: 700,
+          y: 164,
+        ),
+      ],
+    );
+    await MobileApi.instance.adminSaveProductionMap(source);
+    ProductionMapTestArgs? openedArgs;
+    await _pumpCalculateScreen(
+      tester,
+      template: _template(itemCode: 'ITEM-1', sourceMapId: sourceMapId),
+      onProductionMapArguments: (arguments) {
+        if (arguments is ProductionMapTestArgs) {
+          openedArgs = arguments;
+        }
+      },
+    );
+
+    await tester.drag(find.byType(ListView), const Offset(0, -900));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextFormField, 'KG'), '120');
+    await tester.tap(find.text('Hisoblash'));
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(ListView), const Offset(0, -900));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Production mapga ulash'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Production mapga ulash'));
+    await tester.pumpAndSettle();
+
+    expect(openedArgs, isNotNull);
+    expect(openedArgs!.savedMap?.id, sourceMapId);
+    expect(
+      openedArgs!.savedMap!.nodes.any((node) => node.id == 'stored_apparatus'),
+      isTrue,
+    );
+  });
 }
 
 Future<void> _pumpCalculateScreen(
   WidgetTester tester, {
   CalculateOrderTemplate? template,
+  ValueChanged<Object?>? onProductionMapArguments,
 }) async {
   tester.view.devicePixelRatio = 1;
   tester.view.physicalSize = const Size(430, 1200);
@@ -190,7 +249,9 @@ Future<void> _pumpCalculateScreen(
       home: AdminCalculateScreen(template: template),
       onGenerateRoute: (settings) {
         if (settings.name == AppRoutes.adminProductionMapTest &&
-            settings.arguments is ProductionMapOrderContext) {
+            (settings.arguments is ProductionMapOrderContext ||
+                settings.arguments is ProductionMapTestArgs)) {
+          onProductionMapArguments?.call(settings.arguments);
           return MaterialPageRoute<void>(
             builder: (_) => const Scaffold(body: Text('MAP OPENED')),
           );

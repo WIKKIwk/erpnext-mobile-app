@@ -8,6 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shell/app_shell.dart';
 import '../../shared/models/app_models.dart';
 import '../../werka/presentation/widgets/m3_picker_sheet.dart';
+import '../models/production_map_models.dart';
 import '../state/calculate_order_store.dart';
 import 'calculate_product_picker_loader.dart';
 import '../logic/production_map_pechat_rules.dart';
@@ -207,18 +208,38 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
     if (!mounted) {
       return;
     }
+    final orderContext = _buildProductionMapOrderContext();
+    final sourceMapId = _sourceMapId.trim();
+    ProductionMapDefinition? savedMap;
+    if (sourceMapId.isNotEmpty) {
+      try {
+        final source = await MobileApi.instance.adminProductionMap(sourceMapId);
+        savedMap = source.map.copyWith(
+          title: _resolvedOrderName(),
+          productCode: _itemCode.trim().isNotEmpty
+              ? _itemCode.trim()
+              : source.map.productCode,
+          rollCount: _parseOptionalDouble(_rollCount.text),
+          widthMm: _parseOptionalDouble(_widthMm.text),
+        );
+      } catch (_) {
+        if (mounted) {
+          showAdminTopNotice(context, 'Tezkor zakaz mapini yuklab bo‘lmadi');
+        }
+        return;
+      }
+    }
+    if (!mounted) {
+      return;
+    }
     final saved = await Navigator.of(context).pushNamed(
       AppRoutes.adminProductionMapTest,
-      arguments: ProductionMapOrderContext(
-        templateId: _templateId,
-        orderCode: _orderCode,
-        orderName: _resolvedOrderName(),
-        productName: _product.text,
-        itemCode: _itemCode,
-        rollCount: _parseOptionalDouble(_rollCount.text),
-        widthMm: _parseOptionalDouble(_widthMm.text),
-        templateDraft: _buildTemplateDraft(),
-      ),
+      arguments: savedMap == null
+          ? orderContext
+          : ProductionMapTestArgs(
+              orderContext: orderContext,
+              savedMap: savedMap,
+            ),
     );
     if (!mounted || saved is! CalculateOrderTemplate) {
       return;
@@ -227,6 +248,19 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
       _applyTemplate(saved);
       _editingAllFields = false;
     });
+  }
+
+  ProductionMapOrderContext _buildProductionMapOrderContext() {
+    return ProductionMapOrderContext(
+      templateId: _templateId,
+      orderCode: _orderCode,
+      orderName: _resolvedOrderName(),
+      productName: _product.text,
+      itemCode: _itemCode,
+      rollCount: _parseOptionalDouble(_rollCount.text),
+      widthMm: _parseOptionalDouble(_widthMm.text),
+      templateDraft: _buildTemplateDraft(),
+    );
   }
 
   Future<void> _openOrderFromSavedMap() async {

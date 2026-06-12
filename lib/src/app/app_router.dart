@@ -452,10 +452,14 @@ class AppRouter {
       case AppRoutes.adminRoles:
         return _buildRoute(settings, const AdminRolesScreen());
       case AppRoutes.adminProductionMapTest:
-        final ProductionMapOrderContext? orderContext =
-            settings.arguments is ProductionMapOrderContext
-                ? settings.arguments as ProductionMapOrderContext
+        final ProductionMapTestArgs? args =
+            settings.arguments is ProductionMapTestArgs
+                ? settings.arguments as ProductionMapTestArgs
                 : null;
+        final ProductionMapOrderContext? orderContext = args?.orderContext ??
+            (settings.arguments is ProductionMapOrderContext
+                ? settings.arguments as ProductionMapOrderContext
+                : null);
         final ProductionMapSaved? savedMap =
             settings.arguments is ProductionMapSaved
                 ? settings.arguments as ProductionMapSaved
@@ -464,7 +468,7 @@ class AppRouter {
           settings,
           AdminProductionMapTestScreen(
             orderContext: orderContext,
-            savedMap: savedMap?.map,
+            savedMap: args?.savedMap ?? savedMap?.map,
           ),
         );
       case AppRoutes.adminProductionMapOrders:
