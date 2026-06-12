@@ -642,6 +642,8 @@ class _AdminFabActionMenuState extends State<AdminFabActionMenu>
     final hostHeight = menuHeight +
         _AdminCreateHubOverlayState._groupButtonGap +
         _AdminCreateHubOverlayState._fabClosedSize;
+    final motionAlignment =
+        widget.alignEnd ? Alignment.bottomRight : Alignment.bottomLeft;
     return SizedBox(
       width: hostWidth,
       height: hostHeight,
@@ -713,6 +715,8 @@ class _AdminFabActionMenuState extends State<AdminFabActionMenu>
                 _AdminCreateHubOverlayState._fabOpenSize,
                 progress,
               );
+              final buttonScale =
+                  _targetOpen ? _adminFabSpringScale(progress) : 1.0;
               final anchoredBottom =
                   _AdminCreateHubOverlayState._fabClosedSize -
                       currentButtonSize;
@@ -720,20 +724,24 @@ class _AdminFabActionMenuState extends State<AdminFabActionMenu>
                 start: widget.alignEnd ? null : 0,
                 end: widget.alignEnd ? 0 : null,
                 bottom: anchoredBottom,
-                child: _AdminMorphFabButton(
-                  fabMorphAnimation: _fabMorphController,
-                  effectsAnimation: _effectsController,
-                  onTap: () {
-                    _setOpen(!_targetOpen);
-                    widget.onToggle();
-                  },
-                  closedSize: _AdminCreateHubOverlayState._fabClosedSize,
-                  openSize: _AdminCreateHubOverlayState._fabOpenSize,
-                  shapeTween: _fabShapeTween,
-                  closedLabel: widget.closedLabel,
-                  openLabel: widget.openLabel,
-                  closedIcon: widget.closedIcon,
-                  openIcon: widget.openIcon,
+                child: Transform.scale(
+                  alignment: motionAlignment,
+                  scale: buttonScale,
+                  child: _AdminMorphFabButton(
+                    fabMorphAnimation: _fabMorphController,
+                    effectsAnimation: _effectsController,
+                    onTap: () {
+                      _setOpen(!_targetOpen);
+                      widget.onToggle();
+                    },
+                    closedSize: _AdminCreateHubOverlayState._fabClosedSize,
+                    openSize: _AdminCreateHubOverlayState._fabOpenSize,
+                    shapeTween: _fabShapeTween,
+                    closedLabel: widget.closedLabel,
+                    openLabel: widget.openLabel,
+                    closedIcon: widget.closedIcon,
+                    openIcon: widget.openIcon,
+                  ),
                 ),
               );
             },
@@ -855,6 +863,7 @@ class _AdminHubActionPill extends StatelessWidget {
         final double widthT =
             _hubStaggerSpatialT(spatial.value, action.staggerOrder);
         final double opacity = effectsAnimation.value.clamp(0.0, 1.0);
+        final double scale = _adminFabSpringScale(widthT);
         final double currentWidth = _lerpDouble(
           _adminHubMenuItemHeight,
           resolvedTargetWidth,
@@ -867,52 +876,56 @@ class _AdminHubActionPill extends StatelessWidget {
             excluding: opacity <= 0.001,
             child: Opacity(
               opacity: opacity,
-              child: SizedBox(
-                key: motionKey,
-                width: currentWidth,
-                height: _adminHubMenuItemHeight,
-                child: Semantics(
-                  button: true,
-                  label: action.title,
-                  child: Material(
-                    color: scheme.primaryContainer,
-                    elevation: 0,
-                    surfaceTintColor: Colors.transparent,
-                    shape: const StadiumBorder(),
-                    clipBehavior: Clip.antiAlias,
-                    child: InkWell(
-                      onTap: onTap,
-                      child: OverflowBox(
-                        alignment: overflowAlignment,
-                        minWidth: resolvedTargetWidth,
-                        maxWidth: resolvedTargetWidth,
-                        child: SizedBox(
-                          width: resolvedTargetWidth,
-                          height: _adminHubMenuItemHeight,
-                          child: Padding(
-                            padding: const EdgeInsetsDirectional.only(
-                              start: _adminHubActionPaddingStart,
-                              end: _adminHubActionPaddingEnd,
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  action.icon,
-                                  size: 24,
-                                  color: scheme.onPrimaryContainer,
-                                ),
-                                const SizedBox(width: _adminHubActionIconGap),
-                                Flexible(
-                                  fit: FlexFit.loose,
-                                  child: Text(
-                                    action.title,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: titleStyle,
+              child: Transform.scale(
+                alignment: overflowAlignment,
+                scale: scale,
+                child: SizedBox(
+                  key: motionKey,
+                  width: currentWidth,
+                  height: _adminHubMenuItemHeight,
+                  child: Semantics(
+                    button: true,
+                    label: action.title,
+                    child: Material(
+                      color: scheme.primaryContainer,
+                      elevation: 0,
+                      surfaceTintColor: Colors.transparent,
+                      shape: const StadiumBorder(),
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        onTap: onTap,
+                        child: OverflowBox(
+                          alignment: overflowAlignment,
+                          minWidth: resolvedTargetWidth,
+                          maxWidth: resolvedTargetWidth,
+                          child: SizedBox(
+                            width: resolvedTargetWidth,
+                            height: _adminHubMenuItemHeight,
+                            child: Padding(
+                              padding: const EdgeInsetsDirectional.only(
+                                start: _adminHubActionPaddingStart,
+                                end: _adminHubActionPaddingEnd,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    action.icon,
+                                    size: 24,
+                                    color: scheme.onPrimaryContainer,
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: _adminHubActionIconGap),
+                                  Flexible(
+                                    fit: FlexFit.loose,
+                                    child: Text(
+                                      action.title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: titleStyle,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -927,6 +940,14 @@ class _AdminHubActionPill extends StatelessWidget {
       },
     );
   }
+}
+
+double _adminFabSpringScale(double t) {
+  final clamped = t.clamp(0.0, 1.14);
+  if (clamped <= 1.0) {
+    return _lerpDouble(0.86, 1.0, clamped);
+  }
+  return 1.0 + ((clamped - 1.0) * 0.18);
 }
 
 class _AdminMorphFabButton extends StatelessWidget {
