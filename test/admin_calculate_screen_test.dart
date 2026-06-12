@@ -57,6 +57,21 @@ void main() {
     expect(find.text('Production mapga ulash'), findsNothing);
   });
 
+  testWidgets('product picker selects assigned customer automatically',
+      (tester) async {
+    await TestModeController.instance.setEnabled(true);
+    await _pumpCalculateScreen(tester);
+
+    expect(find.text('Demo haridor'), findsNothing);
+
+    await tester.tap(find.text('Mahsulot'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Hotlunch').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Demo haridor'), findsOneWidget);
+  });
+
   testWidgets('product picker asks before recreating existing quick order',
       (tester) async {
     await TestModeController.instance.setEnabled(true);

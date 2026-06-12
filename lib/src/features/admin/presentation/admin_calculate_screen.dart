@@ -3,6 +3,7 @@ import 'dart:io';
 
 import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
+import '../../../core/customer/customer_priority.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/shell/app_shell.dart';
 import '../../shared/models/app_models.dart';
@@ -53,6 +54,7 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
   String _templateId = '';
   String _orderCode = '';
   String _sourceMapId = '';
+  int _productCustomerGeneration = 0;
   bool _openingRoute = false;
   bool _calculating = false;
   bool _openingSavedOrder = false;
@@ -415,6 +417,7 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
       return;
     }
     setState(() {
+      _productCustomerGeneration++;
       _customerRef = picked.ref;
       _customer.text =
           picked.name.trim().isEmpty ? picked.ref : picked.name.trim();
@@ -474,11 +477,50 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
     if (!mounted) {
       return;
     }
+    final shouldAutoSelectCustomer =
+        _customerRef.trim().isEmpty && _customer.text.trim().isEmpty;
+    final generation = _productCustomerGeneration + 1;
     setState(() {
+      _productCustomerGeneration = generation;
       _itemCode = picked.code;
       _product.text =
           picked.name.trim().isEmpty ? picked.code : picked.name.trim();
     });
+    if (shouldAutoSelectCustomer) {
+      unawaited(_autoSelectCustomerForProduct(picked, generation));
+    }
+  }
+
+  Future<void> _autoSelectCustomerForProduct(
+    SupplierItem product,
+    int generation,
+  ) async {
+    try {
+      final customers = await MobileApi.instance.adminCustomersForItem(
+        itemCode: product.code,
+        itemName: product.name,
+        limit: 200,
+        offset: 0,
+      );
+      final customer = preferPrimaryCustomer<CustomerDirectoryEntry>(
+        customers.where((item) => item.ref.trim().isNotEmpty),
+        customerName: (item) => item.name,
+      );
+      if (!mounted ||
+          generation != _productCustomerGeneration ||
+          customer == null ||
+          _customerRef.trim().isNotEmpty ||
+          _customer.text.trim().isNotEmpty) {
+        return;
+      }
+      setState(() {
+        _customerRef = customer.ref;
+        _customer.text =
+            customer.name.trim().isEmpty ? customer.ref : customer.name.trim();
+      });
+    } catch (_) {
+      return;
+    }
   }
 
   String _resolvedOrderName() {

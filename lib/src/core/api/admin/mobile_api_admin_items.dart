@@ -1,6 +1,62 @@
 part of '../mobile_api.dart';
 
 extension MobileApiAdminItems on MobileApi {
+  Future<List<CustomerDirectoryEntry>> adminCustomersForItem({
+    required String itemCode,
+    String itemName = '',
+    String query = '',
+    int limit = 200,
+    int offset = 0,
+  }) async {
+    if (await TestModeController.instance.isEnabled()) {
+      final trimmedCode = itemCode.trim().toLowerCase();
+      final trimmedName = itemName.trim().toLowerCase();
+      final normalizedQuery = query.trim().toLowerCase();
+      final matches = <CustomerDirectoryEntry>[];
+      final seen = <String>{};
+      for (final customer
+          in TestModeDemoData.customerPage(limit: 0, offset: 0)) {
+        final detail = TestModeDemoData.customerDetail(customer.ref);
+        final hasItem = detail.assignedItems.any((item) {
+          final code = item.code.trim().toLowerCase();
+          final name = item.name.trim().toLowerCase();
+          if (trimmedCode.isNotEmpty && code == trimmedCode) {
+            return true;
+          }
+          return trimmedName.isNotEmpty && name == trimmedName;
+        });
+        if (!hasItem) {
+          continue;
+        }
+        if (normalizedQuery.isNotEmpty &&
+            !searchMatches(normalizedQuery, [
+              customer.name,
+              customer.phone,
+              customer.ref,
+            ])) {
+          continue;
+        }
+        if (seen.add(customer.ref)) {
+          matches.add(customer);
+        }
+      }
+      if (offset >= matches.length) {
+        return const <CustomerDirectoryEntry>[];
+      }
+      final end = limit <= 0 || offset + limit > matches.length
+          ? matches.length
+          : offset + limit;
+      return matches.sublist(offset, end);
+    }
+    return werkaCustomersForItem(
+      itemCode: itemCode,
+      itemName: itemName,
+      query: query,
+      limit: limit,
+      offset: offset,
+    );
+  }
+
   Future<AdminCustomerDetail> adminAssignCustomerItem({
     required String ref,
     required String itemCode,
