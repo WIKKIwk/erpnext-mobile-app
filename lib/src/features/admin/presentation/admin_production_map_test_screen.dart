@@ -665,10 +665,30 @@ class _AdminProductionMapTestScreenState
     if (endIndex <= 0 || apparatus.isEmpty) {
       return;
     }
-    final previous = nodes[endIndex - 1];
     final end = nodes[endIndex];
+    final incomingEdges =
+        edges.where((edge) => edge.to == end.id).toList(growable: false);
+    final previousNodes = incomingEdges.isEmpty
+        ? [nodes[endIndex - 1]]
+        : [
+            for (final edge in incomingEdges)
+              if (nodes.any((node) => node.id == edge.from))
+                nodes.firstWhere((node) => node.id == edge.from),
+          ];
+    if (previousNodes.isEmpty) {
+      return;
+    }
     final groupId = 'alt_${group.name.trim().toLowerCase()}_$_nextNodeIndex';
-    final y = previous.y + _nodeStepY;
+    final previousBottomY = previousNodes
+        .map((node) => node.y)
+        .fold<double>(_minNodeY, (max, y) => y > max ? y : max);
+    final previousCenterX = previousNodes
+            .map((node) => node.x + _ProductionMapCanvas._nodeSize.width / 2)
+            .fold<double>(0, (sum, x) => sum + x) /
+        previousNodes.length;
+    final y = previousBottomY + _nodeStepY;
+    final firstX = previousCenterX -
+        (_ProductionMapCanvas._nodeSize.width * apparatus.length) / 2;
     final created = <ProductionMapNode>[];
     for (var index = 0; index < apparatus.length; index++) {
       final id = 'apparatus_${_nextNodeIndex++}';
@@ -679,17 +699,18 @@ class _AdminProductionMapTestScreenState
           title: apparatus[index].warehouse,
           alternativeGroupId: groupId,
           alternativeGroupLabel: group.name,
-          x: previous.x + index * _ProductionMapCanvas._nodeSize.width,
+          x: firstX + index * _ProductionMapCanvas._nodeSize.width,
           y: y,
         ),
       );
     }
     nodes.insertAll(endIndex, created);
-    edges.removeWhere((edge) => edge.from == previous.id && edge.to == end.id);
+    edges.removeWhere((edge) => edge.to == end.id);
     for (final node in created) {
-      edges
-        ..add(ProductionMapEdge(from: previous.id, to: node.id))
-        ..add(ProductionMapEdge(from: node.id, to: end.id));
+      for (final previous in previousNodes) {
+        edges.add(ProductionMapEdge(from: previous.id, to: node.id));
+      }
+      edges.add(ProductionMapEdge(from: node.id, to: end.id));
     }
     _pushEndDown();
   }

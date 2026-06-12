@@ -203,6 +203,113 @@ void main() {
     expect(find.text('8 ta rangli pechat'), findsOneWidget);
   });
 
+  testWidgets('production map skip groups chain as parallel merge blocks',
+      (tester) async {
+    await TestModeController.instance.setEnabled(true);
+    addTearDown(() async {
+      await MobileApi.instance.adminSaveProductionMap(
+        _productionOrderMap(
+          id: 'zakaz-9468',
+          title: 'Parallel skip cleanup',
+          productCode: 'ITEM-PARALLEL-SKIP-CLEANUP',
+          apparatus: 'Godex aparat - DEMO',
+          product: 'parallel skip cleanup product',
+        ),
+      );
+    });
+    await _usePhoneViewport(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(useMaterial3: true),
+        locale: const Locale('uz'),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const AdminProductionMapTestScreen(
+          orderContext: ProductionMapOrderContext(
+            orderName: 'Parallel skip order',
+            productName: 'parallel skip product',
+            itemCode: 'ITEM-PARALLEL-SKIP',
+            rollCount: 7,
+            widthMm: 650,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _tapMapTool(tester, 'pechat');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Skip'));
+    await tester.pumpAndSettle();
+
+    await _tapMapTool(tester, 'Laminatsiya');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Skip'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('production-map-save')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('production-map-order-number-field')),
+      '9468',
+    );
+    await tester.tap(find.byKey(const ValueKey('production-map-confirm-save')));
+    await tester.pumpAndSettle();
+
+    final saved = await MobileApi.instance.adminProductionMap('zakaz-9468');
+    final map = saved.map;
+    final pechatNodes = map.nodes
+        .where((node) => node.title.trim().contains('rangli pechat'))
+        .toList(growable: false);
+    final laminatsiyaNodes = map.nodes
+        .where((node) => node.title.trim().contains('Laminatsiya'))
+        .toList(growable: false);
+
+    expect(pechatNodes.map((node) => node.title), [
+      '7 ta rangli pechat',
+      '8 ta rangli pechat',
+    ]);
+    expect(laminatsiyaNodes.map((node) => node.title), [
+      'Laminatsiya 1',
+      'Laminatsiya 2',
+    ]);
+    for (final pechat in pechatNodes) {
+      expect(
+        map.edges.any(
+          (edge) =>
+              edge.from == pechat.id &&
+              laminatsiyaNodes.any((node) => node.id == edge.to),
+        ),
+        isTrue,
+      );
+      expect(
+        map.edges.any((edge) => edge.from == pechat.id && edge.to == 'end'),
+        isFalse,
+      );
+    }
+    for (final laminatsiya in laminatsiyaNodes) {
+      expect(
+        map.edges.any(
+          (edge) =>
+              pechatNodes.any((node) => node.id == edge.from) &&
+              edge.to == laminatsiya.id,
+        ),
+        isTrue,
+      );
+      expect(
+        map.edges
+            .any((edge) => edge.from == laminatsiya.id && edge.to == 'end'),
+        isTrue,
+      );
+    }
+    await tester.pump(const Duration(seconds: 2));
+  });
+
   testWidgets('production map can add kk product and pick item',
       (tester) async {
     await TestModeController.instance.setEnabled(true);
