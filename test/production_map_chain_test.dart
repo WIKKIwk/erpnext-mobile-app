@@ -79,6 +79,50 @@ void main() {
     );
   });
 
+  test('production map can clear alternative assignment state only', () {
+    const assignedNode = ProductionMapNode(
+      id: 'apparatus-7',
+      kind: 'apparatus',
+      title: '7 ta rangli pechat',
+      alternativeGroupId: 'alt-pechat-1',
+      alternativeGroupLabel: 'pechat',
+      alternativeAssignedTitle: '8 ta rangli pechat',
+      x: 24,
+      y: 48,
+    );
+    const cleanNode = ProductionMapNode(
+      id: 'end',
+      kind: 'end',
+      title: 'End',
+    );
+    const edge = ProductionMapEdge(from: 'apparatus-7', to: 'end');
+    const map = ProductionMapDefinition(
+      id: 'zakaz-template',
+      productCode: 'ITEM-1',
+      title: 'Template',
+      code: '4444',
+      orderNumber: '4444',
+      rollCount: 7,
+      widthMm: 650,
+      nodes: [assignedNode, cleanNode],
+      edges: [edge],
+    );
+
+    final cleanMap = map.withoutAlternativeAssignments();
+
+    expect(cleanMap.id, map.id);
+    expect(cleanMap.productCode, map.productCode);
+    expect(cleanMap.code, map.code);
+    expect(cleanMap.orderNumber, map.orderNumber);
+    expect(cleanMap.rollCount, map.rollCount);
+    expect(cleanMap.widthMm, map.widthMm);
+    expect(cleanMap.edges, map.edges);
+    expect(cleanMap.nodes.first.alternativeGroupId, 'alt-pechat-1');
+    expect(cleanMap.nodes.first.alternativeGroupLabel, 'pechat');
+    expect(cleanMap.nodes.first.alternativeAssignedTitle, '');
+    expect(identical(cleanMap.nodes.last, cleanNode), isTrue);
+  });
+
   test('admin apparatus group normalizes server json shape', () {
     final group = AdminApparatusGroup.fromJson(const {
       'name': 'pechat',

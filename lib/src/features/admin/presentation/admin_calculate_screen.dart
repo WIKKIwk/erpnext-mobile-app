@@ -214,7 +214,7 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
     if (sourceMapId.isNotEmpty) {
       try {
         final source = await MobileApi.instance.adminProductionMap(sourceMapId);
-        final cleanSourceMap = _cleanQuickOrderSourceMap(source.map);
+        final cleanSourceMap = source.map.withoutAlternativeAssignments();
         savedMap = cleanSourceMap.copyWith(
           title: _resolvedOrderName(),
           productCode: _itemCode.trim().isNotEmpty
@@ -264,19 +264,6 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
     );
   }
 
-  ProductionMapDefinition _cleanQuickOrderSourceMap(
-    ProductionMapDefinition map,
-  ) {
-    return map.copyWith(
-      nodes: [
-        for (final node in map.nodes)
-          node.alternativeAssignedTitle.trim().isEmpty
-              ? node
-              : node.copyWith(alternativeAssignedTitle: ''),
-      ],
-    );
-  }
-
   Future<void> _openOrderFromSavedMap() async {
     if (_openingSavedOrder) {
       return;
@@ -302,7 +289,7 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
     setState(() => _openingSavedOrder = true);
     try {
       final source = await MobileApi.instance.adminProductionMap(sourceMapId);
-      final sourceMap = _cleanQuickOrderSourceMap(source.map);
+      final sourceMap = source.map.withoutAlternativeAssignments();
       final normalizedOrder = orderNumber.trim();
       final clonedMap = sourceMap.copyWith(
         id: 'zakaz-$normalizedOrder',

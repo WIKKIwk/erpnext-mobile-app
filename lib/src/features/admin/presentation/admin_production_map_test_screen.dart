@@ -442,9 +442,10 @@ class _AdminProductionMapTestScreenState
       final definition = _currentMapDefinition(orderNumber: orderNumber);
       final draft = _templateDraft;
       if (draft != null) {
+        final templateDefinition = definition.withoutAlternativeAssignments();
         // Single server-side operation: map + zakaz saved together.
         final result = await MobileApi.instance.adminSaveProductionMapWithOrder(
-          map: definition,
+          map: templateDefinition,
           template: draft,
         );
         if (!mounted) {

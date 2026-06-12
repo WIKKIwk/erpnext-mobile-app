@@ -78,6 +78,14 @@ class ProductionMapDefinition {
       edges: edges ?? this.edges,
     );
   }
+
+  ProductionMapDefinition withoutAlternativeAssignments() {
+    return copyWith(
+      nodes: [
+        for (final node in nodes) node.withoutAlternativeAssignment(),
+      ],
+    );
+  }
 }
 
 class ProductionMapNode {
@@ -191,6 +199,12 @@ class ProductionMapNode {
       'x': x,
       'y': y,
     };
+  }
+
+  ProductionMapNode withoutAlternativeAssignment() {
+    return alternativeAssignedTitle.trim().isEmpty
+        ? this
+        : copyWith(alternativeAssignedTitle: '');
   }
 }
 

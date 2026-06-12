@@ -118,6 +118,119 @@ void main() {
     expect(find.byKey(const ValueKey('admin-fab-menu-Ishlov')), findsOneWidget);
   });
 
+  testWidgets('quick order map save clears alternative assignment state',
+      (tester) async {
+    await TestModeController.instance.setEnabled(true);
+    await _usePhoneViewport(tester);
+    final template = CalculateOrderTemplate(
+      id: 'quick-template-1',
+      code: '4444',
+      name: 'Quick template',
+      savedAt: DateTime.fromMillisecondsSinceEpoch(0),
+      orderNumber: '4444',
+      customerRef: 'CUSTOMER-1',
+      customer: 'Customer',
+      itemCode: 'ITEM-1',
+      product: 'Quick product',
+      status: 'rulo',
+      materialDisplay: '',
+      color: '',
+      imageId: '',
+      imageName: '',
+      imageMime: '',
+      imageSizeBytes: 0,
+      imageUrl: '',
+      widthMm: 650,
+      wastePercent: 3,
+      rollCount: 7,
+      firstLayerMaterial: 'pet',
+      firstLayerMicron: '12',
+      secondLayerMaterial: '',
+      secondLayerMicron: '',
+      thirdLayerMaterial: '',
+      thirdLayerMicron: '',
+      note: '',
+      kg: 120,
+    );
+    const dirtyMap = ProductionMapDefinition(
+      id: 'zakaz-template-clean-save',
+      productCode: 'ITEM-1',
+      title: 'Quick template',
+      code: '4444',
+      orderNumber: '4444',
+      nodes: [
+        ProductionMapNode(
+          id: 'start',
+          kind: 'start',
+          title: 'Start',
+        ),
+        ProductionMapNode(
+          id: 'apparatus-7',
+          kind: 'apparatus',
+          title: '7 ta rangli pechat',
+          alternativeGroupId: 'pechat-group',
+          alternativeGroupLabel: 'pechat',
+          alternativeAssignedTitle: '8 ta rangli pechat',
+        ),
+        ProductionMapNode(
+          id: 'end',
+          kind: 'end',
+          title: 'End',
+        ),
+      ],
+      edges: [
+        ProductionMapEdge(from: 'start', to: 'apparatus-7'),
+        ProductionMapEdge(from: 'apparatus-7', to: 'end'),
+      ],
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(useMaterial3: true),
+        locale: const Locale('uz'),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: AdminProductionMapTestScreen(
+          savedMap: dirtyMap,
+          orderContext: ProductionMapOrderContext(
+            orderName: 'Quick template',
+            productName: 'Quick product',
+            itemCode: 'ITEM-1',
+            rollCount: 7,
+            widthMm: 650,
+            templateDraft: template,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('production-map-save')));
+    await tester.pumpAndSettle();
+
+    final saved = await MobileApi.instance.adminProductionMap(
+      'zakaz-template-clean-save',
+    );
+    expect(
+      saved.map.nodes.every(
+        (node) => node.alternativeAssignedTitle.trim().isEmpty,
+      ),
+      isTrue,
+    );
+    expect(
+      saved.map.nodes
+          .firstWhere((node) => node.id == 'apparatus-7')
+          .alternativeGroupId,
+      'pechat-group',
+    );
+    await tester.pump(const Duration(seconds: 3));
+  });
+
   testWidgets('production map canvas pinches over node cards', (tester) async {
     await TestModeController.instance.setEnabled(true);
     await _usePhoneViewport(tester);
