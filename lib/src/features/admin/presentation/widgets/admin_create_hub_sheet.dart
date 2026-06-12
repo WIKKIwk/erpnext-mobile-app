@@ -478,6 +478,7 @@ class AdminFabOverlayActionMenu extends StatefulWidget {
     required this.closedIcon,
     this.openIcon = Icons.close_rounded,
     this.alignEnd = true,
+    this.columns = 1,
   });
 
   final List<AdminFabMenuAction> actions;
@@ -486,6 +487,7 @@ class AdminFabOverlayActionMenu extends StatefulWidget {
   final IconData closedIcon;
   final IconData openIcon;
   final bool alignEnd;
+  final int columns;
 
   @override
   State<AdminFabOverlayActionMenu> createState() =>
@@ -528,6 +530,7 @@ class _AdminFabOverlayActionMenuState extends State<AdminFabOverlayActionMenu> {
           closedIcon: widget.closedIcon,
           openIcon: widget.openIcon,
           alignEnd: widget.alignEnd,
+          columns: widget.columns,
           onClose: _removeOverlay,
         );
       },
@@ -569,6 +572,7 @@ class _AdminFabActionOverlay extends StatefulWidget {
     required this.closedIcon,
     required this.openIcon,
     required this.alignEnd,
+    required this.columns,
     required this.onClose,
   });
 
@@ -578,6 +582,7 @@ class _AdminFabActionOverlay extends StatefulWidget {
   final IconData closedIcon;
   final IconData openIcon;
   final bool alignEnd;
+  final int columns;
   final VoidCallback onClose;
 
   @override
@@ -741,9 +746,13 @@ class _AdminFabActionOverlayState extends State<_AdminFabActionOverlay>
       dockHeight: dockHeight + systemBottomInset,
     );
     final actions = _menuActions();
+    final columns = widget.columns.clamp(1, 4).toInt();
     final menuInset = widget.alignEnd
         ? _AdminCreateHubOverlayState._menuTrailingInset
         : _AdminCreateHubOverlayState._stackTrailingInset;
+    final availableWidth = MediaQuery.sizeOf(context).width - (menuInset * 2);
+    final actionWidth =
+        (availableWidth - math.max(0, columns - 1) * 8) / columns;
 
     return Material(
       color: Colors.transparent,
@@ -781,28 +790,43 @@ class _AdminFabActionOverlayState extends State<_AdminFabActionOverlay>
                   ? CrossAxisAlignment.end
                   : CrossAxisAlignment.start,
               children: [
-                for (int index = 0; index < actions.length; index++) ...[
-                  _AdminHubActionPill(
-                    key: actions[index].key,
-                    action: actions[index],
-                    spatial: _spatialController,
-                    effectsAnimation: _buildEffectsStagger(
-                      actions[index],
-                      _effectsController,
-                    ),
-                    overflowAlignment: widget.alignEnd
-                        ? Alignment.centerRight
-                        : Alignment.centerLeft,
-                    motionKey:
-                        ValueKey('admin-fab-menu-reveal-${actions[index].row}'),
-                    onTap: widget.actions[index].enabled
-                        ? () {
-                            _setOpen(false);
-                            widget.actions[index].onTap();
-                          }
-                        : null,
+                for (var rowStart = 0;
+                    rowStart < actions.length;
+                    rowStart += columns) ...[
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (var offset = 0; offset < columns; offset++)
+                        if (rowStart + offset < actions.length) ...[
+                          _AdminHubActionPill(
+                            key: actions[rowStart + offset].key,
+                            action: actions[rowStart + offset],
+                            targetWidth: actionWidth,
+                            spatial: _spatialController,
+                            effectsAnimation: _buildEffectsStagger(
+                              actions[rowStart + offset],
+                              _effectsController,
+                            ),
+                            overflowAlignment: widget.alignEnd
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
+                            motionKey: ValueKey(
+                              'admin-fab-menu-reveal-${actions[rowStart + offset].row}',
+                            ),
+                            onTap: widget.actions[rowStart + offset].enabled
+                                ? () {
+                                    _setOpen(false);
+                                    widget.actions[rowStart + offset].onTap();
+                                  }
+                                : null,
+                          ),
+                          if (offset != columns - 1 &&
+                              rowStart + offset + 1 < actions.length)
+                            const SizedBox(width: 8),
+                        ],
+                    ],
                   ),
-                  if (index != actions.length - 1)
+                  if (rowStart + columns < actions.length)
                     const SizedBox(
                       height: _AdminCreateHubOverlayState._menuItemGap,
                     ),

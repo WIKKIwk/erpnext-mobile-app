@@ -1474,6 +1474,7 @@ class _AdminProductionMapTestScreenState
                 openLabel: 'Yopish',
                 closedIcon: Icons.add_rounded,
                 alignEnd: false,
+                columns: 2,
               ),
             ),
           ],
