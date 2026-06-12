@@ -1872,59 +1872,54 @@ class _SequenceApparatusSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final theme = Theme.of(context);
     final selectedTitle = selected?.warehouse.trim() ?? '';
     final hasValue = selectedTitle.isNotEmpty;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Semantics(
         button: true,
         label: 'Aparatlar',
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: onTap,
-          child: InputDecorator(
-            isFocused: false,
-            decoration: InputDecoration(
-              labelText: 'Aparatlar',
-              isDense: true,
-              filled: true,
-              fillColor: scheme.surfaceContainerLow,
-              contentPadding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-              prefixIcon: Icon(
-                Icons.precision_manufacturing_outlined,
-                size: 20,
-                color: scheme.onSurfaceVariant,
-              ),
-              prefixIconConstraints: const BoxConstraints(
-                minWidth: 40,
-                minHeight: 40,
-              ),
-              suffixIcon: Icon(
-                Icons.expand_more_rounded,
-                size: 20,
-                color: scheme.onSurfaceVariant,
-              ),
-              suffixIconConstraints: const BoxConstraints(
-                minWidth: 40,
-                minHeight: 40,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: scheme.outlineVariant),
-              ),
-            ),
-            child: Text(
-              hasValue ? selectedTitle : 'Tanlang',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: hasValue ? scheme.onSurface : scheme.onSurfaceVariant,
-                fontWeight: hasValue ? FontWeight.w600 : FontWeight.w500,
+        child: Align(
+          alignment: Alignment.center,
+          child: Material(
+            color: scheme.primaryContainer,
+            borderRadius: BorderRadius.circular(999),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(999),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.precision_manufacturing_rounded,
+                      size: 16,
+                      color: scheme.onPrimaryContainer,
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        hasValue ? selectedTitle : 'Aparat tanlang',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              color: scheme.onPrimaryContainer,
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Icon(
+                      Icons.expand_more_rounded,
+                      size: 18,
+                      color: scheme.onPrimaryContainer,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
