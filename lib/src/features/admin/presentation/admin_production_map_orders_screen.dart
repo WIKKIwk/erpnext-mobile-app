@@ -121,6 +121,7 @@ class _AdminProductionMapOrdersScreenState
   late TabController _tabController;
   bool _openingRoute = false;
   bool _loading = true;
+  String? _loadError;
   bool _liveRefreshInFlight = false;
   bool _liveRefreshQueued = false;
   bool _mapsRefreshInFlight = false;
@@ -404,6 +405,7 @@ class _AdminProductionMapOrdersScreenState
         _recreateWorkerTabController(apparatus);
       }
       setState(() {
+        _loadError = null;
         _orders = orders;
         _apparatus = apparatus;
         if (!widget.workerMode) {
@@ -414,6 +416,13 @@ class _AdminProductionMapOrdersScreenState
           _loading = false;
         }
       });
+    } catch (_) {
+      if (mounted && initial) {
+        setState(() {
+          _loading = false;
+          _loadError = 'Reja menu yuklanmadi';
+        });
+      }
     } finally {
       _mapsRefreshInFlight = false;
     }
@@ -1362,114 +1371,129 @@ class _AdminProductionMapOrdersScreenState
       contentPadding: EdgeInsets.zero,
       child: _loading
           ? const Center(child: AppLoadingIndicator())
-          : widget.workerMode
-              ? _buildWorkerWatchBody(bottomPadding)
-              : Column(
-                  children: [
-                    if (_modules.length > 1)
-                      TabBar(
-                        controller: _tabController,
-                        onTap: (index) => _setModule(_modules[index]),
-                        tabs: [
-                          for (final module in _modules)
-                            Tab(text: _moduleLabel(module)),
-                        ],
-                      ),
-                    Expanded(
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: [
-                          for (final module in _modules)
-                            switch (module) {
-                              _OpenedOrderModule.orders => _OrdersModulePage(
-                                  bottomPadding: bottomPadding,
-                                  searchController: _searchController,
-                                  orders: _orders,
-                                  visibleOrders: _visibleOrders(),
-                                  onSearchChanged: (value) {
-                                    setState(() => _searchQuery = value);
-                                  },
-                                  onSearchClear: () {
-                                    _searchController.clear();
-                                    setState(() => _searchQuery = '');
-                                  },
-                                  onTapOrder:
-                                      widget.readOnly ? null : _openOrder,
-                                ),
-                              _OpenedOrderModule.sequence =>
-                                _SequenceModulePage(
-                                  bottomPadding: bottomPadding,
-                                  apparatus: _selectedApparatus,
-                                  orders: _selectedApparatus == null
-                                      ? const []
-                                      : _ordersForApparatus(
-                                          _selectedApparatus!),
-                                  readOnly: widget.readOnly,
-                                  onPickApparatus: _pickSequenceApparatus,
-                                  onReorder: (oldIndex, newIndex) {
-                                    unawaited(
-                                      _reorderSelectedApparatusOrders(
-                                        oldIndex,
-                                        newIndex,
+          : _loadError != null
+              ? Center(
+                  child: FilledButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _loading = true;
+                        _loadError = null;
+                      });
+                      unawaited(_load());
+                    },
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: Text(_loadError!),
+                  ),
+                )
+              : widget.workerMode
+                  ? _buildWorkerWatchBody(bottomPadding)
+                  : Column(
+                      children: [
+                        if (_modules.length > 1)
+                          TabBar(
+                            controller: _tabController,
+                            onTap: (index) => _setModule(_modules[index]),
+                            tabs: [
+                              for (final module in _modules)
+                                Tab(text: _moduleLabel(module)),
+                            ],
+                          ),
+                        Expanded(
+                          child: TabBarView(
+                            controller: _tabController,
+                            children: [
+                              for (final module in _modules)
+                                switch (module) {
+                                  _OpenedOrderModule.orders =>
+                                    _OrdersModulePage(
+                                      bottomPadding: bottomPadding,
+                                      searchController: _searchController,
+                                      orders: _orders,
+                                      visibleOrders: _visibleOrders(),
+                                      onSearchChanged: (value) {
+                                        setState(() => _searchQuery = value);
+                                      },
+                                      onSearchClear: () {
+                                        _searchController.clear();
+                                        setState(() => _searchQuery = '');
+                                      },
+                                      onTapOrder:
+                                          widget.readOnly ? null : _openOrder,
+                                    ),
+                                  _OpenedOrderModule.sequence =>
+                                    _SequenceModulePage(
+                                      bottomPadding: bottomPadding,
+                                      apparatus: _selectedApparatus,
+                                      orders: _selectedApparatus == null
+                                          ? const []
+                                          : _ordersForApparatus(
+                                              _selectedApparatus!),
+                                      readOnly: widget.readOnly,
+                                      onPickApparatus: _pickSequenceApparatus,
+                                      onReorder: (oldIndex, newIndex) {
+                                        unawaited(
+                                          _reorderSelectedApparatusOrders(
+                                            oldIndex,
+                                            newIndex,
+                                          ),
+                                        );
+                                      },
+                                      onTapOrder: widget.readOnly
+                                          ? _showOrderDetail
+                                          : _openOrder,
+                                    ),
+                                  _OpenedOrderModule.move => _MoveModulePage(
+                                      topApparatus: _moveTopApparatus,
+                                      bottomApparatus: _moveBottomApparatus,
+                                      topOrders: _moveTopApparatus == null ||
+                                              _moveBottomApparatus == null
+                                          ? const []
+                                          : _moveOrdersForApparatus(
+                                              source: _moveTopApparatus!,
+                                              target: _moveBottomApparatus!,
+                                            ),
+                                      bottomOrders: _moveTopApparatus == null ||
+                                              _moveBottomApparatus == null
+                                          ? const []
+                                          : _moveOrdersForApparatus(
+                                              source: _moveBottomApparatus!,
+                                              target: _moveTopApparatus!,
+                                            ),
+                                      selectedOrderIds: _selectedMoveOrderIds,
+                                      draggingOrders: _draggingMoveOrders,
+                                      draggingSource: _draggingMoveSource,
+                                      canMoveTo: (order, target, source) =>
+                                          _canMoveOrderToApparatus(
+                                        order,
+                                        target,
+                                        source: source,
                                       ),
-                                    );
-                                  },
-                                  onTapOrder: widget.readOnly
-                                      ? _showOrderDetail
-                                      : _openOrder,
-                                ),
-                              _OpenedOrderModule.move => _MoveModulePage(
-                                  topApparatus: _moveTopApparatus,
-                                  bottomApparatus: _moveBottomApparatus,
-                                  topOrders: _moveTopApparatus == null ||
-                                          _moveBottomApparatus == null
-                                      ? const []
-                                      : _moveOrdersForApparatus(
-                                          source: _moveTopApparatus!,
-                                          target: _moveBottomApparatus!,
-                                        ),
-                                  bottomOrders: _moveTopApparatus == null ||
-                                          _moveBottomApparatus == null
-                                      ? const []
-                                      : _moveOrdersForApparatus(
-                                          source: _moveBottomApparatus!,
-                                          target: _moveTopApparatus!,
-                                        ),
-                                  selectedOrderIds: _selectedMoveOrderIds,
-                                  draggingOrders: _draggingMoveOrders,
-                                  draggingSource: _draggingMoveSource,
-                                  canMoveTo: (order, target, source) =>
-                                      _canMoveOrderToApparatus(
-                                    order,
-                                    target,
-                                    source: source,
-                                  ),
-                                  onPickTop: () =>
-                                      _pickMoveApparatus(top: true),
-                                  onPickBottom: () =>
-                                      _pickMoveApparatus(top: false),
-                                  onToggleSelect: _toggleMoveOrderSelection,
-                                  buildDragPayload: _buildMoveDragPayload,
-                                  onDragStarted: (payload) {
-                                    setState(() {
-                                      _draggingMoveOrders = payload.orders;
-                                      _draggingMoveSource = payload.source;
-                                    });
-                                  },
-                                  onDragEnded: () {
-                                    setState(() {
-                                      _draggingMoveOrders = const [];
-                                      _draggingMoveSource = null;
-                                    });
-                                  },
-                                  onMove: _moveOrdersBetweenApparatus,
-                                ),
-                            },
-                        ],
-                      ),
+                                      onPickTop: () =>
+                                          _pickMoveApparatus(top: true),
+                                      onPickBottom: () =>
+                                          _pickMoveApparatus(top: false),
+                                      onToggleSelect: _toggleMoveOrderSelection,
+                                      buildDragPayload: _buildMoveDragPayload,
+                                      onDragStarted: (payload) {
+                                        setState(() {
+                                          _draggingMoveOrders = payload.orders;
+                                          _draggingMoveSource = payload.source;
+                                        });
+                                      },
+                                      onDragEnded: () {
+                                        setState(() {
+                                          _draggingMoveOrders = const [];
+                                          _draggingMoveSource = null;
+                                        });
+                                      },
+                                      onMove: _moveOrdersBetweenApparatus,
+                                    ),
+                                },
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
     );
   }
 
