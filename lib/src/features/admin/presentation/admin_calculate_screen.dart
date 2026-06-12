@@ -937,65 +937,48 @@ class _QuickOrderRecreateDialog extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 26),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(999),
-                  boxShadow: [
-                    BoxShadow(
-                      color: scheme.shadow.withValues(alpha: 0.28),
-                      blurRadius: 18,
-                      offset: const Offset(0, 8),
-                    ),
-                    BoxShadow(
-                      color: scheme.primary.withValues(alpha: 0.10),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(999),
-                  child: SizedBox(
-                    height: 52,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Material(
-                            color: scheme.surfaceContainerHighest,
-                            child: InkWell(
-                              onTap: () => Navigator.of(context).pop(false),
-                              child: Center(
-                                child: Text(
-                                  'Yo‘q',
-                                  style: theme.textTheme.labelLarge?.copyWith(
-                                    color: scheme.onSurfaceVariant,
-                                    fontWeight: FontWeight.w800,
-                                  ),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(999),
+                child: SizedBox(
+                  height: 52,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Material(
+                          color: scheme.errorContainer.withValues(alpha: 0.42),
+                          child: InkWell(
+                            onTap: () => Navigator.of(context).pop(false),
+                            child: Center(
+                              child: Text(
+                                'Yo‘q',
+                                style: theme.textTheme.labelLarge?.copyWith(
+                                  color: scheme.error,
+                                  fontWeight: FontWeight.w800,
                                 ),
                               ),
                             ),
                           ),
                         ),
-                        Container(width: 1, color: scheme.surfaceContainerHigh),
-                        Expanded(
-                          child: Material(
-                            color: scheme.primary,
-                            child: InkWell(
-                              onTap: () => Navigator.of(context).pop(true),
-                              child: Center(
-                                child: Text(
-                                  'Ha',
-                                  style: theme.textTheme.labelLarge?.copyWith(
-                                    color: scheme.onPrimary,
-                                    fontWeight: FontWeight.w800,
-                                  ),
+                      ),
+                      Container(width: 1, color: scheme.surfaceContainerHigh),
+                      Expanded(
+                        child: Material(
+                          color: scheme.primary,
+                          child: InkWell(
+                            onTap: () => Navigator.of(context).pop(true),
+                            child: Center(
+                              child: Text(
+                                'Ha',
+                                style: theme.textTheme.labelLarge?.copyWith(
+                                  color: scheme.onPrimary,
+                                  fontWeight: FontWeight.w800,
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
