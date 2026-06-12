@@ -2839,6 +2839,9 @@ class _MapNodeVisualState extends State<_MapNodeVisual> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final background = _backgroundFor(widget.node, scheme);
+    final foreground = _foregroundFor(background);
+    final mutedForeground = foreground.withValues(alpha: 0.72);
     return Semantics(
       button: true,
       label: '${widget.node.title} node',
@@ -2848,7 +2851,7 @@ class _MapNodeVisualState extends State<_MapNodeVisual> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           decoration: BoxDecoration(
-            color: _backgroundFor(widget.node, scheme),
+            color: background,
             borderRadius: widget.borderRadius,
             border: widget.highlighted
                 ? Border.all(color: scheme.primary, width: 2)
@@ -2878,9 +2881,12 @@ class _MapNodeVisualState extends State<_MapNodeVisual> {
                       children: [
                         CircleAvatar(
                           radius: 18,
-                          backgroundColor:
-                              scheme.surface.withValues(alpha: 0.55),
-                          child: Icon(_iconFor(widget.node.kind), size: 19),
+                          backgroundColor: foreground.withValues(alpha: 0.14),
+                          child: Icon(
+                            _iconFor(widget.node.kind),
+                            size: 19,
+                            color: foreground,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -2892,6 +2898,7 @@ class _MapNodeVisualState extends State<_MapNodeVisual> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: theme.textTheme.titleSmall?.copyWith(
+                                  color: foreground,
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
@@ -2901,7 +2908,7 @@ class _MapNodeVisualState extends State<_MapNodeVisual> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: theme.textTheme.bodySmall?.copyWith(
-                                  color: scheme.onSurfaceVariant,
+                                  color: mutedForeground,
                                 ),
                               ),
                             ],
@@ -2911,7 +2918,7 @@ class _MapNodeVisualState extends State<_MapNodeVisual> {
                         Text(
                           _labelFor(widget.node.kind),
                           style: theme.textTheme.labelSmall?.copyWith(
-                            color: scheme.onSurfaceVariant,
+                            color: mutedForeground,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -2935,7 +2942,7 @@ class _MapNodeVisualState extends State<_MapNodeVisual> {
                     child: Icon(
                       Icons.add_link_rounded,
                       size: 20,
-                      color: scheme.onSurfaceVariant,
+                      color: mutedForeground,
                     ),
                   ),
                 ),
@@ -2949,7 +2956,7 @@ class _MapNodeVisualState extends State<_MapNodeVisual> {
                       child: Icon(
                         Icons.close_rounded,
                         size: 20,
-                        color: scheme.onSurfaceVariant,
+                        color: mutedForeground,
                       ),
                     ),
                   ),
@@ -2984,6 +2991,11 @@ class _MapNodeVisualState extends State<_MapNodeVisual> {
       return Colors.green.shade100;
     }
     return _colorFor(node.kind, scheme);
+  }
+
+  Color _foregroundFor(Color background) {
+    final brightness = ThemeData.estimateBrightnessForColor(background);
+    return brightness == Brightness.dark ? Colors.white : Colors.black;
   }
 
   String _labelFor(String kind) {
