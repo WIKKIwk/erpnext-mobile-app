@@ -818,8 +818,8 @@ class _AdminFabActionOverlayState extends State<_AdminFabActionOverlay>
             builder: (context, _) {
               final progress = _m3SpatialLerpT(_fabMorphController.value);
               final currentButtonSize = _lerpDouble(
-                _AdminCreateHubOverlayState._fabOpenSize,
                 _AdminCreateHubOverlayState._fabClosedSize,
+                _AdminCreateHubOverlayState._fabOpenSize,
                 progress,
               );
               final anchoredBottom = toggleBottom +
@@ -836,8 +836,8 @@ class _AdminFabActionOverlayState extends State<_AdminFabActionOverlay>
                     fabMorphAnimation: _fabMorphController,
                     effectsAnimation: _effectsController,
                     onTap: () => _setOpen(!_targetOpen),
-                    closedSize: _AdminCreateHubOverlayState._fabOpenSize,
-                    openSize: _AdminCreateHubOverlayState._fabClosedSize,
+                    closedSize: _AdminCreateHubOverlayState._fabClosedSize,
+                    openSize: _AdminCreateHubOverlayState._fabOpenSize,
                     shapeTween: _fabShapeTween,
                     closedLabel: widget.closedLabel,
                     openLabel: widget.openLabel,
