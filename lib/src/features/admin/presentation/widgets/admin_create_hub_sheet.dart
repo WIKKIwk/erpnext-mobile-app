@@ -499,6 +499,8 @@ class AdminFabActionMenu extends StatefulWidget {
 
 class _AdminFabActionMenuState extends State<AdminFabActionMenu>
     with TickerProviderStateMixin {
+  late bool _targetOpen = widget.open;
+
   late final AnimationController _spatialController = AnimationController(
     vsync: this,
     duration: _AdminCreateHubOverlayState._openDuration,
@@ -530,14 +532,14 @@ class _AdminFabActionMenuState extends State<AdminFabActionMenu>
   @override
   void initState() {
     super.initState();
-    _applyOpenState(widget.open, animate: false);
+    _setOpen(widget.open, animate: false);
   }
 
   @override
   void didUpdateWidget(covariant AdminFabActionMenu oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.open != widget.open) {
-      _applyOpenState(widget.open);
+      _setOpen(widget.open);
     }
   }
 
@@ -549,12 +551,18 @@ class _AdminFabActionMenuState extends State<AdminFabActionMenu>
     super.dispose();
   }
 
-  void _applyOpenState(bool open, {bool animate = true}) {
+  void _setOpen(bool open, {bool animate = true}) {
+    _targetOpen = open;
     final target = open ? 1.0 : 0.0;
     if (!animate) {
       _spatialController.value = target;
       _fabMorphController.value = target;
       _effectsController.value = target;
+      return;
+    }
+    if ((_spatialController.value - target).abs() < 0.001 &&
+        (_fabMorphController.value - target).abs() < 0.001 &&
+        (_effectsController.value - target).abs() < 0.001) {
       return;
     }
     _animateWithSpring(
@@ -715,7 +723,10 @@ class _AdminFabActionMenuState extends State<AdminFabActionMenu>
                 child: _AdminMorphFabButton(
                   fabMorphAnimation: _fabMorphController,
                   effectsAnimation: _effectsController,
-                  onTap: widget.onToggle,
+                  onTap: () {
+                    _setOpen(!_targetOpen);
+                    widget.onToggle();
+                  },
                   closedSize: _AdminCreateHubOverlayState._fabClosedSize,
                   openSize: _AdminCreateHubOverlayState._fabOpenSize,
                   shapeTween: _fabShapeTween,
