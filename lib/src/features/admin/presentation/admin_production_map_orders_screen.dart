@@ -1270,8 +1270,7 @@ class _AdminProductionMapOrdersScreenState
   ) {
     return _orders
         .where((order) =>
-            _isAlternativeOrderForApparatus(order, apparatus) &&
-            !_alternativeOrderIsAssigned(order.map))
+            _hasUnassignedAlternativeGroupForApparatus(order.map, apparatus))
         .toList(growable: false);
   }
 
@@ -1293,13 +1292,28 @@ class _AdminProductionMapOrdersScreenState
     );
   }
 
-  bool _alternativeOrderIsAssigned(ProductionMapDefinition map) {
-    return map.nodes.any(
-      (node) =>
-          node.kind == 'apparatus' &&
-          node.alternativeGroupId.trim().isNotEmpty &&
-          node.alternativeAssignedTitle.trim().isNotEmpty,
-    );
+  bool _hasUnassignedAlternativeGroupForApparatus(
+    ProductionMapDefinition map,
+    AdminWarehouse apparatus,
+  ) {
+    final matchingGroups = <String>{};
+    final assignedGroups = <String>{};
+    for (final node in map.nodes) {
+      if (node.kind != 'apparatus') {
+        continue;
+      }
+      final groupId = node.alternativeGroupId.trim();
+      if (groupId.isEmpty) {
+        continue;
+      }
+      if (productionMapWarehouseTitlesMatch(node.title, apparatus.warehouse)) {
+        matchingGroups.add(groupId);
+      }
+      if (node.alternativeAssignedTitle.trim().isNotEmpty) {
+        assignedGroups.add(groupId);
+      }
+    }
+    return matchingGroups.any((groupId) => !assignedGroups.contains(groupId));
   }
 
   bool _alternativeOrderAssignedToApparatus(

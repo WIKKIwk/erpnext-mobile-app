@@ -1515,6 +1515,68 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
   });
 
+  testWidgets('opened orders move module keeps laminatsiya skips unassigned',
+      (tester) async {
+    await TestModeController.instance.setEnabled(true);
+    final map = _chainedAlternativeProductionOrderMap(
+      id: 'zakaz-laminatsiya-skip',
+      title: 'Skipped laminatsiya order',
+      productCode: 'LAM-SKIP',
+      product: 'laminatsiya skipped product',
+      firstGroupApparatus: const ['7 ta rangli pechat', '8 ta rangli pechat'],
+      secondGroupApparatus: const ['Laminatsiya 1', 'Laminatsiya 2'],
+      firstGroupAssignedTitle: '7 ta rangli pechat',
+      rollCount: 7,
+      widthMm: 650,
+    );
+    await MobileApi.instance.adminSaveProductionMap(map);
+    await _usePhoneViewport(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(useMaterial3: true),
+        locale: const Locale('uz'),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const AdminProductionMapOrdersScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Ko‘chirish'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('move-top-apparatus-picker')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Laminatsiya 1').first);
+    await tester.pumpAndSettle();
+    await tester
+        .tap(find.byKey(const ValueKey('move-boundary-apparatus-picker')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tanlanmagan'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(
+        const ValueKey(
+          'move-order-Laminatsiya 1-zakaz-laminatsiya-skip',
+        ),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.byKey(
+        const ValueKey(
+          'move-order-Tanlanmagan-zakaz-laminatsiya-skip',
+        ),
+      ),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('apparatus queue worker view is read only', (tester) async {
     await TestModeController.instance.setEnabled(true);
     await AppSession.instance.setSession(
@@ -1835,6 +1897,71 @@ ProductionMapDefinition _alternativeProductionOrderMap({
         ProductionMapEdge(from: 'start', to: node.id),
         ProductionMapEdge(from: node.id, to: 'end'),
       ],
+    ],
+  );
+}
+
+ProductionMapDefinition _chainedAlternativeProductionOrderMap({
+  required String id,
+  required String title,
+  required String productCode,
+  required String product,
+  required List<String> firstGroupApparatus,
+  required List<String> secondGroupApparatus,
+  required String firstGroupAssignedTitle,
+  double? rollCount,
+  double? widthMm,
+}) {
+  final firstGroupNodes = [
+    for (var index = 0; index < firstGroupApparatus.length; index++)
+      ProductionMapNode(
+        id: 'first-apparatus-$index',
+        kind: 'apparatus',
+        title: firstGroupApparatus[index],
+        alternativeGroupId: 'alt-first-$id',
+        alternativeGroupLabel: 'pechat',
+        alternativeAssignedTitle: firstGroupAssignedTitle,
+      ),
+  ];
+  final secondGroupNodes = [
+    for (var index = 0; index < secondGroupApparatus.length; index++)
+      ProductionMapNode(
+        id: 'second-apparatus-$index',
+        kind: 'apparatus',
+        title: secondGroupApparatus[index],
+        alternativeGroupId: 'alt-second-$id',
+        alternativeGroupLabel: 'laminatsiya',
+      ),
+  ];
+  return ProductionMapDefinition(
+    id: id,
+    productCode: productCode,
+    title: title,
+    rollCount: rollCount,
+    widthMm: widthMm,
+    nodes: [
+      const ProductionMapNode(
+        id: 'start',
+        kind: 'start',
+        title: 'Start',
+      ),
+      ...firstGroupNodes,
+      ...secondGroupNodes,
+      ProductionMapNode(
+        id: 'end',
+        kind: 'end',
+        title: product,
+        itemCode: productCode,
+      ),
+    ],
+    edges: [
+      for (final first in firstGroupNodes)
+        ProductionMapEdge(from: 'start', to: first.id),
+      for (final first in firstGroupNodes)
+        for (final second in secondGroupNodes)
+          ProductionMapEdge(from: first.id, to: second.id),
+      for (final second in secondGroupNodes)
+        ProductionMapEdge(from: second.id, to: 'end'),
     ],
   );
 }
