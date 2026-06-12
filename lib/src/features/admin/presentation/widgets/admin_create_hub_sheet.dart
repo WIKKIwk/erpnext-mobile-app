@@ -744,8 +744,6 @@ class _AdminFabActionOverlayState extends State<_AdminFabActionOverlay>
     final menuInset = widget.alignEnd
         ? _AdminCreateHubOverlayState._menuTrailingInset
         : _AdminCreateHubOverlayState._stackTrailingInset;
-    final motionAlignment =
-        widget.alignEnd ? Alignment.bottomRight : Alignment.bottomLeft;
 
     return Material(
       color: Colors.transparent,
@@ -829,21 +827,17 @@ class _AdminFabActionOverlayState extends State<_AdminFabActionOverlay>
                 start: widget.alignEnd ? null : menuInset,
                 end: widget.alignEnd ? menuInset : null,
                 bottom: anchoredBottom,
-                child: Transform.scale(
-                  alignment: motionAlignment,
-                  scale: _adminFabSpringScale(progress),
-                  child: _AdminMorphFabButton(
-                    fabMorphAnimation: _fabMorphController,
-                    effectsAnimation: _effectsController,
-                    onTap: () => _setOpen(!_targetOpen),
-                    closedSize: _AdminCreateHubOverlayState._fabClosedSize,
-                    openSize: _AdminCreateHubOverlayState._fabOpenSize,
-                    shapeTween: _fabShapeTween,
-                    closedLabel: widget.closedLabel,
-                    openLabel: widget.openLabel,
-                    closedIcon: widget.closedIcon,
-                    openIcon: widget.openIcon,
-                  ),
+                child: _AdminMorphFabButton(
+                  fabMorphAnimation: _fabMorphController,
+                  effectsAnimation: _effectsController,
+                  onTap: () => _setOpen(!_targetOpen),
+                  closedSize: _AdminCreateHubOverlayState._fabClosedSize,
+                  openSize: _AdminCreateHubOverlayState._fabOpenSize,
+                  shapeTween: _fabShapeTween,
+                  closedLabel: widget.closedLabel,
+                  openLabel: widget.openLabel,
+                  closedIcon: widget.closedIcon,
+                  openIcon: widget.openIcon,
                 ),
               );
             },
