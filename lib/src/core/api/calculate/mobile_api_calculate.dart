@@ -400,6 +400,8 @@ class CalculateOrderTemplate {
     required this.thirdLayerMaterial,
     required this.thirdLayerMicron,
     required this.note,
+    this.kg = 0,
+    this.sourceMapId = '',
   });
 
   factory CalculateOrderTemplate.fromJson(Map<String, dynamic> json) {
@@ -431,6 +433,8 @@ class CalculateOrderTemplate {
       thirdLayerMaterial: _calculateText(json['third_layer_material']),
       thirdLayerMicron: _calculateText(json['third_layer_micron']),
       note: _calculateText(json['note']),
+      kg: _calculateNumber(json['kg']),
+      sourceMapId: _calculateText(json['source_map_id']),
     );
   }
 
@@ -461,6 +465,8 @@ class CalculateOrderTemplate {
   final String thirdLayerMaterial;
   final String thirdLayerMicron;
   final String note;
+  final double kg;
+  final String sourceMapId;
 
   Map<String, dynamic> toJson() {
     return {
@@ -492,7 +498,73 @@ class CalculateOrderTemplate {
       'third_layer_material': thirdLayerMaterial.trim(),
       'third_layer_micron': thirdLayerMicron.trim(),
       'note': note.trim(),
+      if (kg > 0) 'kg': kg,
+      if (sourceMapId.trim().isNotEmpty) 'source_map_id': sourceMapId.trim(),
     };
+  }
+
+  CalculateOrderTemplate copyWith({
+    String? id,
+    String? code,
+    String? name,
+    DateTime? savedAt,
+    String? orderNumber,
+    String? customerRef,
+    String? customer,
+    String? itemCode,
+    String? product,
+    String? status,
+    String? materialDisplay,
+    String? color,
+    String? imageId,
+    String? imageName,
+    String? imageMime,
+    int? imageSizeBytes,
+    String? imageUrl,
+    double? widthMm,
+    double? wastePercent,
+    double? rollCount,
+    String? firstLayerMaterial,
+    String? firstLayerMicron,
+    String? secondLayerMaterial,
+    String? secondLayerMicron,
+    String? thirdLayerMaterial,
+    String? thirdLayerMicron,
+    String? note,
+    double? kg,
+    String? sourceMapId,
+  }) {
+    return CalculateOrderTemplate(
+      id: id ?? this.id,
+      code: code ?? this.code,
+      name: name ?? this.name,
+      savedAt: savedAt ?? this.savedAt,
+      orderNumber: orderNumber ?? this.orderNumber,
+      customerRef: customerRef ?? this.customerRef,
+      customer: customer ?? this.customer,
+      itemCode: itemCode ?? this.itemCode,
+      product: product ?? this.product,
+      status: status ?? this.status,
+      materialDisplay: materialDisplay ?? this.materialDisplay,
+      color: color ?? this.color,
+      imageId: imageId ?? this.imageId,
+      imageName: imageName ?? this.imageName,
+      imageMime: imageMime ?? this.imageMime,
+      imageSizeBytes: imageSizeBytes ?? this.imageSizeBytes,
+      imageUrl: imageUrl ?? this.imageUrl,
+      widthMm: widthMm ?? this.widthMm,
+      wastePercent: wastePercent ?? this.wastePercent,
+      rollCount: rollCount ?? this.rollCount,
+      firstLayerMaterial: firstLayerMaterial ?? this.firstLayerMaterial,
+      firstLayerMicron: firstLayerMicron ?? this.firstLayerMicron,
+      secondLayerMaterial: secondLayerMaterial ?? this.secondLayerMaterial,
+      secondLayerMicron: secondLayerMicron ?? this.secondLayerMicron,
+      thirdLayerMaterial: thirdLayerMaterial ?? this.thirdLayerMaterial,
+      thirdLayerMicron: thirdLayerMicron ?? this.thirdLayerMicron,
+      note: note ?? this.note,
+      kg: kg ?? this.kg,
+      sourceMapId: sourceMapId ?? this.sourceMapId,
+    );
   }
 }
 
@@ -563,6 +635,8 @@ CalculateOrderTemplate _testModeUpsertCalculateOrderTemplate(
     thirdLayerMaterial: template.thirdLayerMaterial,
     thirdLayerMicron: template.thirdLayerMicron,
     note: template.note,
+    kg: template.kg,
+    sourceMapId: template.sourceMapId,
   );
   final lowerCode = code.toLowerCase();
   _testModeCalculateOrderTemplates.removeWhere(

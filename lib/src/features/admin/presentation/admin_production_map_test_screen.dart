@@ -18,6 +18,22 @@ import 'package:flutter/services.dart';
 
 const _maxLaminatsiyaRubberSizeMm = 1050;
 
+Future<String?> showProductionMapOrderNumberSheet(
+  BuildContext context, {
+  String initialValue = '',
+}) {
+  return showModalBottomSheet<String>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withValues(alpha: 0.32),
+    builder: (context) => _ProductionMapOrderNumberDialog(
+      initialValue: initialValue,
+    ),
+  );
+}
+
 String productionMapBranchDisplayLabel(String branch) {
   return switch (branch.trim().toLowerCase()) {
     'true' => 'Shunda',
@@ -457,15 +473,9 @@ class _AdminProductionMapTestScreenState
   Future<String?> _requestOrderNumber() {
     // Uniqueness is enforced server-side on save (duplicate_order_number);
     // the dialog only checks the 4-digit format.
-    return showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.32),
-      builder: (context) => _ProductionMapOrderNumberDialog(
-        initialValue: _orderNumber,
-      ),
+    return showProductionMapOrderNumberSheet(
+      context,
+      initialValue: _orderNumber,
     );
   }
 

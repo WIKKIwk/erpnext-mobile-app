@@ -52,8 +52,10 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
   String _itemCode = '';
   String _templateId = '';
   String _orderCode = '';
+  String _sourceMapId = '';
   bool _openingRoute = false;
   bool _calculating = false;
+  bool _openingSavedOrder = false;
   bool _uploadingImage = false;
   bool _editingAllFields = true;
   bool _applyingTemplate = false;
@@ -132,6 +134,7 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
     try {
       _templateId = template.id;
       _orderCode = template.code;
+      _sourceMapId = template.sourceMapId;
       _customerRef = template.customerRef;
       _customer.text = template.customer;
       _itemCode = template.itemCode;
@@ -224,6 +227,77 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
     });
   }
 
+  Future<void> _openOrderFromSavedMap() async {
+    if (_openingSavedOrder) {
+      return;
+    }
+    if (!_hasFreshCalculation) {
+      showAdminTopNotice(context, 'Avval hisoblash tugmasini bosing');
+      return;
+    }
+    final sourceMapId = _sourceMapId.trim();
+    if (sourceMapId.isEmpty) {
+      showAdminTopNotice(context, 'Bu tezkor zakazga map ulanmagan');
+      return;
+    }
+    final error = _templateValidationError();
+    if (error != null) {
+      showAdminTopNotice(context, error);
+      return;
+    }
+    final orderNumber = await showProductionMapOrderNumberSheet(context);
+    if (!mounted || orderNumber == null) {
+      return;
+    }
+    setState(() => _openingSavedOrder = true);
+    try {
+      final source = await MobileApi.instance.adminProductionMap(sourceMapId);
+      final normalizedOrder = orderNumber.trim();
+      final clonedMap = source.map.copyWith(
+        id: 'zakaz-$normalizedOrder',
+        title: _resolvedOrderName(),
+        code: normalizedOrder,
+        orderNumber: normalizedOrder,
+        productCode: _itemCode.trim().isNotEmpty
+            ? _itemCode.trim()
+            : source.map.productCode,
+        rollCount: _parseOptionalDouble(_rollCount.text),
+        widthMm: _parseOptionalDouble(_widthMm.text),
+      );
+      final draft = _buildTemplateDraft().copyWith(
+        id: '',
+        code: normalizedOrder,
+        orderNumber: normalizedOrder,
+        kg: _parseRequiredDouble(_kg.text),
+        sourceMapId: sourceMapId,
+      );
+      final result = await MobileApi.instance.adminSaveProductionMapWithOrder(
+        map: clonedMap,
+        template: draft,
+      );
+      if (!mounted) {
+        return;
+      }
+      final savedTemplate = result.template;
+      if (savedTemplate != null) {
+        CalculateOrderTemplateStore.instance.remember(savedTemplate);
+      }
+      showAdminTopNotice(context, 'Zakaz ochildi: $normalizedOrder');
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      showAdminTopNotice(
+        context,
+        error is MobileApiException ? error.message : 'Zakaz ochilmadi',
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _openingSavedOrder = false);
+      }
+    }
+  }
+
   bool _hasExistingQuickOrderForProduct(SupplierItem product) {
     final productKeys = {
       product.code,
@@ -300,6 +374,8 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
       thirdLayerMaterial: _thirdMaterial.text.trim(),
       thirdLayerMicron: _thirdMicron.text.trim(),
       note: _note.text.trim(),
+      kg: _kg.text.trim().isEmpty ? 0 : _parseRequiredDouble(_kg.text),
+      sourceMapId: _sourceMapId,
     );
   }
 
@@ -706,6 +782,21 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
           rollCount: _parseOptionalDouble(_rollCount.text),
           widthMm: _parseRequiredDouble(_widthMm.text),
         ),
+        if (_sourceMapId.trim().isNotEmpty) ...[
+          const SizedBox(height: 18),
+          FilledButton.icon(
+            onPressed: _openingSavedOrder ? null : _openOrderFromSavedMap,
+            icon: Icon(
+              _openingSavedOrder
+                  ? Icons.hourglass_top_rounded
+                  : Icons.playlist_add_check_rounded,
+            ),
+            label: Text(_openingSavedOrder ? 'Ochilmoqda...' : 'Zakaz ochish'),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(52),
+            ),
+          ),
+        ],
         const SizedBox(height: 18),
         OutlinedButton.icon(
           onPressed: _openProductionMap,

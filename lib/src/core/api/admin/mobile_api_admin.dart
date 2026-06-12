@@ -272,6 +272,33 @@ extension MobileApiAdmin on MobileApi {
         .toList();
   }
 
+  Future<ProductionMapSaved> adminProductionMap(String id) async {
+    final normalized = id.trim();
+    if (await TestModeController.instance.isEnabled()) {
+      return _testModeProductionMaps.firstWhere(
+        (item) => item.map.id.trim() == normalized,
+        orElse: () => throw const MobileApiException(
+          code: 'map_not_found',
+          message: 'Zakaz topilmadi',
+        ),
+      );
+    }
+    final response = await _sendAuthorized(
+      () => http.get(
+        Uri.parse('$baseUrl/v1/mobile/admin/production-maps').replace(
+          queryParameters: {'id': normalized},
+        ),
+        headers: _headers(requireToken()),
+      ),
+    );
+    if (response.statusCode != 200) {
+      throw _adminProductionMapException(response, 'map_not_found');
+    }
+    return ProductionMapSaved.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  }
+
   Future<ProductionMapSaved> adminSaveProductionMap(
     ProductionMapDefinition map,
   ) async {
@@ -344,7 +371,9 @@ extension MobileApiAdmin on MobileApi {
       }
       try {
         final savedMap = await adminSaveProductionMap(map);
-        final savedTemplate = _testModeUpsertCalculateOrderTemplate(template);
+        final savedTemplate = _testModeUpsertCalculateOrderTemplate(
+          template.copyWith(sourceMapId: savedMap.map.id),
+        );
         return ProductionMapSaveWithOrderResult(
           saved: savedMap,
           template: savedTemplate,
