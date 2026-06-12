@@ -293,7 +293,6 @@ class _AdminProductionMapTestScreenState
   String? _connectingFromNodeID;
   String _connectingFromBranch = '';
   Offset? _connectionPreviewEnd;
-  bool _mapToolsMenuOpen = false;
   bool _savingMap = false;
   late String _orderNumber;
   CalculateOrderTemplate? _templateDraft;
@@ -1298,19 +1297,7 @@ class _AdminProductionMapTestScreenState
     });
   }
 
-  void _toggleMapToolsMenu() {
-    setState(() => _mapToolsMenuOpen = !_mapToolsMenuOpen);
-  }
-
-  void _closeMapToolsMenu() {
-    if (!_mapToolsMenuOpen) {
-      return;
-    }
-    setState(() => _mapToolsMenuOpen = false);
-  }
-
   void _runMapToolAction(VoidCallback action) {
-    _closeMapToolsMenu();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         action();
@@ -1478,23 +1465,11 @@ class _AdminProductionMapTestScreenState
                 onEdgeDelete: _removeEdge,
               ),
             ),
-            if (_mapToolsMenuOpen)
-              Positioned.fill(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: _closeMapToolsMenu,
-                  child: ColoredBox(
-                    color: scheme.scrim.withValues(alpha: 0.16),
-                  ),
-                ),
-              ),
             Positioned(
               left: 16,
               bottom: fabBottom,
-              child: AdminFabActionMenu(
-                open: _mapToolsMenuOpen,
+              child: AdminFabOverlayActionMenu(
                 actions: _mapToolActions(),
-                onToggle: _toggleMapToolsMenu,
                 closedLabel: 'Element qo‘shish',
                 openLabel: 'Yopish',
                 closedIcon: Icons.add_rounded,

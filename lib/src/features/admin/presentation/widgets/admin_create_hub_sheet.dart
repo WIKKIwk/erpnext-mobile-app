@@ -469,6 +469,391 @@ class AdminFabMenuAction {
   final bool enabled;
 }
 
+class AdminFabOverlayActionMenu extends StatefulWidget {
+  const AdminFabOverlayActionMenu({
+    super.key,
+    required this.actions,
+    required this.closedLabel,
+    required this.openLabel,
+    required this.closedIcon,
+    this.openIcon = Icons.close_rounded,
+    this.alignEnd = true,
+  });
+
+  final List<AdminFabMenuAction> actions;
+  final String closedLabel;
+  final String openLabel;
+  final IconData closedIcon;
+  final IconData openIcon;
+  final bool alignEnd;
+
+  @override
+  State<AdminFabOverlayActionMenu> createState() =>
+      _AdminFabOverlayActionMenuState();
+}
+
+class _AdminFabOverlayActionMenuState extends State<AdminFabOverlayActionMenu> {
+  OverlayEntry? _entry;
+  final GlobalKey<_AdminFabActionOverlayState> _overlayKey =
+      GlobalKey<_AdminFabActionOverlayState>();
+
+  @override
+  void dispose() {
+    _removeOverlay();
+    super.dispose();
+  }
+
+  void _removeOverlay() {
+    final entry = _entry;
+    _entry = null;
+    if (entry?.mounted ?? false) {
+      entry!.remove();
+    }
+  }
+
+  void _showOverlay() {
+    if (_entry != null) {
+      _overlayKey.currentState?.setOpen(true);
+      return;
+    }
+
+    late final OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (context) {
+        return _AdminFabActionOverlay(
+          key: _overlayKey,
+          actions: widget.actions,
+          closedLabel: widget.closedLabel,
+          openLabel: widget.openLabel,
+          closedIcon: widget.closedIcon,
+          openIcon: widget.openIcon,
+          alignEnd: widget.alignEnd,
+          onClose: _removeOverlay,
+        );
+      },
+    );
+    _entry = entry;
+    Overlay.of(context, rootOverlay: true).insert(entry);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _AdminMorphFabButton(
+      fabMorphAnimation: const AlwaysStoppedAnimation<double>(0),
+      effectsAnimation: const AlwaysStoppedAnimation<double>(0),
+      onTap: _showOverlay,
+      closedSize: _AdminCreateHubOverlayState._fabClosedSize,
+      openSize: _AdminCreateHubOverlayState._fabOpenSize,
+      shapeTween: ShapeBorderTween(
+        begin: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(
+            appNavigationBarPrimaryButtonBorderRadius,
+          ),
+        ),
+        end: const CircleBorder(),
+      ),
+      closedLabel: widget.closedLabel,
+      openLabel: widget.openLabel,
+      closedIcon: widget.closedIcon,
+      openIcon: widget.openIcon,
+    );
+  }
+}
+
+class _AdminFabActionOverlay extends StatefulWidget {
+  const _AdminFabActionOverlay({
+    super.key,
+    required this.actions,
+    required this.closedLabel,
+    required this.openLabel,
+    required this.closedIcon,
+    required this.openIcon,
+    required this.alignEnd,
+    required this.onClose,
+  });
+
+  final List<AdminFabMenuAction> actions;
+  final String closedLabel;
+  final String openLabel;
+  final IconData closedIcon;
+  final IconData openIcon;
+  final bool alignEnd;
+  final VoidCallback onClose;
+
+  @override
+  State<_AdminFabActionOverlay> createState() => _AdminFabActionOverlayState();
+}
+
+class _AdminFabActionOverlayState extends State<_AdminFabActionOverlay>
+    with TickerProviderStateMixin {
+  late final AnimationController _spatialController = AnimationController(
+    vsync: this,
+    duration: _AdminCreateHubOverlayState._openDuration,
+    reverseDuration: _AdminCreateHubOverlayState._closeDuration,
+    lowerBound: _AdminCreateHubOverlayState._spatialLower,
+    upperBound: _AdminCreateHubOverlayState._spatialUpper,
+  );
+  late final AnimationController _fabMorphController = AnimationController(
+    vsync: this,
+    duration: _AdminCreateHubOverlayState._openDuration,
+    reverseDuration: _AdminCreateHubOverlayState._closeDuration,
+    lowerBound: _AdminCreateHubOverlayState._fabMorphLower,
+    upperBound: _AdminCreateHubOverlayState._fabMorphUpper,
+  );
+  late final AnimationController _effectsController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 860),
+    reverseDuration: const Duration(milliseconds: 860),
+  );
+  late final ShapeBorderTween _fabShapeTween = ShapeBorderTween(
+    begin: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(
+        appNavigationBarPrimaryButtonBorderRadius,
+      ),
+    ),
+    end: const CircleBorder(),
+  );
+
+  bool _targetOpen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _setOpen(true);
+  }
+
+  @override
+  void dispose() {
+    _spatialController.dispose();
+    _fabMorphController.dispose();
+    _effectsController.dispose();
+    super.dispose();
+  }
+
+  void setOpen(bool open) {
+    _setOpen(open);
+  }
+
+  void _setOpen(bool open) {
+    _targetOpen = open;
+
+    final double target = open ? 1.0 : 0.0;
+    final spatialFuture = _animateWithSpring(
+      controller: _spatialController,
+      spring: open
+          ? _AdminCreateHubOverlayState._spatialSpring
+          : _AdminCreateHubOverlayState._spatialSpringClose,
+      target: target,
+    );
+    final fabMorphFuture = _animateWithSpring(
+      controller: _fabMorphController,
+      spring: open
+          ? _AdminCreateHubOverlayState._fabMorphSpring
+          : _AdminCreateHubOverlayState._fabMorphSpringClose,
+      target: target,
+    );
+    final effectsFuture = _animateWithSpring(
+      controller: _effectsController,
+      spring: open
+          ? _AdminCreateHubOverlayState._effectsSpring
+          : _AdminCreateHubOverlayState._effectsSpringClose,
+      target: target,
+    );
+
+    if (!open) {
+      unawaited(
+        () async {
+          try {
+            await Future.wait<void>([
+              spatialFuture.orCancel,
+              fabMorphFuture.orCancel,
+              effectsFuture.orCancel,
+            ]);
+          } on TickerCanceled {
+            return;
+          }
+          if (!mounted || _targetOpen) {
+            return;
+          }
+          widget.onClose();
+        }(),
+      );
+    }
+  }
+
+  TickerFuture _animateWithSpring({
+    required AnimationController controller,
+    required SpringDescription spring,
+    required double target,
+  }) {
+    final simulation = SpringSimulation(
+      spring,
+      controller.value,
+      target,
+      controller.velocity,
+    )..tolerance = const Tolerance(distance: 0.001, velocity: 0.001);
+    return controller.animateWith(simulation);
+  }
+
+  List<_AdminHubAction> _menuActions() {
+    final visible = widget.actions;
+    final n = visible.length;
+    return [
+      for (var i = 0; i < visible.length; i++)
+        _AdminHubAction(
+          key: ValueKey('admin-fab-menu-${visible[i].title}'),
+          title: visible[i].title,
+          icon: visible[i].icon,
+          routeName: '',
+          row: i,
+          staggerOrder: n - 1 - i,
+        ),
+    ];
+  }
+
+  Animation<double> _buildEffectsStagger(
+    _AdminHubAction action,
+    Animation<double> parent,
+  ) {
+    final int order = action.staggerOrder;
+    final double start = (order * 0.20).clamp(0.0, 0.76);
+    final double end = (start + 0.56).clamp(0.0, 1.0);
+    return CurvedAnimation(
+      parent: parent,
+      curve: Interval(start, end, curve: Curves.easeOutCubic),
+      reverseCurve: Interval(start, end, curve: Curves.easeInCubic),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final targetBackdropColor = isDarkMode
+        ? Colors.black.withValues(alpha: 0.78)
+        : Colors.white.withValues(alpha: 0.68);
+    final viewMetrics = MediaQueryData.fromView(View.of(context));
+    final systemBottomInset = dockLayoutBottomInset(
+      viewMetrics,
+      thinGestureBottom: DockGestureOverlayScope.thinGestureBottomOf(context),
+    );
+    const dockHeight = 60.0;
+    final toggleBottom = appNavigationBarPrimaryButtonBottom(
+      dockHeight: dockHeight + systemBottomInset,
+    );
+    final actions = _menuActions();
+    final menuInset = widget.alignEnd
+        ? _AdminCreateHubOverlayState._menuTrailingInset
+        : _AdminCreateHubOverlayState._stackTrailingInset;
+    final motionAlignment =
+        widget.alignEnd ? Alignment.bottomRight : Alignment.bottomLeft;
+
+    return Material(
+      color: Colors.transparent,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => _setOpen(false),
+              child: AnimatedBuilder(
+                animation: _effectsController,
+                builder: (context, _) {
+                  final progress = _effectsController.value.clamp(0.0, 1.0);
+                  return ColoredBox(
+                    color: Color.lerp(
+                      Colors.transparent,
+                      targetBackdropColor,
+                      progress,
+                    )!,
+                  );
+                },
+              ),
+            ),
+          ),
+          PositionedDirectional(
+            start: widget.alignEnd ? null : menuInset,
+            end: widget.alignEnd ? menuInset : null,
+            bottom: toggleBottom +
+                _AdminCreateHubOverlayState._fabClosedSize +
+                _AdminCreateHubOverlayState._groupButtonGap,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: widget.alignEnd
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
+              children: [
+                for (int index = 0; index < actions.length; index++) ...[
+                  _AdminHubActionPill(
+                    key: actions[index].key,
+                    action: actions[index],
+                    spatial: _spatialController,
+                    effectsAnimation: _buildEffectsStagger(
+                      actions[index],
+                      _effectsController,
+                    ),
+                    overflowAlignment: widget.alignEnd
+                        ? Alignment.centerRight
+                        : Alignment.centerLeft,
+                    motionKey:
+                        ValueKey('admin-fab-menu-reveal-${actions[index].row}'),
+                    onTap: widget.actions[index].enabled
+                        ? () {
+                            _setOpen(false);
+                            widget.actions[index].onTap();
+                          }
+                        : null,
+                  ),
+                  if (index != actions.length - 1)
+                    const SizedBox(
+                      height: _AdminCreateHubOverlayState._menuItemGap,
+                    ),
+                ],
+              ],
+            ),
+          ),
+          AnimatedBuilder(
+            animation:
+                Listenable.merge([_fabMorphController, _effectsController]),
+            builder: (context, _) {
+              final progress = _m3SpatialLerpT(_fabMorphController.value);
+              final currentButtonSize = _lerpDouble(
+                _AdminCreateHubOverlayState._fabOpenSize,
+                _AdminCreateHubOverlayState._fabClosedSize,
+                progress,
+              );
+              final anchoredBottom = toggleBottom +
+                  _AdminCreateHubOverlayState._fabClosedSize -
+                  currentButtonSize;
+              return PositionedDirectional(
+                start: widget.alignEnd ? null : menuInset,
+                end: widget.alignEnd ? menuInset : null,
+                bottom: anchoredBottom,
+                child: Transform.scale(
+                  alignment: motionAlignment,
+                  scale: _adminFabSpringScale(progress),
+                  child: _AdminMorphFabButton(
+                    fabMorphAnimation: _fabMorphController,
+                    effectsAnimation: _effectsController,
+                    onTap: () => _setOpen(!_targetOpen),
+                    closedSize: _AdminCreateHubOverlayState._fabOpenSize,
+                    openSize: _AdminCreateHubOverlayState._fabClosedSize,
+                    shapeTween: _fabShapeTween,
+                    closedLabel: widget.closedLabel,
+                    openLabel: widget.openLabel,
+                    closedIcon: widget.closedIcon,
+                    openIcon: widget.openIcon,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class AdminFabActionMenu extends StatefulWidget {
   const AdminFabActionMenu({
     super.key,
