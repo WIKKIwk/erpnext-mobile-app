@@ -939,46 +939,51 @@ class _QuickOrderRecreateDialog extends StatelessWidget {
               const SizedBox(height: 26),
               ClipRRect(
                 borderRadius: BorderRadius.circular(999),
-                child: SizedBox(
-                  height: 52,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Material(
-                          color: scheme.surfaceContainerHighest,
-                          child: InkWell(
-                            onTap: () => Navigator.of(context).pop(false),
-                            child: Center(
-                              child: Text(
-                                'Yo‘q',
-                                style: theme.textTheme.labelLarge?.copyWith(
-                                  color: scheme.onSurfaceVariant,
-                                  fontWeight: FontWeight.w800,
+                child: Material(
+                  elevation: 3,
+                  shadowColor: scheme.shadow.withValues(alpha: 0.24),
+                  surfaceTintColor: scheme.primary,
+                  child: SizedBox(
+                    height: 52,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Material(
+                            color: scheme.surfaceContainerHighest,
+                            child: InkWell(
+                              onTap: () => Navigator.of(context).pop(false),
+                              child: Center(
+                                child: Text(
+                                  'Yo‘q',
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                    color: scheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.w800,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      Container(width: 1, color: scheme.surfaceContainerHigh),
-                      Expanded(
-                        child: Material(
-                          color: scheme.primary,
-                          child: InkWell(
-                            onTap: () => Navigator.of(context).pop(true),
-                            child: Center(
-                              child: Text(
-                                'Ha',
-                                style: theme.textTheme.labelLarge?.copyWith(
-                                  color: scheme.onPrimary,
-                                  fontWeight: FontWeight.w800,
+                        Container(width: 1, color: scheme.surfaceContainerHigh),
+                        Expanded(
+                          child: Material(
+                            color: scheme.primary,
+                            child: InkWell(
+                              onTap: () => Navigator.of(context).pop(true),
+                              child: Center(
+                                child: Text(
+                                  'Ha',
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                    color: scheme.onPrimary,
+                                    fontWeight: FontWeight.w800,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
