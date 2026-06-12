@@ -1237,6 +1237,7 @@ class _AdminProductionMapOrdersScreenState
 
   Future<void> _pickMoveApparatus({required bool top}) async {
     final anchor = top ? _moveBottomApparatus : _moveTopApparatus;
+    final pickerApparatus = _movePickerApparatusOptions(anchor);
     final unassignedOrderCount =
         anchor == null || _isMoveUnassignedApparatus(anchor)
             ? 0
@@ -1246,7 +1247,7 @@ class _AdminProductionMapOrdersScreenState
       useSafeArea: true,
       showDragHandle: true,
       builder: (context) => _ApparatusPickerSheet(
-        apparatus: _apparatus,
+        apparatus: pickerApparatus,
         selected: top ? _moveTopApparatus : _moveBottomApparatus,
         orderCountFor: (apparatus) => _ordersForApparatus(apparatus).length,
         showUnassigned: anchor != null && !_isMoveUnassignedApparatus(anchor),
@@ -1263,6 +1264,24 @@ class _AdminProductionMapOrdersScreenState
         _moveBottomApparatus = picked;
       }
     });
+  }
+
+  List<AdminWarehouse> _movePickerApparatusOptions(
+    AdminWarehouse? oppositeApparatus,
+  ) {
+    if (oppositeApparatus == null ||
+        _isMoveUnassignedApparatus(oppositeApparatus)) {
+      return _apparatus;
+    }
+    final oppositeTitle = oppositeApparatus.warehouse.trim();
+    return _apparatus
+        .where(
+          (apparatus) => !productionMapWarehouseTitlesMatch(
+            apparatus.warehouse,
+            oppositeTitle,
+          ),
+        )
+        .toList(growable: false);
   }
 
   List<ProductionMapSaved> _alternativeOrdersForApparatus(

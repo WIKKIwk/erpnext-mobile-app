@@ -1384,6 +1384,41 @@ void main() {
     ]);
   });
 
+  testWidgets('opened orders move picker hides opposite selected apparatus',
+      (tester) async {
+    await TestModeController.instance.setEnabled(true);
+    await _usePhoneViewport(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(useMaterial3: true),
+        locale: const Locale('uz'),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const AdminProductionMapOrdersScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Ko‘chirish'));
+    await tester.pumpAndSettle();
+
+    await tester
+        .tap(find.byKey(const ValueKey('move-boundary-apparatus-picker')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('7 ta rangli pechat'), findsNWidgets(2));
+    Navigator.of(tester.element(find.text('Aparat tanlang'))).pop();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('move-top-apparatus-picker')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('8 ta rangli pechat'), findsNWidgets(2));
+  });
+
   testWidgets('opened orders move module boundary resizes zones',
       (tester) async {
     await TestModeController.instance.setEnabled(true);
