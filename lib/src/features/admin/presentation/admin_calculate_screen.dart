@@ -937,12 +937,24 @@ class _QuickOrderRecreateDialog extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 26),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(999),
-                child: Material(
-                  elevation: 3,
-                  shadowColor: scheme.shadow.withValues(alpha: 0.24),
-                  surfaceTintColor: scheme.primary,
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(999),
+                  boxShadow: [
+                    BoxShadow(
+                      color: scheme.shadow.withValues(alpha: 0.28),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                    BoxShadow(
+                      color: scheme.primary.withValues(alpha: 0.10),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(999),
                   child: SizedBox(
                     height: 52,
                     child: Row(
