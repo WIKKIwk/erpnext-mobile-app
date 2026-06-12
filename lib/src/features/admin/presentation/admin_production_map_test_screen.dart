@@ -1443,7 +1443,10 @@ class _AdminProductionMapTestScreenState
       ],
       contentPadding: EdgeInsets.zero,
       animateOnEnter: false,
-      bottom: const AdminDock(activeTab: AdminDockTab.home),
+      bottom: const AdminDock(
+        activeTab: AdminDockTab.home,
+        showPrimaryFab: false,
+      ),
       child: ColoredBox(
         color: scheme.surface,
         child: Stack(
