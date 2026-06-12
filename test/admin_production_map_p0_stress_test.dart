@@ -123,6 +123,32 @@ void main() {
     );
   });
 
+  test('flexo orders cannot move to color pechat apparatus', () {
+    final map = _productionOrderMap(
+      id: 'zakaz-flexo-1',
+      title: 'Flexo paket zakaz',
+      productCode: 'FLEXO-001',
+      apparatus: 'Flexo pechat - A',
+      product: 'vitagum flexo zip paket',
+      orderNumber: '8756',
+      rollCount: 7,
+      widthMm: 650,
+    );
+
+    expect(productionMapIsFlexoOrder(map), isTrue);
+    expect(
+      productionMapCanMoveOrderToApparatus(
+        nodes: map.nodes,
+        fromApparatus: 'Flexo pechat - A',
+        toApparatus: '8 ta rangli pechat - A',
+        rollCount: map.rollCount,
+        widthMm: map.widthMm,
+        isFlexoOrder: productionMapIsFlexoOrder(map),
+      ),
+      isFalse,
+    );
+  });
+
   test('batch move is all-or-nothing for pechat orders', () async {
     await MobileApi.instance.adminSaveProductionMap(
       _productionOrderMap(

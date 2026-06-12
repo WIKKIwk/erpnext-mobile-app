@@ -458,6 +458,7 @@ extension MobileApiAdmin on MobileApi {
           toApparatus: toApparatus,
           rollCount: current.map.rollCount,
           widthMm: current.map.widthMm,
+          isFlexoOrder: productionMapIsFlexoOrder(current.map),
         )) {
           throw const MobileApiException(
             code: 'move_not_allowed',
@@ -546,6 +547,7 @@ extension MobileApiAdmin on MobileApi {
         toApparatus: toApparatus,
         rollCount: current.map.rollCount,
         widthMm: current.map.widthMm,
+        isFlexoOrder: productionMapIsFlexoOrder(current.map),
       )) {
         throw const MobileApiException(
           code: 'move_not_allowed',

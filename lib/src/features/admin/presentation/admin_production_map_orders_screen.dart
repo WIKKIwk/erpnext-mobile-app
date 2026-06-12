@@ -808,6 +808,9 @@ class _AdminProductionMapOrdersScreenState
   List<ProductionMapSaved> _ordersForApparatus(AdminWarehouse apparatus) {
     final title = apparatus.warehouse.trim();
     final filtered = _orders.where((order) {
+      if (_isFlexoOrderBlockedForColorPechat(order.map, apparatus)) {
+        return false;
+      }
       final hasAlternative = _hasAlternativeApparatus(order.map);
       if (hasAlternative) {
         return _alternativeOrderAssignedToApparatus(order.map, apparatus);
@@ -1232,6 +1235,7 @@ class _AdminProductionMapOrdersScreenState
       toApparatus: target.warehouse,
       rollCount: order.map.rollCount,
       widthMm: order.map.widthMm,
+      isFlexoOrder: productionMapIsFlexoOrder(order.map),
     );
   }
 
@@ -1289,6 +1293,7 @@ class _AdminProductionMapOrdersScreenState
   ) {
     return _orders
         .where((order) =>
+            !_isFlexoOrderBlockedForColorPechat(order.map, apparatus) &&
             _hasUnassignedAlternativeGroupForApparatus(order.map, apparatus))
         .toList(growable: false);
   }
@@ -1297,6 +1302,9 @@ class _AdminProductionMapOrdersScreenState
     ProductionMapSaved order,
     AdminWarehouse apparatus,
   ) {
+    if (_isFlexoOrderBlockedForColorPechat(order.map, apparatus)) {
+      return false;
+    }
     return order.map.nodes.any((node) {
       return node.kind == 'apparatus' &&
           node.alternativeGroupId.trim().isNotEmpty &&
@@ -1349,6 +1357,14 @@ class _AdminProductionMapOrdersScreenState
             title,
           ),
     );
+  }
+
+  bool _isFlexoOrderBlockedForColorPechat(
+    ProductionMapDefinition map,
+    AdminWarehouse apparatus,
+  ) {
+    return productionMapIsFlexoOrder(map) &&
+        productionMapPechatColorCount(apparatus.warehouse) != null;
   }
 
   String? _assignedAlternativeGroupIdForApparatus(

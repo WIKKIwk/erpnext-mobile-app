@@ -191,6 +191,26 @@ bool productionMapIsLaminatsiyaApparatus(String title) {
       .contains('laminatsiya');
 }
 
+bool productionMapTextIsFlexoOrder(Iterable<String> values) {
+  final haystack = values.join(' ').toLowerCase();
+  return const ['fleksa', 'fleska', 'flex', 'flexe', 'flexo'].any(
+    haystack.contains,
+  );
+}
+
+bool productionMapIsFlexoOrder(ProductionMapDefinition map) {
+  return productionMapTextIsFlexoOrder([
+    map.title,
+    map.productCode,
+    map.code,
+    for (final node in map.nodes)
+      if (node.kind != 'apparatus') ...[
+        node.title,
+        node.itemCode,
+      ],
+  ]);
+}
+
 bool productionMapWarehouseTitlesMatch(String left, String right) {
   final normalizedLeft = left.trim();
   final normalizedRight = right.trim();
@@ -248,6 +268,7 @@ bool productionMapCanMoveOrderToApparatus({
   required String toApparatus,
   required double? rollCount,
   required double? widthMm,
+  bool isFlexoOrder = false,
 }) {
   final fromIsLaminatsiya = productionMapIsLaminatsiyaApparatus(fromApparatus);
   final toIsLaminatsiya = productionMapIsLaminatsiyaApparatus(toApparatus);
@@ -263,6 +284,9 @@ bool productionMapCanMoveOrderToApparatus({
   final targetColorCount = productionMapPechatColorCount(toApparatus);
   if (targetColorCount == null) {
     return true;
+  }
+  if (isFlexoOrder) {
+    return false;
   }
   final sourceColorCount = productionMapPechatColorCount(fromApparatus) ??
       productionMapOrderPechatColorCount(
