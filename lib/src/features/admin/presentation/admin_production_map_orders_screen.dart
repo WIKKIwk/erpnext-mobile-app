@@ -2042,7 +2042,7 @@ class _MoveModulePageState extends State<_MoveModulePage> {
                     _MoveApparatusHeader(
                       key: const ValueKey('move-top-apparatus-picker'),
                       apparatus: top,
-                      alignment: Alignment.centerLeft,
+                      alignment: Alignment.center,
                       onTap: onPickTop,
                     ),
                     const SizedBox(height: 8),

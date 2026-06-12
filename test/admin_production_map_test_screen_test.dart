@@ -1419,6 +1419,39 @@ void main() {
     expect(find.textContaining('8 ta rangli pechat'), findsNWidgets(2));
   });
 
+  testWidgets('opened orders move top apparatus picker is centered',
+      (tester) async {
+    await TestModeController.instance.setEnabled(true);
+    await _usePhoneViewport(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(useMaterial3: true),
+        locale: const Locale('uz'),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const AdminProductionMapOrdersScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Ko‘chirish'));
+    await tester.pumpAndSettle();
+
+    final pickerRect = tester.getRect(
+      find.descendant(
+        of: find.byKey(const ValueKey('move-top-apparatus-picker')),
+        matching: find.textContaining('7 ta rangli pechat'),
+      ),
+    );
+    final screenCenterX = tester.getSize(find.byType(MaterialApp)).width / 2;
+    expect((pickerRect.center.dx - screenCenterX).abs(), lessThan(8));
+  });
+
   testWidgets('opened orders move module boundary resizes zones',
       (tester) async {
     await TestModeController.instance.setEnabled(true);
