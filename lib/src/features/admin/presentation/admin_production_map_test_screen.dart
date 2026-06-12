@@ -1854,6 +1854,8 @@ class _ProductionMapCanvasState extends State<_ProductionMapCanvas> {
   final _canvasKey = GlobalKey();
   late final TransformationController _transformController;
   bool _didSetInitialTransform = false;
+  bool _nodeDragActive = false;
+  final Set<int> _canvasPointers = <int>{};
   Offset? _lastConnectionPosition;
 
   @override
@@ -1893,118 +1895,99 @@ class _ProductionMapCanvasState extends State<_ProductionMapCanvas> {
                     painter: _GridPaperPainter(scheme: scheme),
                   ),
                 ),
-                InteractiveViewer(
-                  transformationController: _transformController,
-                  constrained: false,
-                  minScale: 0.45,
-                  maxScale: 2.4,
-                  boundaryMargin: const EdgeInsets.all(760),
-                  child: SizedBox(
-                    key: _canvasKey,
-                    width: canvasSize.width,
-                    height: canvasSize.height,
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Positioned(
-                          left: 0,
-                          top: 0,
-                          width: canvasSize.width,
-                          height: canvasSize.height,
-                          child: CustomPaint(
-                            size: canvasSize,
-                            painter: _MapCanvasPainter(
-                              nodes: widget.nodes,
-                              edges: widget.edges,
-                              connectionFromNodeID: widget.connectingFromNodeID,
-                              connectionFromBranch: widget.connectingFromBranch,
-                              connectionPreviewEnd: widget.connectionPreviewEnd,
-                              nodeSize: _ProductionMapCanvas._nodeSize,
-                              scheme: scheme,
-                            ),
-                          ),
-                        ),
-                        for (final edge in widget.edges)
-                          if (_edgeActionPosition(edge) case final position?)
-                            Positioned(
-                              left: position.dx - 13,
-                              top: position.dy - 13,
-                              child: _EdgeDeleteButton(
-                                edge: edge,
-                                onTap: () => widget.onEdgeDelete(edge),
-                              ),
-                            ),
-                        for (final node in widget.nodes)
+                Listener(
+                  onPointerDown: _handleCanvasPointerDown,
+                  onPointerUp: _handleCanvasPointerEnd,
+                  onPointerCancel: _handleCanvasPointerEnd,
+                  child: InteractiveViewer(
+                    transformationController: _transformController,
+                    constrained: false,
+                    panEnabled: !_nodeDragActive,
+                    minScale: 0.45,
+                    maxScale: 2.4,
+                    boundaryMargin: const EdgeInsets.all(760),
+                    child: SizedBox(
+                      key: _canvasKey,
+                      width: canvasSize.width,
+                      height: canvasSize.height,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
                           Positioned(
-                            left: node.x,
-                            top: node.y,
-                            width: _ProductionMapCanvas._nodeSize.width,
-                            child: _MapNodeVisual(
-                              node: node,
-                              borderRadius: _nodeBorderRadius(node),
-                              onTap: () => widget.onNodeTap(node),
-                              onDragUpdate: (details) {
-                                final scale = _transformController.value
-                                    .getMaxScaleOnAxis();
-                                widget.onNodeMoved(
-                                  node.id,
-                                  details.delta / scale,
-                                );
-                              },
-                              onDelete:
-                                  node.kind == 'start' || node.kind == 'end'
-                                      ? null
-                                      : () => widget.onNodeDelete(node),
-                              onConnectionDragStart: (globalPosition) {
-                                final canvasPosition = _globalToCanvas(
-                                  globalPosition,
-                                );
-                                _lastConnectionPosition = canvasPosition;
-                                widget.onConnectionStart(node.id, '');
-                                widget.onConnectionUpdate(canvasPosition);
-                              },
-                              onConnectionDragUpdate: (globalPosition) {
-                                final canvasPosition = _globalToCanvas(
-                                  globalPosition,
-                                );
-                                _lastConnectionPosition = canvasPosition;
-                                widget.onConnectionUpdate(canvasPosition);
-                              },
-                              onConnectionDragEnd: () {
-                                final position = _lastConnectionPosition;
-                                _lastConnectionPosition = null;
-                                if (position == null) {
-                                  widget.onConnectionCancel();
-                                  return;
-                                }
-                                widget.onConnectionEnd(position);
-                              },
-                              onConnectionDragCancel: () {
-                                _lastConnectionPosition = null;
-                                widget.onConnectionCancel();
-                              },
-                              floating: false,
-                              highlighted:
-                                  widget.connectingFromNodeID == node.id,
+                            left: 0,
+                            top: 0,
+                            width: canvasSize.width,
+                            height: canvasSize.height,
+                            child: CustomPaint(
+                              size: canvasSize,
+                              painter: _MapCanvasPainter(
+                                nodes: widget.nodes,
+                                edges: widget.edges,
+                                connectionFromNodeID:
+                                    widget.connectingFromNodeID,
+                                connectionFromBranch:
+                                    widget.connectingFromBranch,
+                                connectionPreviewEnd:
+                                    widget.connectionPreviewEnd,
+                                nodeSize: _ProductionMapCanvas._nodeSize,
+                                scheme: scheme,
+                              ),
                             ),
                           ),
-                        for (final node in widget.nodes)
-                          if (node.kind == 'condition') ...[
+                          for (final edge in widget.edges)
+                            if (_edgeActionPosition(edge) case final position?)
+                              Positioned(
+                                left: position.dx - 13,
+                                top: position.dy - 13,
+                                child: _EdgeDeleteButton(
+                                  edge: edge,
+                                  onTap: () => widget.onEdgeDelete(edge),
+                                ),
+                              ),
+                          for (final node in widget.nodes)
                             Positioned(
-                              left: _branchButtonLeft(node, 'true'),
-                              top: _branchButtonTop(node),
-                              child: _BranchAddButton(
-                                branch: 'true',
+                              left: node.x,
+                              top: node.y,
+                              width: _ProductionMapCanvas._nodeSize.width,
+                              child: _MapNodeVisual(
+                                node: node,
+                                borderRadius: _nodeBorderRadius(node),
+                                onTap: () => widget.onNodeTap(node),
+                                canDrag: _canDragNode,
+                                onDragStart: () {
+                                  if (!_nodeDragActive) {
+                                    setState(() => _nodeDragActive = true);
+                                  }
+                                },
+                                onDragUpdate: (details) {
+                                  final scale = _transformController.value
+                                      .getMaxScaleOnAxis();
+                                  widget.onNodeMoved(
+                                    node.id,
+                                    details.delta / scale,
+                                  );
+                                },
+                                onDragEnd: () {
+                                  if (_nodeDragActive) {
+                                    setState(() => _nodeDragActive = false);
+                                  }
+                                },
+                                onDelete:
+                                    node.kind == 'start' || node.kind == 'end'
+                                        ? null
+                                        : () => widget.onNodeDelete(node),
                                 onConnectionDragStart: (globalPosition) {
-                                  final canvasPosition =
-                                      _globalToCanvas(globalPosition);
+                                  final canvasPosition = _globalToCanvas(
+                                    globalPosition,
+                                  );
                                   _lastConnectionPosition = canvasPosition;
-                                  widget.onConnectionStart(node.id, 'true');
+                                  widget.onConnectionStart(node.id, '');
                                   widget.onConnectionUpdate(canvasPosition);
                                 },
                                 onConnectionDragUpdate: (globalPosition) {
-                                  final canvasPosition =
-                                      _globalToCanvas(globalPosition);
+                                  final canvasPosition = _globalToCanvas(
+                                    globalPosition,
+                                  );
                                   _lastConnectionPosition = canvasPosition;
                                   widget.onConnectionUpdate(canvasPosition);
                                 },
@@ -2021,43 +2004,82 @@ class _ProductionMapCanvasState extends State<_ProductionMapCanvas> {
                                   _lastConnectionPosition = null;
                                   widget.onConnectionCancel();
                                 },
+                                floating: false,
+                                highlighted:
+                                    widget.connectingFromNodeID == node.id,
                               ),
                             ),
-                            Positioned(
-                              left: _branchButtonLeft(node, 'false'),
-                              top: _branchButtonTop(node),
-                              child: _BranchAddButton(
-                                branch: 'false',
-                                onConnectionDragStart: (globalPosition) {
-                                  final canvasPosition =
-                                      _globalToCanvas(globalPosition);
-                                  _lastConnectionPosition = canvasPosition;
-                                  widget.onConnectionStart(node.id, 'false');
-                                  widget.onConnectionUpdate(canvasPosition);
-                                },
-                                onConnectionDragUpdate: (globalPosition) {
-                                  final canvasPosition =
-                                      _globalToCanvas(globalPosition);
-                                  _lastConnectionPosition = canvasPosition;
-                                  widget.onConnectionUpdate(canvasPosition);
-                                },
-                                onConnectionDragEnd: () {
-                                  final position = _lastConnectionPosition;
-                                  _lastConnectionPosition = null;
-                                  if (position == null) {
+                          for (final node in widget.nodes)
+                            if (node.kind == 'condition') ...[
+                              Positioned(
+                                left: _branchButtonLeft(node, 'true'),
+                                top: _branchButtonTop(node),
+                                child: _BranchAddButton(
+                                  branch: 'true',
+                                  onConnectionDragStart: (globalPosition) {
+                                    final canvasPosition =
+                                        _globalToCanvas(globalPosition);
+                                    _lastConnectionPosition = canvasPosition;
+                                    widget.onConnectionStart(node.id, 'true');
+                                    widget.onConnectionUpdate(canvasPosition);
+                                  },
+                                  onConnectionDragUpdate: (globalPosition) {
+                                    final canvasPosition =
+                                        _globalToCanvas(globalPosition);
+                                    _lastConnectionPosition = canvasPosition;
+                                    widget.onConnectionUpdate(canvasPosition);
+                                  },
+                                  onConnectionDragEnd: () {
+                                    final position = _lastConnectionPosition;
+                                    _lastConnectionPosition = null;
+                                    if (position == null) {
+                                      widget.onConnectionCancel();
+                                      return;
+                                    }
+                                    widget.onConnectionEnd(position);
+                                  },
+                                  onConnectionDragCancel: () {
+                                    _lastConnectionPosition = null;
                                     widget.onConnectionCancel();
-                                    return;
-                                  }
-                                  widget.onConnectionEnd(position);
-                                },
-                                onConnectionDragCancel: () {
-                                  _lastConnectionPosition = null;
-                                  widget.onConnectionCancel();
-                                },
+                                  },
+                                ),
                               ),
-                            ),
-                          ],
-                      ],
+                              Positioned(
+                                left: _branchButtonLeft(node, 'false'),
+                                top: _branchButtonTop(node),
+                                child: _BranchAddButton(
+                                  branch: 'false',
+                                  onConnectionDragStart: (globalPosition) {
+                                    final canvasPosition =
+                                        _globalToCanvas(globalPosition);
+                                    _lastConnectionPosition = canvasPosition;
+                                    widget.onConnectionStart(node.id, 'false');
+                                    widget.onConnectionUpdate(canvasPosition);
+                                  },
+                                  onConnectionDragUpdate: (globalPosition) {
+                                    final canvasPosition =
+                                        _globalToCanvas(globalPosition);
+                                    _lastConnectionPosition = canvasPosition;
+                                    widget.onConnectionUpdate(canvasPosition);
+                                  },
+                                  onConnectionDragEnd: () {
+                                    final position = _lastConnectionPosition;
+                                    _lastConnectionPosition = null;
+                                    if (position == null) {
+                                      widget.onConnectionCancel();
+                                      return;
+                                    }
+                                    widget.onConnectionEnd(position);
+                                  },
+                                  onConnectionDragCancel: () {
+                                    _lastConnectionPosition = null;
+                                    widget.onConnectionCancel();
+                                  },
+                                ),
+                              ),
+                            ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -2086,6 +2108,21 @@ class _ProductionMapCanvasState extends State<_ProductionMapCanvas> {
         canvasSize: canvasSize,
       );
     });
+  }
+
+  bool _canDragNode() {
+    return _canvasPointers.length <= 1;
+  }
+
+  void _handleCanvasPointerDown(PointerDownEvent event) {
+    _canvasPointers.add(event.pointer);
+    if (_canvasPointers.length > 1 && _nodeDragActive) {
+      setState(() => _nodeDragActive = false);
+    }
+  }
+
+  void _handleCanvasPointerEnd(PointerEvent event) {
+    _canvasPointers.remove(event.pointer);
   }
 
   Offset _globalToCanvas(Offset globalPosition) {
@@ -2691,12 +2728,15 @@ class _MapCanvasPainter extends CustomPainter {
   }
 }
 
-class _MapNodeVisual extends StatelessWidget {
+class _MapNodeVisual extends StatefulWidget {
   const _MapNodeVisual({
     required this.node,
     required this.borderRadius,
     required this.onTap,
+    required this.canDrag,
+    required this.onDragStart,
     required this.onDragUpdate,
+    required this.onDragEnd,
     required this.onDelete,
     required this.onConnectionDragStart,
     required this.onConnectionDragUpdate,
@@ -2709,7 +2749,10 @@ class _MapNodeVisual extends StatelessWidget {
   final ProductionMapNode node;
   final BorderRadius borderRadius;
   final VoidCallback onTap;
+  final bool Function() canDrag;
+  final VoidCallback onDragStart;
   final GestureDragUpdateCallback onDragUpdate;
+  final VoidCallback onDragEnd;
   final VoidCallback? onDelete;
   final ValueChanged<Offset> onConnectionDragStart;
   final ValueChanged<Offset> onConnectionDragUpdate;
@@ -2719,25 +2762,84 @@ class _MapNodeVisual extends StatelessWidget {
   final bool highlighted;
 
   @override
+  State<_MapNodeVisual> createState() => _MapNodeVisualState();
+}
+
+class _MapNodeVisualState extends State<_MapNodeVisual> {
+  final Set<int> _activePointers = <int>{};
+  int? _dragPointer;
+  bool _dragging = false;
+
+  void _handlePointerDown(PointerDownEvent event) {
+    _activePointers.add(event.pointer);
+    if (_activePointers.length == 1 &&
+        _dragPointer == null &&
+        widget.canDrag()) {
+      _dragPointer = event.pointer;
+      _dragging = true;
+      widget.onDragStart();
+      return;
+    }
+    _stopDrag();
+  }
+
+  void _handlePointerMove(PointerMoveEvent event) {
+    if (_dragging &&
+        _activePointers.length == 1 &&
+        _dragPointer == event.pointer &&
+        widget.canDrag()) {
+      widget.onDragUpdate(
+        DragUpdateDetails(
+          globalPosition: event.position,
+          localPosition: event.localPosition,
+          delta: event.delta,
+        ),
+      );
+    } else if (_dragging && !widget.canDrag()) {
+      _stopDrag();
+    }
+  }
+
+  void _handlePointerUp(PointerEvent event) {
+    final wasDragPointer = _dragPointer == event.pointer;
+    _activePointers.remove(event.pointer);
+    if (wasDragPointer) {
+      _stopDrag();
+    }
+    if (_activePointers.isEmpty) {
+      _dragPointer = null;
+    }
+  }
+
+  void _stopDrag() {
+    if (!_dragging) {
+      _dragPointer = null;
+      return;
+    }
+    _dragging = false;
+    _dragPointer = null;
+    widget.onDragEnd();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     return Semantics(
       button: true,
-      label: '${node.title} node',
+      label: '${widget.node.title} node',
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        onPanUpdate: onDragUpdate,
+        onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           decoration: BoxDecoration(
-            color: _backgroundFor(node, scheme),
-            borderRadius: borderRadius,
-            border: highlighted
+            color: _backgroundFor(widget.node, scheme),
+            borderRadius: widget.borderRadius,
+            border: widget.highlighted
                 ? Border.all(color: scheme.primary, width: 2)
                 : null,
-            boxShadow: floating
+            boxShadow: widget.floating
                 ? [
                     BoxShadow(
                       color: scheme.shadow.withValues(alpha: 0.28),
@@ -2751,54 +2853,69 @@ class _MapNodeVisual extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundColor: scheme.surface.withValues(alpha: 0.55),
-                  child: Icon(_iconFor(node.kind), size: 19),
-                ),
-                const SizedBox(width: 12),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        node.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
+                  child: Listener(
+                    behavior: HitTestBehavior.opaque,
+                    onPointerDown: _handlePointerDown,
+                    onPointerMove: _handlePointerMove,
+                    onPointerUp: _handlePointerUp,
+                    onPointerCancel: _handlePointerUp,
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 18,
+                          backgroundColor:
+                              scheme.surface.withValues(alpha: 0.55),
+                          child: Icon(_iconFor(widget.node.kind), size: 19),
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        _subtitleFor(node),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurfaceVariant,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.node.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                _subtitleFor(widget.node),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  _labelFor(node.kind),
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: scheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w700,
+                        const SizedBox(width: 8),
+                        Text(
+                          _labelFor(widget.node.kind),
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 GestureDetector(
-                  key: ValueKey('production-map-node-connect-${node.id}'),
+                  key:
+                      ValueKey('production-map-node-connect-${widget.node.id}'),
                   behavior: HitTestBehavior.opaque,
                   onPanStart: (details) =>
-                      onConnectionDragStart(details.globalPosition),
+                      widget.onConnectionDragStart(details.globalPosition),
                   onPanUpdate: (details) =>
-                      onConnectionDragUpdate(details.globalPosition),
-                  onPanEnd: (_) => onConnectionDragEnd(),
-                  onPanCancel: onConnectionDragCancel,
+                      widget.onConnectionDragUpdate(details.globalPosition),
+                  onPanEnd: (_) => widget.onConnectionDragEnd(),
+                  onPanCancel: widget.onConnectionDragCancel,
                   child: Padding(
                     padding: const EdgeInsets.all(4),
                     child: Icon(
@@ -2808,11 +2925,11 @@ class _MapNodeVisual extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (onDelete != null) ...[
+                if (widget.onDelete != null) ...[
                   const SizedBox(width: 8),
                   GestureDetector(
                     behavior: HitTestBehavior.opaque,
-                    onTap: onDelete,
+                    onTap: widget.onDelete,
                     child: Padding(
                       padding: const EdgeInsets.all(4),
                       child: Icon(

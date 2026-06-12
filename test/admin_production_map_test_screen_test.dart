@@ -118,6 +118,75 @@ void main() {
     expect(find.byKey(const ValueKey('admin-fab-menu-Ishlov')), findsOneWidget);
   });
 
+  testWidgets('production map canvas pinches over node cards', (tester) async {
+    await TestModeController.instance.setEnabled(true);
+    await _usePhoneViewport(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(useMaterial3: true),
+        locale: const Locale('uz'),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const AdminProductionMapTestScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final startFinder = find.text('Start').first;
+    final before = tester.getRect(startFinder);
+    final center = tester.getCenter(startFinder);
+    final first = await tester.createGesture(pointer: 91);
+    final second = await tester.createGesture(pointer: 92);
+    await first.down(center + const Offset(-18, 0));
+    await second.down(center + const Offset(18, 0));
+    await tester.pump();
+    await first.moveTo(center + const Offset(-92, -34));
+    await second.moveTo(center + const Offset(92, 34));
+    await tester.pump();
+    await first.up();
+    await second.up();
+    await tester.pumpAndSettle();
+
+    final after = tester.getRect(startFinder);
+    expect(after.width, greaterThan(before.width * 1.08));
+  });
+
+  testWidgets('production map node cards drag with one finger', (tester) async {
+    await TestModeController.instance.setEnabled(true);
+    await _usePhoneViewport(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(useMaterial3: true),
+        locale: const Locale('uz'),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const AdminProductionMapTestScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final startFinder = find.text('Start').first;
+    final before = tester.getCenter(startFinder);
+    final gesture = await tester.startGesture(before);
+    await gesture.moveBy(const Offset(76, 48));
+    await gesture.up();
+    await tester.pumpAndSettle();
+
+    final after = tester.getCenter(startFinder);
+    expect(after.dx, greaterThan(before.dx + 30));
+    expect(after.dy, greaterThan(before.dy + 20));
+  });
+
   testWidgets('production map order flow hides laminatsiya group above 1050',
       (tester) async {
     await TestModeController.instance.setEnabled(true);
