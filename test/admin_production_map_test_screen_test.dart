@@ -226,6 +226,45 @@ void main() {
     );
   });
 
+  testWidgets('production map order flow hides color pechat group for flex',
+      (tester) async {
+    await TestModeController.instance.setEnabled(true);
+    await _usePhoneViewport(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(useMaterial3: true),
+        locale: const Locale('uz'),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const AdminProductionMapTestScreen(
+          orderContext: ProductionMapOrderContext(
+            orderName: 'Flex order',
+            productName: 'vitagum flex paket',
+            itemCode: 'ITEM-FLEX',
+            rollCount: 7,
+            widthMm: 650,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.bySemanticsLabel('Element qo‘shish'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('admin-fab-menu-pechat')), findsNothing);
+    expect(
+      find.byKey(const ValueKey('admin-fab-menu-Laminatsiya')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('admin-fab-menu-Ishlov')), findsOneWidget);
+  });
+
   testWidgets(
       'production map pechat group skip adds alternative apparatus nodes',
       (tester) async {
@@ -593,6 +632,60 @@ void main() {
       ),
       isFalse,
     );
+  });
+
+  test('production map pechat filter blocks color pechat for flex products',
+      () {
+    for (final marker in const ['fleksa', 'fleska', 'flex', 'flexe', 'flexo']) {
+      final context = ProductionMapOrderContext(
+        orderName: 'Flexo order',
+        productName: 'vitagum $marker paket',
+        itemCode: 'ITEM-FLEX',
+        rollCount: 7,
+        widthMm: 650,
+      );
+
+      expect(
+        productionMapApparatusMatchesOrder(
+          const AdminWarehouse(
+            warehouse: '7 ta rangli pechat',
+            parentWarehouse: 'aparat - A',
+          ),
+          context,
+        ),
+        isFalse,
+      );
+      expect(
+        productionMapApparatusMatchesOrder(
+          const AdminWarehouse(
+            warehouse: '8 ta rangli pechat',
+            parentWarehouse: 'aparat - A',
+          ),
+          context,
+        ),
+        isFalse,
+      );
+      expect(
+        productionMapApparatusMatchesOrder(
+          const AdminWarehouse(
+            warehouse: 'Flexo pechat',
+            parentWarehouse: 'aparat - A',
+          ),
+          context,
+        ),
+        isTrue,
+      );
+      expect(
+        productionMapApparatusMatchesOrder(
+          const AdminWarehouse(
+            warehouse: 'Laminatsiya - A',
+            parentWarehouse: 'aparat - A',
+          ),
+          context,
+        ),
+        isTrue,
+      );
+    }
   });
 
   test('production map apparatus filter blocks laminatsiya above 1050 rubber',

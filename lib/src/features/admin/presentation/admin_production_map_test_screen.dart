@@ -71,6 +71,9 @@ bool productionMapApparatusMatchesOrder(
   if (context == null) {
     return true;
   }
+  if (_productionMapOrderIsFlexoProduct(context)) {
+    return false;
+  }
   final recommended = productionMapRecommendedPechatColorCount(
     rollCount: context.rollCount,
     widthMm: context.widthMm,
@@ -82,6 +85,17 @@ bool productionMapApparatusMatchesOrder(
     apparatusColorCount: apparatusColorCount,
     rollCount: context.rollCount,
     widthMm: context.widthMm,
+  );
+}
+
+bool _productionMapOrderIsFlexoProduct(ProductionMapOrderContext context) {
+  final haystack = [
+    context.orderName,
+    context.productName,
+    context.itemCode,
+  ].join(' ').toLowerCase();
+  return const ['fleksa', 'fleska', 'flex', 'flexe', 'flexo'].any(
+    haystack.contains,
   );
 }
 
