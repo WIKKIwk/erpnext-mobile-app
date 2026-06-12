@@ -924,6 +924,34 @@ void main() {
     );
   });
 
+  testWidgets('opened orders modules are ordered orders move sequence',
+      (tester) async {
+    await TestModeController.instance.setEnabled(true);
+    await _usePhoneViewport(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(useMaterial3: true),
+        locale: const Locale('uz'),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const AdminProductionMapOrdersScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final zakazlarCenter = tester.getCenter(find.text('Zakazlar'));
+    final moveCenter = tester.getCenter(find.text('Ko‘chirish'));
+    final sequenceCenter = tester.getCenter(find.text('Ketma-ketlik'));
+
+    expect(zakazlarCenter.dx, lessThan(moveCenter.dx));
+    expect(moveCenter.dx, lessThan(sequenceCenter.dx));
+  });
+
   testWidgets('opened orders sequence module picks apparatus and reorders',
       (tester) async {
     await TestModeController.instance.setEnabled(true);

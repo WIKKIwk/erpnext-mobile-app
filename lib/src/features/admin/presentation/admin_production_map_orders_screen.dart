@@ -28,9 +28,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 enum _OpenedOrderModule {
+  orders,
   move,
   sequence,
-  orders,
 }
 
 const _moveUnassignedWarehouse = AdminWarehouse(
