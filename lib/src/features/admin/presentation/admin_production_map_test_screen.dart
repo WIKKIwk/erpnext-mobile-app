@@ -4,6 +4,9 @@ import 'dart:math' as math;
 import '../../../app/app_router.dart';
 import '../../../core/api/mobile_api.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/navigation/app_navigation_bar.dart';
+import '../../../core/widgets/navigation/dock_gesture_overlay.dart';
+import '../../../core/widgets/navigation/dock_system_bottom_inset.dart';
 import '../../../core/widgets/shell/app_shell.dart';
 import '../../shared/models/app_models.dart';
 import '../../werka/presentation/widgets/m3_picker_sheet.dart';
@@ -17,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 const _maxLaminatsiyaRubberSizeMm = 1050;
+const _productionMapDockHeight = 60.0;
 
 Future<String?> showProductionMapOrderNumberSheet(
   BuildContext context, {
@@ -1392,7 +1396,18 @@ class _AdminProductionMapTestScreenState
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final fabBottom = MediaQuery.viewPaddingOf(context).bottom + 92.0;
+    final viewMetrics = MediaQueryData.fromView(View.of(context));
+    final systemBottomInset = dockLayoutBottomInset(
+      viewMetrics,
+      thinGestureBottom: DockGestureOverlayScope.thinGestureBottomOf(context),
+    );
+    final dockHeight = appNavigationBarDockHeight(
+      height: _productionMapDockHeight,
+      systemBottomInset: systemBottomInset,
+    );
+    final fabBottom = appNavigationBarPrimaryButtonBottom(
+      dockHeight: dockHeight,
+    );
     // System back (swipe) must also return the saved template to the caller.
     return PopScope(
       canPop: false,
