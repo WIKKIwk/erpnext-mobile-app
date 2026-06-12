@@ -214,11 +214,12 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
     if (sourceMapId.isNotEmpty) {
       try {
         final source = await MobileApi.instance.adminProductionMap(sourceMapId);
-        savedMap = source.map.copyWith(
+        final cleanSourceMap = _cleanQuickOrderSourceMap(source.map);
+        savedMap = cleanSourceMap.copyWith(
           title: _resolvedOrderName(),
           productCode: _itemCode.trim().isNotEmpty
               ? _itemCode.trim()
-              : source.map.productCode,
+              : cleanSourceMap.productCode,
           rollCount: _parseOptionalDouble(_rollCount.text),
           widthMm: _parseOptionalDouble(_widthMm.text),
         );
@@ -263,6 +264,19 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
     );
   }
 
+  ProductionMapDefinition _cleanQuickOrderSourceMap(
+    ProductionMapDefinition map,
+  ) {
+    return map.copyWith(
+      nodes: [
+        for (final node in map.nodes)
+          node.alternativeAssignedTitle.trim().isEmpty
+              ? node
+              : node.copyWith(alternativeAssignedTitle: ''),
+      ],
+    );
+  }
+
   Future<void> _openOrderFromSavedMap() async {
     if (_openingSavedOrder) {
       return;
@@ -288,15 +302,16 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
     setState(() => _openingSavedOrder = true);
     try {
       final source = await MobileApi.instance.adminProductionMap(sourceMapId);
+      final sourceMap = _cleanQuickOrderSourceMap(source.map);
       final normalizedOrder = orderNumber.trim();
-      final clonedMap = source.map.copyWith(
+      final clonedMap = sourceMap.copyWith(
         id: 'zakaz-$normalizedOrder',
         title: _resolvedOrderName(),
         code: normalizedOrder,
         orderNumber: normalizedOrder,
         productCode: _itemCode.trim().isNotEmpty
             ? _itemCode.trim()
-            : source.map.productCode,
+            : sourceMap.productCode,
         rollCount: _parseOptionalDouble(_rollCount.text),
         widthMm: _parseOptionalDouble(_widthMm.text),
       );

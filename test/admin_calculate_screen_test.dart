@@ -121,7 +121,7 @@ void main() {
     await TestModeController.instance.setEnabled(true);
     const sourceMapId = 'zakaz-template-1';
     await MobileApi.instance.adminSaveProductionMap(
-      _map(
+      _dirtyMap(
         id: sourceMapId,
         code: '4444',
         orderNumber: '4444',
@@ -160,6 +160,12 @@ void main() {
     expect(opened.map.orderNumber, '5555');
     expect(opened.map.nodes.map((node) => node.id), ['start', 'order', 'end']);
     expect(
+      opened.map.nodes.every(
+        (node) => node.alternativeAssignedTitle.trim().isEmpty,
+      ),
+      isTrue,
+    );
+    expect(
       maps.any((item) => item.map.id == sourceMapId),
       isTrue,
     );
@@ -170,7 +176,7 @@ void main() {
       (tester) async {
     await TestModeController.instance.setEnabled(true);
     const sourceMapId = 'zakaz-template-map';
-    final source = _map(
+    final source = _dirtyMap(
       id: sourceMapId,
       code: '4444',
       orderNumber: '4444',
@@ -220,6 +226,12 @@ void main() {
     expect(openedArgs!.savedMap?.id, sourceMapId);
     expect(
       openedArgs!.savedMap!.nodes.any((node) => node.id == 'stored_apparatus'),
+      isTrue,
+    );
+    expect(
+      openedArgs!.savedMap!.nodes.every(
+        (node) => node.alternativeAssignedTitle.trim().isEmpty,
+      ),
       isTrue,
     );
   });
@@ -340,6 +352,22 @@ ProductionMapDefinition _map({
     edges: const [
       ProductionMapEdge(from: 'start', to: 'order'),
       ProductionMapEdge(from: 'order', to: 'end'),
+    ],
+  );
+}
+
+ProductionMapDefinition _dirtyMap({
+  required String id,
+  required String code,
+  required String orderNumber,
+}) {
+  final source = _map(id: id, code: code, orderNumber: orderNumber);
+  return source.copyWith(
+    nodes: [
+      for (final node in source.nodes)
+        node.id == 'order'
+            ? node.copyWith(alternativeAssignedTitle: node.title)
+            : node,
     ],
   );
 }
