@@ -87,6 +87,20 @@ void main() {
 
     expect(find.text('Bu tezkor zakazlar ro‘yxatida bor'), findsOneWidget);
     expect(find.text('Qaytadan yaratmoqchimisiz?'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(Row),
+        matching: find.text('Yo‘q'),
+      ),
+      findsWidgets,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(Row),
+        matching: find.text('Ha'),
+      ),
+      findsWidgets,
+    );
 
     await tester.tap(find.text('Yo‘q'));
     await tester.pumpAndSettle();

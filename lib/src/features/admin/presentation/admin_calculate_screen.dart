@@ -328,22 +328,7 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
   Future<bool?> _confirmQuickOrderRecreate() {
     return showDialog<bool>(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Bu tezkor zakazlar ro‘yxatida bor'),
-          content: const Text('Qaytadan yaratmoqchimisiz?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Yo‘q'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Ha'),
-            ),
-          ],
-        );
-      },
+      builder: (context) => const _QuickOrderRecreateDialog(),
     );
   }
 
@@ -912,6 +897,92 @@ class _AdminCalculateScreenState extends State<AdminCalculateScreen> {
           child: ListView(
             padding: EdgeInsets.fromLTRB(12, 12, 12, bottomPadding),
             children: children,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickOrderRecreateDialog extends StatelessWidget {
+  const _QuickOrderRecreateDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+      backgroundColor: scheme.surfaceContainerHigh,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 360),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Bu tezkor zakazlar ro‘yxatida bor',
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'Qaytadan yaratmoqchimisiz?',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 26),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(999),
+                child: SizedBox(
+                  height: 52,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Material(
+                          color: scheme.surfaceContainerHighest,
+                          child: InkWell(
+                            onTap: () => Navigator.of(context).pop(false),
+                            child: Center(
+                              child: Text(
+                                'Yo‘q',
+                                style: theme.textTheme.labelLarge?.copyWith(
+                                  color: scheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(width: 1, color: scheme.surfaceContainerHigh),
+                      Expanded(
+                        child: Material(
+                          color: scheme.primary,
+                          child: InkWell(
+                            onTap: () => Navigator.of(context).pop(true),
+                            child: Center(
+                              child: Text(
+                                'Ha',
+                                style: theme.textTheme.labelLarge?.copyWith(
+                                  color: scheme.onPrimary,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
